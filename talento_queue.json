@@ -19,6 +19,8 @@
     "id": "post_demo_003",
     "message": "⏰ ¡Tercera y última prueba! Si estás leyendo esto, significa que el temporizador (Cronjob) de GitHub Actions despertó exactamente a la hora programada sin ninguna intervención humana. La automatización es absoluta. 🤖📈",
     "link": "https://talentocontarifa.lat",
-    "status": "pending"
+    "status": "published",
+    "publishedAt": "2026-05-15T01:51:53.004Z",
+    "metaId": "217934242951793_977377541320903"
   }
 ]
