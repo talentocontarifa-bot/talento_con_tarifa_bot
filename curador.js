@@ -18,24 +18,27 @@ const FEEDS = [
 
 const QUEUE_FILE = path.join(__dirname, 'talento_queue.json');
 
-async function extractLatestNews() {
-    console.log("🕵️ Buscando noticias frescas...");
+async function extractLatestNews(count = 3) {
+    console.log(`🕵️ Buscando hasta ${count} noticias frescas...`);
     
     // Leemos la cola actual para saber qué hemos publicado
     const queueData = fs.readFileSync(QUEUE_FILE, 'utf8');
     const queue = JSON.parse(queueData);
     const publishedLinks = queue.map(post => post.link);
+    let foundNews = [];
 
     for (const feedUrl of FEEDS) {
+        if (foundNews.length >= count) break;
         try {
             const feed = await parser.parseURL(feedUrl);
             console.log(`\n📚 Revisando: ${feed.title}`);
 
-            // Buscamos la primera noticia que NO hayamos publicado
             for (const item of feed.items) {
                 if (!publishedLinks.includes(item.link)) {
                     console.log(`✅ ¡Nueva noticia encontrada!: ${item.title}`);
-                    return item; // Devolvemos la noticia cruda
+                    foundNews.push(item);
+                    publishedLinks.push(item.link); // evitar duplicados en la misma corrida
+                    if (foundNews.length >= count) break;
                 }
             }
         } catch (error) {
@@ -43,8 +46,10 @@ async function extractLatestNews() {
         }
     }
     
-    console.log("🤷‍♂️ No hay noticias nuevas que no hayamos publicado ya.");
-    return null;
+    if (foundNews.length === 0) {
+        console.log("🤷‍♂️ No hay noticias nuevas que no hayamos publicado ya.");
+    }
+    return foundNews;
 }
 
 async function generatePostWithAI(newsItem) {
@@ -80,29 +85,31 @@ async function generatePostWithAI(newsItem) {
 
 async function curadorMain() {
     try {
-        const news = await extractLatestNews();
-        if (!news) return;
+        const newsList = await extractLatestNews(3); // Buscar 3 noticias
+        if (newsList.length === 0) return;
 
-        const aiPostText = await generatePostWithAI(news);
-        console.log("\n✍️ POST GENERADO POR IA:\n");
-        console.log(aiPostText);
-        console.log("\n-----------------------------------\n");
-
-        // Agregar a la cola
         const queueData = fs.readFileSync(QUEUE_FILE, 'utf8');
         const queue = JSON.parse(queueData);
 
-        const newPost = {
-            id: `ai_post_${Date.now()}`,
-            message: aiPostText,
-            link: news.link, // Guardamos el link original para que Meta publique la vista previa
-            status: "pending"
-        };
+        for (let i = 0; i < newsList.length; i++) {
+            const news = newsList[i];
+            const aiPostText = await generatePostWithAI(news);
+            console.log(`\n✍️ POST ${i+1} GENERADO POR IA:\n`);
+            console.log(aiPostText);
+            console.log("\n-----------------------------------\n");
 
-        queue.push(newPost);
+            const newPost = {
+                id: `ai_post_${Date.now()}_${i}`,
+                message: aiPostText,
+                link: news.link, // Guardamos el link original para que Meta publique la vista previa
+                status: "pending"
+            };
+
+            queue.push(newPost);
+        }
+
         fs.writeFileSync(QUEUE_FILE, JSON.stringify(queue, null, 2));
-
-        console.log("💾 ¡Nuevo post encolado y listo para ser despachado por el cronjob!");
+        console.log(`💾 ¡${newsList.length} nuevos posts encolados y listos para ser programados!`);
 
     } catch (error) {
         console.error("💥 Error fatal en el curador:", error);

@@ -3,7 +3,7 @@ require('dotenv').config();
 const PAGE_ID = process.env.META_PAGE_ID;
 const ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN;
 
-async function publishPost(message, link = null) {
+async function publishPost(message, link = null, scheduledTime = null) {
   if (!PAGE_ID || !ACCESS_TOKEN) {
     console.error('Faltan credenciales META_PAGE_ID o META_PAGE_ACCESS_TOKEN en el archivo .env');
     return null;
@@ -18,6 +18,11 @@ async function publishPost(message, link = null) {
   
   if (link) {
     params.append('link', link);
+  }
+
+  if (scheduledTime) {
+    params.append('published', 'false');
+    params.append('scheduled_publish_time', scheduledTime.toString());
   }
 
   try {
