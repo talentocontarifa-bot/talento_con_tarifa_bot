@@ -10,7 +10,10 @@ const parser = new Parser();
 
 // 2. Fuentes de noticias (Podemos añadir o cambiar estas)
 const FEEDS = [
-    'https://www.entrepreneur.com/es/feed' // Emprendimiento y negocios
+    'https://www.entrepreneur.com/es/feed', // Emprendimiento y negocios
+    'https://feeds.weblogssl.com/xataka2',  // Xataka (Tecnología general)
+    'https://feeds.weblogssl.com/genbeta',  // Genbeta (Software e IA)
+    'https://wwwhatsnew.com/feed/'          // WWWhat's new (Herramientas y tecnología)
 ];
 
 const QUEUE_FILE = path.join(__dirname, 'talento_queue.json');
