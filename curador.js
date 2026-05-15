@@ -57,9 +57,13 @@ async function generatePostWithAI(newsItem) {
     Título: "${newsItem.title}"
     Resumen/Fragmento: "${newsItem.contentSnippet}"
     
-    Escribe un post para Facebook (máximo 3 párrafos cortos) resumiendo esta noticia y dando una opinión o consejo para emprendedores o dueños de negocio.
+    Tu objetivo es redactar un post para Facebook (máximo 3 párrafos cortos) donde tomes esta noticia y le des un enfoque obligatorio sobre Inteligencia Artificial para emprendedores. 
+    Incluso si la noticia no habla de IA directamente, encuéntrale el ángulo: ¿Cómo la IA cambiaría esto? ¿Cómo pueden los emprendedores usar la IA para sacar ventaja de esto?
+    
     Usa emojis con estilo (⚡, 🧠, 🚀, 💀, etc.).
-    Incluye al final un CTA sutil invitando a seguir a Talento con Tarifa.
+    Al final de tu texto, invita sutilmente a seguir a Talento con Tarifa, y luego incluye estrictamente la fuente original de esta manera:
+    
+    "🔗 Lee la nota completa aquí: ${newsItem.link}"
     
     Responde ÚNICAMENTE con el texto del post, sin explicaciones extras.
     `;

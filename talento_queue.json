@@ -27,12 +27,20 @@
     "id": "post_demo_004",
     "message": "🔌 ¡Cuarta prueba exitosa! Este post ha sido disparado por cron-job.org mediante un Webhook externo. El sistema ha alcanzado el nivel máximo de precisión y fiabilidad. 🎯",
     "link": "https://talentocontarifa.lat",
-    "status": "pending"
+    "status": "published",
+    "publishedAt": "2026-05-15T02:39:03.866Z",
+    "metaId": "217934242951793_977403004651690"
   },
   {
     "id": "ai_post_1778810941166",
     "message": "Dicen que decir 'SÍ', incluso cuando te aprieta, es tu mejor jugada profesional en la era de la IA. Un artículo lo deja claro: no es por ser el 'buenazo', es tu catalizador de carrera. ¿Incomodidad? Bienvenido al progreso. 💀\n\nPara emprendedores y dueños de negocio, esto no es un cursillo de autoayuda barato. Esto es sobre supervivencia. La IA no te va a preguntar si estás cómodo. Te va a exigir adaptarte, aprender nuevas herramientas, o te pasa por encima. Ese 'sí' forzado te saca de la burbuja, te empuja a lo desconocido, a lo que *realmente* te hará crecer, no la rutina aburrida. 🧠⚡\n\nLa autocomplacencia es el lujo que ya no puedes permitirte. Aceptar el riesgo, probar lo nuevo, pivotar rápido... eso es lo que separa a los que dominan de los que observan cómo los superan. No es un 'sí' por compromiso, es un 'sí' por imperativo estratégico. 🚀 ¿Quieres dominar o ser dominado? Para resultados que importan, sigue a Talento con Tarifa.",
     "link": "https://spanish.entrepreneur.com/emprendedores/por-que-decir-si-es-tu-mejor-jugada-profesional-en-la-era-de-la-inteligencia-artificial",
+    "status": "pending"
+  },
+  {
+    "id": "ai_post_1778813033296",
+    "message": "¿Crees que tu startup es inmune al desastre? 💀 Los gigantes de Silicon Valley ya están quemando billetes como locos con la IA, y la banca mexicana... bueno, ellos van por el mismo camino con su gasto fuera de control.\n\nLa IA puede ser tu cohete 🚀 o tu agujero negro financiero si no tienes control. Para el emprendedor, esto no es un lujo, es una lección brutal: sin FinOps, sin cerebro, la IA te devora el presupuesto antes de que digas \"ChatGPT\". No te dejes llevar por el hype.\n\nNo se trata de no usar IA, sino de usarla para *no* joderla. ⚡ Aprovecha que los grandes están distraídos con su propio despilfarro. Usa la IA para optimizar cada céntimo, automatizar lo que te roba tiempo y dinero, y escalar con la disciplina que ellos no tienen. Eso es ventaja.\n\n¿Cansado de la mierda corporativa y listo para resultados? Sigue a Talento con Tarifa.\n🔗 Lee la nota completa aquí: https://spanish.entrepreneur.com/tecnologia/el-nuevo-gasto-fuera-de-control-en-las-empresas-asi-nacio-el-finops-para-ia",
+    "link": "https://spanish.entrepreneur.com/tecnologia/el-nuevo-gasto-fuera-de-control-en-las-empresas-asi-nacio-el-finops-para-ia",
     "status": "pending"
   }
 ]
