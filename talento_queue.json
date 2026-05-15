@@ -22,5 +22,11 @@
     "status": "published",
     "publishedAt": "2026-05-15T01:51:53.004Z",
     "metaId": "217934242951793_977377541320903"
+  },
+  {
+    "id": "post_demo_004",
+    "message": "🔌 ¡Cuarta prueba exitosa! Este post ha sido disparado por cron-job.org mediante un Webhook externo. El sistema ha alcanzado el nivel máximo de precisión y fiabilidad. 🎯",
+    "link": "https://talentocontarifa.lat",
+    "status": "pending"
   }
 ]
