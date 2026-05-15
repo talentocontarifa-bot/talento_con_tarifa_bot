@@ -28,6 +28,11 @@ jobs:
       - name: Instalar dependencias
         run: npm install
 
+      - name: Curar nuevo contenido con Inteligencia Artificial
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node curador.js
+
       - name: Ejecutar publicador de Meta
         env:
           META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
@@ -37,5 +42,5 @@ jobs:
       - name: Hacer commit y push del archivo JSON actualizado
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "🤖 Auto-Update: Post publicado en Meta"
+          commit_message: "🤖 Auto-Update: Estado de posts y cola actualizada"
           file_pattern: "talento_queue.json"
