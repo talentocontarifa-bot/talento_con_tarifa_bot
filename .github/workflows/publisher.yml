@@ -1,0 +1,39 @@
+name: Publicador de Talento con Tarifa
+
+on:
+  schedule:
+    # Se ejecuta todos los días a las 16:00 UTC (10:00 AM CDMX aprox)
+    - cron: '0 16 * * *'
+  workflow_dispatch: # Permite ejecutar el botón desde la interfaz de GitHub
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    # Necesitamos permisos de escritura para que el bot pueda actualizar el talento_queue.json
+    permissions:
+      contents: write
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Ejecutar publicador de Meta
+        env:
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+        run: node run_campaign.js
+
+      - name: Hacer commit y push del archivo JSON actualizado
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🤖 Auto-Update: Post publicado en Meta"
+          file_pattern: "talento_queue.json"
