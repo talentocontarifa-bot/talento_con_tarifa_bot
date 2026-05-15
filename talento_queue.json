@@ -11,6 +11,8 @@
     "id": "post_demo_002",
     "message": "🚀 ¡Segunda prueba de transmisión! Esta vez iniciada manualmente desde el botón de GitHub Actions. Comprobando que el servidor despierta a voluntad. #TalentoConTarifa",
     "link": "https://talentocontarifa.lat",
-    "status": "pending"
+    "status": "published",
+    "publishedAt": "2026-05-15T01:43:08.021Z",
+    "metaId": "217934242951793_977373337987990"
   }
 ]
