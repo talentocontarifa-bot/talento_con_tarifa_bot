@@ -5,6 +5,8 @@ on:
     # Programado para probar el cron automático (01:52 UTC aprox)
     - cron: '52 1 * * *'
   workflow_dispatch: # Permite ejecutar el botón desde la interfaz de GitHub
+  repository_dispatch: # Permite que cron-job.org dispare el bot vía Webhook
+    types: [trigger-publicador]
 
 jobs:
   publish:
