@@ -4,7 +4,13 @@
     "message": "🤖 Hola Mundo. Esta es una prueba de fuego del nuevo sistema automatizado de Talento con Tarifa, transmitiendo directamente desde la nube. Si estás leyendo esto, ¡el CI/CD funciona perfectamente! ✨",
     "link": "https://talentocontarifa.lat",
     "status": "published",
-    "publishedAt": "2026-05-15T01:33:45.087Z",
+    "publishedAt": "2026-05-15T01:33:48.000Z",
     "metaId": "217934242951793_977368434655147"
+  },
+  {
+    "id": "post_demo_002",
+    "message": "🚀 ¡Segunda prueba de transmisión! Esta vez iniciada manualmente desde el botón de GitHub Actions. Comprobando que el servidor despierta a voluntad. #TalentoConTarifa",
+    "link": "https://talentocontarifa.lat",
+    "status": "pending"
   }
 ]
