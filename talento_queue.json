@@ -1,7 +1,7 @@
 [
   {
-    "id": "post_001",
-    "message": "¡Iniciando transmisiones! El bot automatizado de Talento con Tarifa está en línea. 🚀",
+    "id": "post_demo_001",
+    "message": "🤖 Hola Mundo. Esta es una prueba de fuego del nuevo sistema automatizado de Talento con Tarifa, transmitiendo directamente desde la nube. Si estás leyendo esto, ¡el CI/CD funciona perfectamente! ✨",
     "link": "https://talentocontarifa.lat",
     "status": "pending"
   }

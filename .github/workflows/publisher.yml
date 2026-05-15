@@ -2,8 +2,8 @@ name: Publicador de Talento con Tarifa
 
 on:
   schedule:
-    # Se ejecuta todos los días a las 16:00 UTC (10:00 AM CDMX aprox)
-    - cron: '0 16 * * *'
+    # Programado para ejecutarse en ~10 minutos (01:18 UTC / 20:18 CDT)
+    - cron: '18 1 * * *'
   workflow_dispatch: # Permite ejecutar el botón desde la interfaz de GitHub
 
 jobs:
