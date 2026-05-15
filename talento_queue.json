@@ -3,6 +3,8 @@
     "id": "post_demo_001",
     "message": "🤖 Hola Mundo. Esta es una prueba de fuego del nuevo sistema automatizado de Talento con Tarifa, transmitiendo directamente desde la nube. Si estás leyendo esto, ¡el CI/CD funciona perfectamente! ✨",
     "link": "https://talentocontarifa.lat",
-    "status": "pending"
+    "status": "published",
+    "publishedAt": "2026-05-15T01:33:45.087Z",
+    "metaId": "217934242951793_977368434655147"
   }
 ]
