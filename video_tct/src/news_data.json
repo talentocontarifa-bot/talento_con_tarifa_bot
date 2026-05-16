@@ -1,10 +1,11 @@
 {
-  "title_line1": "AGENTES",
-  "title_line2": "AUTÓNOMOS",
-  "bullet_points": "Operan ventas y datos 24/7",
-  "percentage": 50,
-  "percentage_sub": "Ahorro Operativo",
-  "data_text": "Delega Procesos",
-  "data_sub": "Automatizar = Rentabilidad",
-  "cta_text": "¿Qué vas a delegar?"
+  "script": "Emprendedor LATAM, ¡despierta! El monopolio de la IA se acabó. Modelos open-source ya no son un juguete; están superando a los gigantes privados en costo y rendimiento para tus operaciones clave. Gigantes como Llama 3 o Mixtral ofrecen el 90% de la potencia de GPT-4, ¡por una fracción del costo! Tu competencia ya lo sabe. Si no los implementas, estás perdiendo la guerra. La revolución es ahora, ¿estás dentro o fuera?",
+  "title_line1": "IA LIBRE",
+  "title_line2": "TU ARMA",
+  "bullet_points": "Costos a pique",
+  "percentage": 90,
+  "percentage_sub": "Capacidad vs Premium",
+  "data_text": "Llama 3, Mixtral",
+  "data_sub": "El poder abierto",
+  "cta_text": "¿Ya los usas?"
 }

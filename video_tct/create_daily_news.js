@@ -4,9 +4,10 @@ const { exec } = require('child_process');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const HF_API_KEY = process.env.HF_API_KEY;
 
-if (!GEMINI_API_KEY) {
-  console.error("❌ Faltó GEMINI_API_KEY en las variables de entorno.");
+if (!GEMINI_API_KEY || !HF_API_KEY) {
+  console.error("❌ Faltó GEMINI_API_KEY o HF_API_KEY en las variables de entorno.");
   process.exit(1);
 }
 
@@ -25,10 +26,12 @@ Reglas:
 
 {
   "script": "Texto completo para ser leído por el sintetizador de voz...",
+  "image_prompt_1": "Prompt en inglés para Stable Diffusion detallando la primera escena de la noticia (ej: A humanoid robot working in a factory, cyberpunk style, high contrast, green and black)",
+  "image_prompt_2": "Prompt en inglés para Stable Diffusion para la segunda escena (ej: Data servers glowing in neon green, high tech abstract, ultra realistic)",
   "title_line1": "PALABRA 1 (Max 10 letras)",
   "title_line2": "PALABRA 2 (Max 12 letras)",
   "bullet_points": "Punto clave corto (Max 25 letras)",
-  "percentage": 90, // Un número del 1 al 99 relacionado con la noticia
+  "percentage": 90,
   "percentage_sub": "Explicación corta del %",
   "data_text": "Dato clave corto",
   "data_sub": "Subtítulo del dato",
@@ -65,6 +68,36 @@ Reglas:
       }
       console.log(`✅ ¡Éxito! Audio guardado en public/news_voice.mp3`);
     });
+
+    // 3. Generar Imágenes con Hugging Face (Stable Diffusion)
+    async function generateImage(prompt, filename) {
+        console.log(`🎨 Generando imagen para: ${filename}...`);
+        try {
+            const hfResponse = await fetch(
+                "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
+                {
+                    headers: { 
+                        "Authorization": `Bearer ${HF_API_KEY}`,
+                        "Content-Type": "application/json"
+                    },
+                    method: "POST",
+                    body: JSON.stringify({ inputs: prompt }),
+                }
+            );
+            
+            if(!hfResponse.ok) throw new Error(`HF API error: ${hfResponse.statusText}`);
+            
+            const buffer = await hfResponse.arrayBuffer();
+            const imgPath = path.join(__dirname, 'public', filename);
+            fs.writeFileSync(imgPath, Buffer.from(buffer));
+            console.log(`✅ Imagen guardada en public/${filename}`);
+        } catch(e) {
+            console.error(`❌ Error al generar imagen ${filename}:`, e);
+        }
+    }
+
+    await generateImage(newsData.image_prompt_1, 'agent_robot.png');
+    await generateImage(newsData.image_prompt_2, 'data_structure.png');
 
   } catch (error) {
     console.error("❌ Error en el proceso:", error);

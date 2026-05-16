@@ -24,9 +24,10 @@ jobs:
         run: |
           pip3 install edge-tts --break-system-packages
           
-      - name: Generate Daily News (Gemini + TTS)
+      - name: Generate Daily News (Gemini + TTS + HF)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          HF_API_KEY: ${{ secrets.HF_API_KEY }}
         run: |
           cd video_tct
           node create_daily_news.js
