@@ -20,6 +20,17 @@ jobs:
           cd video_tct
           npm install
 
+      - name: Setup Python & edge-tts
+        run: |
+          pip3 install edge-tts --break-system-packages
+          
+      - name: Generate Daily News (Gemini + TTS)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          cd video_tct
+          node create_daily_news.js
+
       - name: Render Video
         run: |
           cd video_tct
