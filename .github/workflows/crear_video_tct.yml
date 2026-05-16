@@ -30,3 +30,4 @@ jobs:
         with:
           name: video-tct
           path: video_tct/out/video_final_tct.mp4
+          retention-days: 1

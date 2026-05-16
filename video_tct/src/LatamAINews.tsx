@@ -9,6 +9,7 @@ import {
   spring,
   Img
 } from 'remotion';
+import newsData from './news_data.json';
 
 export const LatamAINews: React.FC = () => {
   const frame = useCurrentFrame();
@@ -32,7 +33,7 @@ export const LatamAINews: React.FC = () => {
     <AbsoluteFill style={{ backgroundColor: '#CCFF00', fontFamily: 'sans-serif' }}>
       
       {/* Audio: Voz Recortada + Track Industrial Rave */}
-      <Audio src={staticFile('news_voice_trimmed.mp3')} volume={1.5} />
+      <Audio src={staticFile('news_voice.mp3')} volume={1.5} />
       <Audio src={staticFile('tct_music.mp3')} volume={0.15} />
 
       {/* WATERMARK: Logo persistente de Talento con Tarifa en la esquina superior derecha */}
@@ -51,8 +52,8 @@ export const LatamAINews: React.FC = () => {
       <Sequence from={0} durationInFrames={200}>
         <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
           <div style={{ backgroundColor: '#000', color: '#FFF', padding: '40px 80px', border: '10px solid #FFF', boxShadow: '15px 15px 0px rgba(0,0,0,1)', transform: `scale(${scaleTitle}) rotate(-2deg)`, textAlign: 'center' }}>
-            <h1 style={{ fontSize: '80px', margin: 0, textTransform: 'uppercase' }}>IA en LATAM</h1>
-            <h2 style={{ fontSize: '60px', margin: 0, color: '#CCFF00' }}>2026</h2>
+            <h1 style={{ fontSize: '80px', margin: 0, textTransform: 'uppercase' }}>{newsData.title_line1}</h1>
+            <h2 style={{ fontSize: '60px', margin: 0, color: '#CCFF00' }}>{newsData.title_line2}</h2>
           </div>
         </AbsoluteFill>
       </Sequence>
@@ -68,7 +69,7 @@ export const LatamAINews: React.FC = () => {
               <h2 style={{ fontSize: '70px', margin: 0, color: '#000', textTransform: 'uppercase' }}>Agentes Autónomos</h2>
             </div>
             <p style={{ fontSize: '45px', color: '#FFF', textShadow: '2px 2px 10px #000', fontWeight: 'bold', marginTop: '20px' }}>
-              Gestionan facturas y ventas reales.
+              {newsData.bullet_points}
             </p>
           </div>
         </AbsoluteFill>
@@ -77,10 +78,10 @@ export const LatamAINews: React.FC = () => {
       {/* Escena 3: MOTION GRAPHIC - El Número Gigante Animado (Frames 500 - 850) */}
       <Sequence from={500} durationInFrames={350}>
         <AbsoluteFill style={{ backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '60px', color: '#FFF', textTransform: 'uppercase', letterSpacing: '5px' }}>Ahorro Operativo</h2>
+          <h2 style={{ fontSize: '60px', color: '#FFF', textTransform: 'uppercase', letterSpacing: '5px' }}>{newsData.percentage_sub}</h2>
           <div style={{ transform: `scale(${scalePercent})` }}>
             <h1 style={{ fontSize: '350px', margin: '-50px 0', color: '#CCFF00', textShadow: '15px 15px 0px #FFF' }}>
-              {percentNumber}%
+              {Math.floor(interpolate(frame - 500, [0, 60], [0, newsData.percentage], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }))}%
             </h1>
           </div>
           <p style={{ fontSize: '40px', color: '#FFF', marginTop: '20px' }}>Exigencia de los Inversores (ROI)</p>
@@ -95,10 +96,10 @@ export const LatamAINews: React.FC = () => {
           
           <div style={{ position: 'absolute', bottom: '100px', left: '50px', transform: `translateX(${interpolate(slideDataText, [0, 1], [-500, 0])}px)` }}>
             <div style={{ backgroundColor: '#FFF', padding: '20px 40px', display: 'inline-block', border: '8px solid #000' }}>
-              <h2 style={{ fontSize: '70px', margin: 0, color: '#000', textTransform: 'uppercase' }}>Estructura tus Datos</h2>
+              <h2 style={{ fontSize: '70px', margin: 0, color: '#000', textTransform: 'uppercase' }}>{newsData.data_text}</h2>
             </div>
             <p style={{ fontSize: '50px', color: '#CCFF00', textShadow: '5px 5px 0px #000', fontWeight: 'bold', marginTop: '20px' }}>
-              Rentabilidad &gt; Verse Moderno
+              {newsData.data_sub}
             </p>
           </div>
         </AbsoluteFill>
@@ -111,7 +112,7 @@ export const LatamAINews: React.FC = () => {
             {/* Logo grande en el CTA */}
             <Img src={staticFile('tct_logo.svg')} style={{ width: '300px', height: '300px', margin: '0 auto 40px auto' }} />
             
-            <h1 style={{ fontSize: '90px', textTransform: 'uppercase', margin: 0 }}>¿Estás listo<br />para el salto?</h1>
+            <h1 style={{ fontSize: '80px', textTransform: 'uppercase', margin: 0 }}>{newsData.cta_text}</h1>
             
             <div style={{ marginTop: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#CCFF00', border: '8px solid #FFF', padding: '20px 40px', boxShadow: '15px 15px 0px rgba(255,255,255,1)' }}>
               <Img src={staticFile('tct_logo.svg')} style={{ width: '80px', height: '80px', marginRight: '30px' }} />
