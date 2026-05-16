@@ -1,11 +1,35 @@
 {
-  "script": "Emprendedor LATAM, ¡despierta! El monopolio de la IA se acabó. Modelos open-source ya no son un juguete; están superando a los gigantes privados en costo y rendimiento para tus operaciones clave. Gigantes como Llama 3 o Mixtral ofrecen el 90% de la potencia de GPT-4, ¡por una fracción del costo! Tu competencia ya lo sabe. Si no los implementas, estás perdiendo la guerra. La revolución es ahora, ¿estás dentro o fuera?",
-  "title_line1": "IA LIBRE",
-  "title_line2": "TU ARMA",
-  "bullet_points": "Costos a pique",
-  "percentage": 90,
-  "percentage_sub": "Capacidad vs Premium",
-  "data_text": "Llama 3, Mixtral",
-  "data_sub": "El poder abierto",
-  "cta_text": "¿Ya los usas?"
+  "theme_color": "#FF3300",
+  "script": "Emprendedor, el juego ha cambiado. Los agentes de IA no son el futuro, son hoy. Automatizan tareas, analizan mercados, incluso cierran ventas. ¿Tu negocio está listo? La competencia ya lo está usando. No te quedes atrás. Es tiempo de evolucionar, de dominar las nuevas reglas. Tu tarifa, tu talento, amplificado por IA. Conéctate con el poder de la inteligencia artificial. Talento con Tarifa: ¡Revoluciona tu negocio!",
+  "scenes": [
+    {
+      "type": "title",
+      "text1": "IA AGENTES",
+      "text2": "REVOLUCIÓN",
+      "durationInFrames": 150
+    },
+    {
+      "type": "image_text",
+      "text": "Automatización Extrema",
+      "image_prompt": "A futuristic glowing neon orange abstract neural network forming into a digital assistant or agent figure, ultra-realistic, deep focus, cybernetic, neo-brutalist aesthetic, 8k, highly detailed, sharp edges, dark background, dynamic lighting.",
+      "durationInFrames": 200
+    },
+    {
+      "type": "big_percentage",
+      "number": 85,
+      "text": "Empresas Adaptadas",
+      "durationInFrames": 200
+    },
+    {
+      "type": "image_text",
+      "text": "¡No te quedes atrás!",
+      "image_prompt": "A lone entrepreneur silhouette standing at a digital crossroads, one path glowing vibrant neon orange towards a sprawling futuristic city, the other dark and fading into obsolescence. Neo-brutalist architecture elements, dramatic volumetric lighting, 8k, ultra-detailed, cinematic composition.",
+      "durationInFrames": 200
+    },
+    {
+      "type": "cta",
+      "text": "¿Listo para dominar?",
+      "durationInFrames": 150
+    }
+  ]
 }

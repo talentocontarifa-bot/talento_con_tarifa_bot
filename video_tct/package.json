@@ -8,6 +8,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@gradio/client": "^2.2.0",
+    "@huggingface/inference": "^4.13.15",
     "@remotion/cli": "4.0.461",
     "@remotion/tailwind-v4": "4.0.461",
     "axios": "^1.16.1",

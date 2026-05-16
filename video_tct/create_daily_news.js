@@ -14,28 +14,34 @@ if (!GEMINI_API_KEY || !HF_API_KEY) {
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 async function generateNews() {
-  console.log("🤖 Consultando a Gemini para las noticias del día...");
+  console.log("🤖 Consultando a Gemini para la estructura dinámica del video...");
   
-  const prompt = `Actúa como un experto en negocios e Inteligencia Artificial en Latinoamérica. Eres el curador de contenido de "Talento con Tarifa".
-Genera una noticia corta, impactante y agresiva (estilo neo-brutalista, directa al grano) sobre una tendencia real o noticia reciente de IA que impacte a las empresas (por ejemplo: la caída de costos de IA, modelos open source superando a los privados, robots humanoides, o agentes autónomos).
-  
-Reglas:
-1. El guion de audio (script) debe durar unos 25-30 segundos leído (aprox 70-80 palabras). Debe empezar enganchando al emprendedor.
-2. Genera los textos cortos para la pantalla del video que tengan concordancia con la noticia.
-3. El formato de salida DEBE SER ÚNICAMENTE JSON válido, sin bloques de código markdown, con la siguiente estructura:
+  const prompt = `Actúa como un director de arte y curador de "Talento con Tarifa".
+Diseña un video corto (30 seg) sobre una noticia reciente o tendencia agresiva de IA para emprendedores.
 
+Tu trabajo es definir la ESTRUCTURA COMPLETA DEL VIDEO usando "escenas".
+Tienes 4 tipos de escena disponibles:
+- "title": Un título gigante para el inicio. Requiere 'text1' y 'text2' (máximo 12 letras cada uno).
+- "image_text": Muestra una imagen generada con un texto corto. Requiere 'text' (Max 25 letras) y 'image_prompt' (Prompt super detallado en inglés para Stable Diffusion).
+- "big_percentage": Muestra un número grande que crece. Requiere 'number' (1-99) y 'text' (Max 20 letras).
+- "cta": El llamado a la acción final con el logo de Talento con Tarifa. Requiere 'text' (ej. "¿Estás listo?").
+
+Reglas:
+1. "theme_color" debe ser un color neón vibrante neo-brutalista (elige aleatoriamente: #CCFF00, #FF00FF, #00FFFF, #FF3300, #00FF66).
+2. Tienes total libertad de mezclar las escenas. Ejemplo de flujo: title -> image_text -> big_percentage -> image_text -> cta. O diferente.
+3. La suma de "durationInFrames" de todas las escenas debe ser exactamente 900 (30 segundos a 30fps).
+4. El guion ("script") debe durar unos 25-30 segundos leído (aprox 75 palabras).
+
+Ejemplo de JSON esperado:
 {
-  "script": "Texto completo para ser leído por el sintetizador de voz...",
-  "image_prompt_1": "Prompt en inglés para Stable Diffusion detallando la primera escena de la noticia (ej: A humanoid robot working in a factory, cyberpunk style, high contrast, green and black)",
-  "image_prompt_2": "Prompt en inglés para Stable Diffusion para la segunda escena (ej: Data servers glowing in neon green, high tech abstract, ultra realistic)",
-  "title_line1": "PALABRA 1 (Max 10 letras)",
-  "title_line2": "PALABRA 2 (Max 12 letras)",
-  "bullet_points": "Punto clave corto (Max 25 letras)",
-  "percentage": 90,
-  "percentage_sub": "Explicación corta del %",
-  "data_text": "Dato clave corto",
-  "data_sub": "Subtítulo del dato",
-  "cta_text": "¿Pregunta final corta?"
+  "theme_color": "#FF00FF",
+  "script": "Emprendedor, despierta. El monopolio se acabó...",
+  "scenes": [
+    { "type": "title", "text1": "AGENTE", "text2": "SECRETO", "durationInFrames": 150 },
+    { "type": "image_text", "text": "Datos seguros 24/7", "image_prompt": "Cyberpunk server room glowing neon green, ultra realistic 8k", "durationInFrames": 250 },
+    { "type": "big_percentage", "number": 95, "text": "Precisión", "durationInFrames": 200 },
+    { "type": "cta", "text": "¿Listo para el salto?", "durationInFrames": 300 }
+  ]
 }`;
 
   try {
@@ -69,35 +75,32 @@ Reglas:
       console.log(`✅ ¡Éxito! Audio guardado en public/news_voice.mp3`);
     });
 
-    // 3. Generar Imágenes con Hugging Face (Stable Diffusion)
+    // 3. Generar Imágenes con Hugging Face (FLUX.1)
+    const { HfInference } = require('@huggingface/inference');
+    const hf = new HfInference(HF_API_KEY);
+
     async function generateImage(prompt, filename) {
-        console.log(`🎨 Generando imagen para: ${filename}...`);
+        console.log(`🎨 Generando imagen para: ${filename} (Prompt: ${prompt})...`);
         try {
-            const hfResponse = await fetch(
-                "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
-                {
-                    headers: { 
-                        "Authorization": `Bearer ${HF_API_KEY}`,
-                        "Content-Type": "application/json"
-                    },
-                    method: "POST",
-                    body: JSON.stringify({ inputs: prompt }),
-                }
-            );
-            
-            if(!hfResponse.ok) throw new Error(`HF API error: ${hfResponse.statusText}`);
-            
-            const buffer = await hfResponse.arrayBuffer();
+            const blob = await hf.textToImage({
+                model: 'black-forest-labs/FLUX.1-schnell',
+                inputs: prompt
+            });
+            const arrayBuffer = await blob.arrayBuffer();
             const imgPath = path.join(__dirname, 'public', filename);
-            fs.writeFileSync(imgPath, Buffer.from(buffer));
+            fs.writeFileSync(imgPath, Buffer.from(arrayBuffer));
             console.log(`✅ Imagen guardada en public/${filename}`);
         } catch(e) {
             console.error(`❌ Error al generar imagen ${filename}:`, e);
         }
     }
 
-    await generateImage(newsData.image_prompt_1, 'agent_robot.png');
-    await generateImage(newsData.image_prompt_2, 'data_structure.png');
+    for (let i = 0; i < newsData.scenes.length; i++) {
+        const scene = newsData.scenes[i];
+        if (scene.type === 'image_text' && scene.image_prompt) {
+            await generateImage(scene.image_prompt, `scene_${i}.png`);
+        }
+    }
 
   } catch (error) {
     console.error("❌ Error en el proceso:", error);
