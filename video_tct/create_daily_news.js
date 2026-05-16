@@ -83,7 +83,7 @@ Ejemplo de JSON esperado:
         console.log(`🎨 Generando imagen para: ${filename} (Prompt: ${prompt})...`);
         try {
             const blob = await hf.textToImage({
-                model: 'black-forest-labs/FLUX.1-schnell',
+                model: 'stabilityai/stable-diffusion-xl-base-1.0',
                 inputs: prompt
             });
             const arrayBuffer = await blob.arrayBuffer();

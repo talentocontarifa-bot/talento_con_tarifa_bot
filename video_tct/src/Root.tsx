@@ -3,8 +3,12 @@ import {DreamcraftersAI15} from './DreamcraftersAI15';
 import {DreamcraftersAI} from './DreamcraftersAI';
 import {VeronikaPromo} from './VeronikaPromo';
 import {LatamAINews} from './LatamAINews';
+import newsData from './news_data.json';
 
 export const RemotionRoot: React.FC = () => {
+  // Calculamos la duración exacta sumando todos los frames que dictó Gemini
+  const totalFrames = newsData.scenes.reduce((acc: number, scene: any) => acc + scene.durationInFrames, 0);
+
   return (
     <>
       {/* ⭐ ACTIVO: 15s ElevenLabs + Industrial Rave */}
@@ -36,11 +40,12 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
       />
-      {/* Nueva Noticia IA LATAM 2026 */}
+      
+      {/* Nueva Noticia IA LATAM 2026 - 100% DINÁMICO */}
       <Composition
         id="LatamAINews"
         component={LatamAINews}
-        durationInFrames={1800} // 60 segundos a 30fps
+        durationInFrames={totalFrames} // La duración la decide Gemini ahora
         fps={30}
         width={1080}
         height={1920}
