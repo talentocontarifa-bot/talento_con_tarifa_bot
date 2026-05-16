@@ -2,8 +2,8 @@ name: Publicador de Talento con Tarifa
 
 on:
   schedule:
-    # Programado para probar el cron automático (01:52 UTC aprox)
-    - cron: '52 1 * * *'
+    # 13:00 UTC equivale a las 8:00 AM (Centro de México/Colombia)
+    - cron: '0 13 * * *'
   workflow_dispatch: # Permite ejecutar el botón desde la interfaz de GitHub
   repository_dispatch: # Permite que cron-job.org dispare el bot vía Webhook
     types: [trigger-publicador]
@@ -12,9 +12,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     
-    # Necesitamos permisos de escritura para que el bot pueda actualizar el talento_queue.json
+    # Permisos vitales para leer la bandeja de entrada y cerrar el issue
     permissions:
-      contents: write
+      contents: read
+      issues: write
 
     steps:
       - name: Descargar repositorio
@@ -28,19 +29,10 @@ jobs:
       - name: Instalar dependencias
         run: npm install
 
-      - name: Curar nuevo contenido con Inteligencia Artificial
+      - name: Ejecutar el Master Pipeline de Contenido (Issues + RSS)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node curador.js
-
-      - name: Ejecutar publicador de Meta
-        env:
           META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
-        run: node run_campaign.js
-
-      - name: Hacer commit y push del archivo JSON actualizado
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "🤖 Auto-Update: Estado de posts y cola actualizada"
-          file_pattern: "talento_queue.json"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Necesario para que gh cli pueda cerrar los issues
+        run: node master_pipeline.js
