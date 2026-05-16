@@ -1,0 +1,32 @@
+name: Crear Video TCT
+
+on:
+  workflow_dispatch:
+
+jobs:
+  render-video:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          cd video_tct
+          npm install
+
+      - name: Render Video
+        run: |
+          cd video_tct
+          npx remotion render src/index.ts LatamAINews out/video_final_tct.mp4
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-tct
+          path: video_tct/out/video_final_tct.mp4
