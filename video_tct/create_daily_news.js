@@ -7,7 +7,7 @@ const { getAudioDurationInSeconds } = require('get-audio-duration');
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const HF_API_KEY = process.env.HF_API_KEY;
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE_ID = 'ulJB4yAMefhHYn0FWgGy';
+const ELEVENLABS_VOICE_ID = '4XUsiqPDK4UACIM2BILe';
 const FPS = 30;
 
 if (!GEMINI_API_KEY || !HF_API_KEY || !ELEVENLABS_API_KEY) {
@@ -37,7 +37,7 @@ Reglas estrictas:
 1. "theme_color": elige UNO aleatoriamente entre: #CCFF00, #FF00FF, #00FFFF, #FF3300, #00FF66
 2. Mezcla las escenas creativamente — el orden puede variar cada vez.
 3. NO definas 'durationInFrames' — el sistema lo calculará automáticamente desde el audio.
-4. "script": El guion de voz en español. Exactamente 60-70 palabras, ritmo dinámico, NO menciones el color ni el diseño.
+4. "script": El guion de voz en español. Exactamente 55-65 palabras, ritmo dinámico, NO menciones el color ni el diseño. NO incluyas ninguna despedida ni cierre — el sistema agrega uno automáticamente.
 5. Los porcentajes y datos deben ser reales y verificables de tendencias actuales de IA.
 
 Responde ÚNICAMENTE con JSON válido:
@@ -67,8 +67,18 @@ Responde ÚNICAMENTE con JSON válido:
 // ─────────────────────────────────────────
 // 2. ELEVENLABS — Genera el audio de alta calidad
 // ─────────────────────────────────────────
+// Firma de audio fija que se añade al final de CADA video
+const AI_SIGNATURE_AUDIO =
+  'Este video fue creado y publicado de manera completamente automática por inteligencia artificial. ' +
+  'Imagina el impacto que este superpoder podría tener en tu negocio. ' +
+  'Conéctate con nosotros en Talento con Tarifa punto lat.';
+
 async function generateVoice(script) {
+  // El audio completo = guion de Gemini + firma de IA siempre fija
+  const fullScript = script.trim() + ' ... ' + AI_SIGNATURE_AUDIO;
   console.log(`\n🎙️ [2/4] Generando voz con ElevenLabs (voz: ${ELEVENLABS_VOICE_ID})...`);
+  console.log(`   Script completo (${fullScript.split(' ').length} palabras)`);
+
 
   const response = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`,
@@ -79,7 +89,7 @@ async function generateVoice(script) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        text: script,
+        text: fullScript,
         model_id: 'eleven_multilingual_v2',
         voice_settings: {
           stability: 0.45,
