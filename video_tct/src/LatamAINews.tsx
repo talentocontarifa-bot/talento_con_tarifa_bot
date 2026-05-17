@@ -9,451 +9,510 @@ import {
   useVideoConfig,
   spring,
   Img,
-  useCurrentFrame as useFrame,
 } from 'remotion';
 import newsData from './news_data.json';
 
 const TC = newsData.theme_color;
 
-// ─────────────────────────────────────────────
-// ELEMENTOS DECORATIVOS GLOBALES
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// EFECTOS GLOBALES
+// ═══════════════════════════════════════════════════════
 
-/** Líneas de ruido/scanlines para sensación de broadcast en vivo */
+/** Scanlines estilo CRT broadcast */
 const Scanlines: React.FC = () => (
-  <div
-    style={{
-      position: 'absolute', inset: 0, zIndex: 50, pointerEvents: 'none',
-      background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.15) 3px, rgba(0,0,0,0.15) 4px)',
-    }}
-  />
+  <div style={{
+    position: 'absolute', inset: 0, zIndex: 50, pointerEvents: 'none',
+    background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.13) 3px, rgba(0,0,0,0.13) 4px)',
+  }} />
 );
 
-/** Ticker "EN VIVO" parpadeante */
+/** Glitch de corte entre escenas — 10 frames + aberración cromática */
+const GlitchCut: React.FC = () => {
+  const frame = useCurrentFrame();
+  if (frame > 10) return null;
+
+  const opacity = interpolate(frame, [0, 10], [1, 0], { extrapolateRight: 'clamp' });
+  // Desplazamiento RGB split
+  const shift = interpolate(frame, [0, 5, 10], [20, 0, 8]);
+
+  return (
+    <>
+      {/* Canal R corrido a la derecha */}
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 500, opacity: opacity * 0.6,
+        backgroundColor: '#FF0000', mixBlendMode: 'screen',
+        transform: `translateX(${shift}px)`,
+      }} />
+      {/* Canal B corrido a la izquierda */}
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 500, opacity: opacity * 0.6,
+        backgroundColor: '#0000FF', mixBlendMode: 'screen',
+        transform: `translateX(${-shift}px)`,
+      }} />
+      {/* Ruido horizontal */}
+      <div style={{
+        position: 'absolute', zIndex: 501,
+        top: `${(frame * 137) % 80}%`,
+        left: 0, right: 0, height: '3%',
+        backgroundColor: TC, opacity: opacity * 0.8,
+        mixBlendMode: 'overlay',
+      }} />
+    </>
+  );
+};
+
+/** Glitch periódico de imagen — desplazamiento aleatorio cada N frames */
+const ImageGlitch: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const frame = useCurrentFrame();
+
+  // Dispara cada 47 frames, dura 4 frames
+  const cycle = frame % 47;
+  const active = cycle < 4;
+  const shift = active ? ((cycle * 13) % 30) - 15 : 0;
+  const skew = active ? ((cycle * 7) % 6) - 3 : 0;
+
+  return (
+    <div style={{
+      position: 'relative', width: '100%', height: '100%',
+      transform: active ? `translateX(${shift}px) skewX(${skew}deg)` : 'none',
+      overflow: 'hidden',
+    }}>
+      {children}
+      {/* Franja horizontal de glitch sobre la imagen */}
+      {active && (
+        <div style={{
+          position: 'absolute',
+          top: `${(frame * 53) % 75}%`,
+          left: 0, right: 0, height: '5%',
+          backgroundColor: TC, opacity: 0.4, mixBlendMode: 'overlay',
+        }} />
+      )}
+    </div>
+  );
+};
+
+/** Texto con efecto "typing reveal" letra a letra */
+const TypeReveal: React.FC<{ text: string; startFrame: number; style?: React.CSSProperties }> = ({ text, startFrame, style }) => {
+  const frame = useCurrentFrame();
+  const charsToShow = Math.floor(interpolate(
+    frame, [startFrame, startFrame + text.length * 2],
+    [0, text.length], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }
+  ));
+  const cursor = Math.floor(frame / 8) % 2 === 0 && charsToShow < text.length;
+
+  return (
+    <span style={style}>
+      {text.substring(0, charsToShow)}
+      {cursor && <span style={{ opacity: 0.8 }}>|</span>}
+    </span>
+  );
+};
+
+/** Badge "EN VIVO" parpadeante */
 const LiveBadge: React.FC = () => {
   const frame = useCurrentFrame();
   const blink = Math.floor(frame / 15) % 2 === 0;
   return (
     <div style={{
       position: 'absolute', top: 55, left: 55, zIndex: 200,
-      display: 'flex', alignItems: 'center', gap: '18px',
-      backgroundColor: '#FF0000', padding: '14px 30px',
+      display: 'flex', alignItems: 'center', gap: 18,
+      backgroundColor: '#FF0000', padding: '14px 28px',
       border: '5px solid #000', boxShadow: '6px 6px 0 #000',
     }}>
       <div style={{
-        width: 24, height: 24, borderRadius: '50%',
+        width: 22, height: 22, borderRadius: '50%',
         backgroundColor: blink ? '#FFF' : 'transparent',
-        border: '3px solid #FFF', transition: 'background 0.1s',
+        border: '3px solid #FFF',
       }} />
-      <span style={{ fontSize: 36, fontWeight: 900, color: '#FFF', letterSpacing: 6, fontFamily: 'monospace' }}>
+      <span style={{ fontSize: 34, fontWeight: 900, color: '#FFF', letterSpacing: 6, fontFamily: 'monospace' }}>
         EN VIVO
       </span>
     </div>
   );
 };
 
-/** Marca de agua TCT esquina superior derecha */
+/** Watermark TCT */
 const Watermark: React.FC = () => (
   <div style={{ position: 'absolute', top: 50, right: 50, zIndex: 200 }}>
-    <Img
-      src={staticFile('tct_logo.svg')}
-      style={{ width: 100, height: 100, filter: `drop-shadow(4px 4px 0px ${TC})` }}
-    />
+    <Img src={staticFile('tct_logo.svg')} style={{ width: 100, height: 100, filter: `drop-shadow(4px 4px 0px ${TC})` }} />
   </div>
 );
 
-/** Barra de progreso inferior (progresa durante toda la escena) */
-const SceneProgressBar: React.FC<{ durationInFrames: number }> = ({ durationInFrames }) => {
+/** Barra de progreso de escena */
+const ProgressBar: React.FC<{ dur: number }> = ({ dur }) => {
   const frame = useCurrentFrame();
-  const progress = interpolate(frame, [0, durationInFrames], [0, 100], { extrapolateRight: 'clamp' });
+  const pct = interpolate(frame, [0, dur], [0, 100], { extrapolateRight: 'clamp' });
   return (
-    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 300, height: 14, backgroundColor: '#000' }}>
-      <div style={{ height: '100%', width: `${progress}%`, backgroundColor: TC, transition: 'width 0.1s' }} />
+    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 300, height: 12, backgroundColor: '#111' }}>
+      <div style={{ height: '100%', width: `${pct}%`, backgroundColor: TC }} />
     </div>
   );
 };
 
-/** Ruido estático animado — aparece 8 frames al corte de escena */
-const GlitchOverlay: React.FC = () => {
-  const frame = useCurrentFrame();
-  if (frame > 8) return null;
-  const opacity = interpolate(frame, [0, 8], [0.6, 0], { extrapolateRight: 'clamp' });
-  return (
-    <div style={{
-      position: 'absolute', inset: 0, zIndex: 400, opacity,
-      background: `repeating-linear-gradient(
-        90deg,
-        transparent 0px, transparent ${Math.random() * 80 + 20}px,
-        ${TC} ${Math.random() * 80 + 20}px, ${TC} ${Math.random() * 80 + 24}px
-      )`,
-      mixBlendMode: 'overlay',
-    }} />
-  );
-};
-
-// ─────────────────────────────────────────────
-// ESCENA 1: TÍTULO — "Breaking News" estilo broadcast
-// ─────────────────────────────────────────────
-const TitleScene: React.FC<{ text1: string; text2: string; durationInFrames: number }> = ({ text1, text2, durationInFrames }) => {
+// ═══════════════════════════════════════════════════════
+// ESCENA TÍTULO — Breaking News con chromatic aberration en texto
+// ═══════════════════════════════════════════════════════
+const TitleScene: React.FC<{ text1: string; text2: string; dur: number }> = ({ text1, text2, dur }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // text1 entra desde abajo (rebote elástico)
-  const t1Y = spring({ fps, frame, from: 300, to: 0, config: { damping: 10, stiffness: 120 } });
-  // text2 entra desde arriba con delay
-  const t2Y = spring({ fps, frame: Math.max(0, frame - 8), from: -200, to: 0, config: { damping: 12 } });
-  // Rectángulo de fondo se expande desde el centro
-  const rectScale = spring({ fps, frame, from: 0, to: 1, config: { damping: 14 } });
-  // Líneas decorativas que se dibujan de izquierda a derecha
-  const lineW = interpolate(frame, [5, 25], [0, 100], { extrapolateRight: 'clamp' });
+  const t1Y = spring({ fps, frame, from: 400, to: 0, config: { damping: 9, stiffness: 100 } });
+  const t2Y = spring({ fps, frame: Math.max(0, frame - 10), from: -300, to: 0, config: { damping: 11 } });
+  const scaleIn = spring({ fps, frame, from: 0, to: 1, config: { damping: 13 } });
+  const tilt = interpolate(frame, [0, dur], [-2, 2]);
+  const lineW = interpolate(frame, [8, 30], [0, 100], { extrapolateRight: 'clamp' });
 
-  // Rotación leve pendular que oscila toda la escena
-  const tilt = interpolate(frame, [0, durationInFrames], [-1.5, 1.5], { extrapolateRight: 'clamp' });
+  // Chromatic aberration en el título: capas RGB separadas
+  const aberration = interpolate(frame, [0, 6, 12], [14, 0, 4], { extrapolateRight: 'clamp' });
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
-      <GlitchOverlay />
+      <GlitchCut />
       <Scanlines />
       <LiveBadge />
       <Watermark />
-      <SceneProgressBar durationInFrames={durationInFrames} />
+      <ProgressBar dur={dur} />
 
-      {/* Caja principal girada */}
-      <div style={{
-        transform: `rotate(${tilt}deg) scale(${rectScale})`,
-        textAlign: 'center', position: 'relative',
-      }}>
-        {/* Bloque color sólido detrás del text1 */}
-        <div style={{
-          backgroundColor: TC, padding: '20px 60px',
-          border: '12px solid #FFF', boxShadow: '20px 20px 0 #FFF',
-          marginBottom: 0,
-          transform: `translateY(${t1Y}px)`,
-        }}>
+      <div style={{ transform: `rotate(${tilt}deg) scale(${scaleIn})`, textAlign: 'center' }}>
+
+        {/* TEXT1 con aberración cromática */}
+        <div style={{ transform: `translateY(${t1Y}px)`, position: 'relative', display: 'inline-block', marginBottom: 12 }}>
+          {/* Sombra R */}
           <h1 style={{
-            fontSize: 130, margin: 0, color: '#000',
-            fontFamily: 'Impact, sans-serif', letterSpacing: -4,
-            textTransform: 'uppercase', lineHeight: 1,
+            fontSize: 140, margin: 0, color: 'rgba(255,0,80,0.6)',
+            fontFamily: 'Impact, sans-serif', textTransform: 'uppercase', lineHeight: 1,
+            position: 'absolute', top: 0, left: aberration, width: '100%',
+          }}>{text1}</h1>
+          {/* Sombra B */}
+          <h1 style={{
+            fontSize: 140, margin: 0, color: 'rgba(0,200,255,0.6)',
+            fontFamily: 'Impact, sans-serif', textTransform: 'uppercase', lineHeight: 1,
+            position: 'absolute', top: 0, left: -aberration, width: '100%',
+          }}>{text1}</h1>
+          {/* Texto principal en caja de color */}
+          <div style={{
+            backgroundColor: TC, padding: '20px 60px',
+            border: '12px solid #FFF', boxShadow: '18px 18px 0 #FFF',
+            position: 'relative',
           }}>
-            {text1}
-          </h1>
+            <h1 style={{
+              fontSize: 140, margin: 0, color: '#000',
+              fontFamily: 'Impact, sans-serif', textTransform: 'uppercase', lineHeight: 1,
+            }}>{text1}</h1>
+          </div>
         </div>
 
-        {/* Líneas decorativas horizontales */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, margin: '16px 0' }}>
-          {[1, 2, 3, 4].map(n => (
+        {/* Líneas decorativas animadas */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 14, margin: '14px 0' }}>
+          {[0.4, 0.7, 0.5, 0.8, 0.3].map((w, n) => (
             <div key={n} style={{
-              height: 8, width: `${lineW * (n % 2 === 0 ? 0.8 : 0.5)}px`,
-              backgroundColor: n % 2 === 0 ? '#FFF' : TC, border: '3px solid #000',
+              height: 8, width: `${lineW * w * 1.2}px`,
+              backgroundColor: n % 2 === 0 ? '#FFF' : TC,
+              border: '2px solid #000',
+              transform: n % 2 === 0 ? 'skewX(-8deg)' : 'skewX(8deg)',
             }} />
           ))}
         </div>
 
-        {/* text2 en caja blanca */}
+        {/* TEXT2 en caja blanca */}
         <div style={{
-          backgroundColor: '#FFF', padding: '14px 50px',
-          border: '10px solid #000', boxShadow: '-14px 14px 0 ' + TC,
           transform: `translateY(${t2Y}px)`,
+          backgroundColor: '#FFF', padding: '14px 50px',
+          border: '10px solid #000', boxShadow: `-16px 16px 0 ${TC}`,
+          display: 'inline-block',
         }}>
           <h2 style={{
-            fontSize: 80, margin: 0, color: '#000',
-            fontFamily: 'Impact, sans-serif',
-            textTransform: 'uppercase', letterSpacing: 2,
-          }}>
-            {text2}
-          </h2>
+            fontSize: 88, margin: 0, color: '#000',
+            fontFamily: 'Impact, sans-serif', textTransform: 'uppercase',
+          }}>{text2}</h2>
         </div>
       </div>
     </AbsoluteFill>
   );
 };
 
-// ─────────────────────────────────────────────
-// ESCENA 2: IMAGEN + TEXTO — Pantalla dividida brutal
-// ─────────────────────────────────────────────
-const ImageTextScene: React.FC<{ text: string; imageFile: string; durationInFrames: number }> = ({ text, imageFile, durationInFrames }) => {
+// ═══════════════════════════════════════════════════════
+// ESCENA IMAGEN — Pantalla dividida + glitch en imagen + typing en texto
+// ═══════════════════════════════════════════════════════
+const ImageTextScene: React.FC<{ text: string; imageFile: string; dur: number }> = ({ text, imageFile, dur }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const kenBurns = interpolate(frame, [0, durationInFrames], [1.08, 1.2], { extrapolateRight: 'clamp' });
-
-  // Panel inferior sube desde abajo
-  const panelY = spring({ fps, frame, from: 800, to: 0, config: { damping: 16 } });
-  // Texto aparece con delay
-  const textOpacity = interpolate(frame, [8, 20], [0, 1], { extrapolateRight: 'clamp' });
-  const textX = spring({ fps, frame: Math.max(0, frame - 8), from: -100, to: 0, config: { damping: 14 } });
-
-  // Borde de color que recorre el perímetro de la imagen (efecto "outline reveal")
-  const borderProgress = interpolate(frame, [2, 22], [0, 100], { extrapolateRight: 'clamp' });
+  const kenBurns = interpolate(frame, [0, dur], [1.0, 1.18], { extrapolateRight: 'clamp' });
+  const panelY = spring({ fps, frame, from: 900, to: 0, config: { damping: 15 } });
+  const lineW = interpolate(frame, [5, 25], [0, 100], { extrapolateRight: 'clamp' });
 
   return (
     <AbsoluteFill>
-      <GlitchOverlay />
+      <GlitchCut />
 
-      {/* IMAGEN con Ken Burns */}
-      <Img
-        src={staticFile(imageFile)}
-        style={{ width: '100%', height: '75%', objectFit: 'cover', transform: `scale(${kenBurns})`, transformOrigin: 'center center' }}
-      />
+      {/* IMAGEN con Ken Burns Y glitch periódico */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '72%', overflow: 'hidden' }}>
+        <ImageGlitch>
+          <Img
+            src={staticFile(imageFile)}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${kenBurns})` }}
+          />
+        </ImageGlitch>
+      </div>
 
-      {/* Degradado inferior */}
-      <div style={{ position: 'absolute', bottom: '25%', left: 0, right: 0, height: 260, background: 'linear-gradient(transparent, #000)' }} />
+      {/* Degradado al panel */}
+      <div style={{ position: 'absolute', top: '58%', left: 0, right: 0, height: '18%', background: 'linear-gradient(transparent, #000)' }} />
 
-      {/* PANEL INFERIOR — sube desde abajo */}
+      {/* PANEL INFERIOR */}
       <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%',
-        backgroundColor: '#000', borderTop: `14px solid ${TC}`,
-        transform: `translateY(${panelY}px)`, padding: '30px 50px',
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: '32%',
+        backgroundColor: '#000', borderTop: `12px solid ${TC}`,
+        transform: `translateY(${panelY}px)`,
+        padding: '28px 50px 28px 50px',
         display: 'flex', flexDirection: 'column', justifyContent: 'center',
       }}>
-        {/* Línea decorativa que se dibuja */}
-        <div style={{ width: `${borderProgress}%`, height: 6, backgroundColor: TC, marginBottom: 20 }} />
+        {/* Línea que se dibuja */}
+        <div style={{ height: 6, width: `${lineW}%`, backgroundColor: TC, marginBottom: 18 }} />
 
-        <div style={{
-          opacity: textOpacity, transform: `translateX(${textX}px)`,
-          display: 'flex', alignItems: 'flex-start', gap: 20,
-        }}>
-          {/* Bloque de color lateral — detalle neo-brutalista */}
-          <div style={{ width: 16, height: 100, backgroundColor: TC, flexShrink: 0, marginTop: 4 }} />
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20 }}>
+          {/* Bloque lateral de color */}
+          <div style={{ width: 14, flexShrink: 0, alignSelf: 'stretch', backgroundColor: TC, minHeight: 80 }} />
           <h2 style={{
-            fontSize: 70, margin: 0, color: '#FFF',
-            fontFamily: 'Impact, sans-serif',
-            textTransform: 'uppercase', lineHeight: 1.05,
+            fontSize: 68, margin: 0, color: '#FFF',
+            fontFamily: 'Impact, sans-serif', textTransform: 'uppercase', lineHeight: 1.05,
           }}>
-            {text}
+            <TypeReveal text={text} startFrame={12} style={{ color: '#FFF' }} />
           </h2>
         </div>
       </div>
 
       <Watermark />
-      <SceneProgressBar durationInFrames={durationInFrames} />
+      <ProgressBar dur={dur} />
       <Scanlines />
     </AbsoluteFill>
   );
 };
 
-// ─────────────────────────────────────────────
-// ESCENA 3: PORCENTAJE — Contador dramático con explosión
-// ─────────────────────────────────────────────
-const PercentageScene: React.FC<{ number: number; text: string; durationInFrames: number }> = ({ number, text, durationInFrames }) => {
+// ═══════════════════════════════════════════════════════
+// ESCENA PORCENTAJE — Contador con overshoot + fondo animado
+// ═══════════════════════════════════════════════════════
+const PercentageScene: React.FC<{ number: number; text: string; dur: number }> = ({ number, text, dur }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Número cuenta rápido los primeros 40 frames, luego frena dramáticamente
-  const animatedNumber = Math.floor(
-    interpolate(frame, [0, 40, 55], [0, number * 1.1, number], {
-      extrapolateRight: 'clamp', extrapolateLeft: 'clamp',
-    })
+  const animatedNum = Math.floor(
+    interpolate(frame, [0, 45, 60], [0, number * 1.12, number], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })
   );
+  const punch = spring({ fps, frame: Math.max(0, frame - 55), from: 0.8, to: 1, config: { damping: 5, stiffness: 500 } });
+  const textY = spring({ fps, frame: Math.max(0, frame - 35), from: 100, to: 0, config: { damping: 12 } });
+  const stripeOffset = frame * 2.5;
 
-  // Escala "punch" al llegar al número final
-  const punch = spring({ fps, frame: Math.max(0, frame - 52), from: 0.8, to: 1, config: { damping: 6, stiffness: 400 } });
-
-  // Texto descriptivo aparece tarde
-  const textY = spring({ fps, frame: Math.max(0, frame - 30), from: 80, to: 0, config: { damping: 12 } });
-
-  // Fondo con rayas diagonales animadas (se desplazan)
-  const stripeOffset = frame * 2;
+  // Aberración cromática en el número cuando llega al valor final
+  const ab = frame > 56 ? interpolate(frame, [56, 62], [10, 0], { extrapolateRight: 'clamp' }) : 0;
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
-      <GlitchOverlay />
+      <GlitchCut />
 
-      {/* Fondo de rayas diagonales */}
+      {/* Fondo de rayas diagonales en movimiento */}
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: `repeating-linear-gradient(
-          45deg,
-          transparent, transparent 40px,
-          ${TC}18 40px, ${TC}18 44px
-        )`,
+        backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 38px, ${TC}15 38px, ${TC}15 42px)`,
         backgroundPosition: `${stripeOffset}px ${stripeOffset}px`,
       }} />
 
-      {/* Cruz decorativa central */}
-      <div style={{ position: 'absolute', width: 8, height: '100%', backgroundColor: `${TC}30` }} />
-      <div style={{ position: 'absolute', height: 8, width: '100%', backgroundColor: `${TC}30` }} />
+      {/* Cruz decorativa */}
+      <div style={{ position: 'absolute', width: 6, height: '100%', backgroundColor: `${TC}25` }} />
+      <div style={{ position: 'absolute', height: 6, width: '100%', backgroundColor: `${TC}25` }} />
 
-      {/* NÚMERO GIGANTE */}
+      {/* NÚMERO */}
       <div style={{ zIndex: 10, textAlign: 'center', transform: `scale(${punch})` }}>
         <div style={{ position: 'relative', display: 'inline-block' }}>
-          {/* Sombra neo-brutalista del número */}
+          {/* Canal R aberración */}
           <h1 style={{
-            fontSize: 400, margin: 0, lineHeight: 0.85,
+            fontSize: 380, margin: 0, lineHeight: 0.85,
             fontFamily: 'Impact, sans-serif',
-            color: 'transparent',
-            WebkitTextStroke: `8px ${TC}`,
-            position: 'absolute', top: 12, left: 12,
-          }}>
-            {animatedNumber}%
-          </h1>
+            color: 'rgba(255,0,80,0.5)',
+            position: 'absolute', top: 0, left: ab,
+          }}>{animatedNum}%</h1>
+          {/* Canal B aberración */}
           <h1 style={{
-            fontSize: 400, margin: 0, lineHeight: 0.85,
+            fontSize: 380, margin: 0, lineHeight: 0.85,
             fontFamily: 'Impact, sans-serif',
-            color: TC,
+            color: 'rgba(0,200,255,0.5)',
+            position: 'absolute', top: 0, left: -ab,
+          }}>{animatedNum}%</h1>
+          {/* Número principal */}
+          <h1 style={{
+            fontSize: 380, margin: 0, lineHeight: 0.85,
+            fontFamily: 'Impact, sans-serif', color: TC,
             position: 'relative',
-          }}>
-            {animatedNumber}%
-          </h1>
+            textShadow: `10px 10px 0 rgba(255,255,255,0.15)`,
+          }}>{animatedNum}%</h1>
         </div>
 
-        {/* Texto descriptivo */}
+        {/* Etiqueta */}
         <div style={{
-          transform: `translateY(${textY}px)`,
-          marginTop: 40,
-          backgroundColor: '#FFF', padding: '16px 60px',
+          transform: `translateY(${textY}px)`, marginTop: 30,
+          backgroundColor: '#FFF', padding: '14px 55px',
           border: '8px solid #000', boxShadow: `10px 10px 0 ${TC}`,
           display: 'inline-block',
         }}>
           <h2 style={{
-            fontSize: 60, margin: 0, color: '#000',
+            fontSize: 58, margin: 0, color: '#000',
             fontFamily: 'Impact, sans-serif', textTransform: 'uppercase',
-          }}>
-            {text}
-          </h2>
+          }}>{text}</h2>
         </div>
       </div>
 
       <LiveBadge />
       <Watermark />
-      <SceneProgressBar durationInFrames={durationInFrames} />
+      <ProgressBar dur={dur} />
       <Scanlines />
     </AbsoluteFill>
   );
 };
 
-// ─────────────────────────────────────────────
-// ESCENA 4: CTA — Cortina de cierre épica
-// ─────────────────────────────────────────────
-const CtaScene: React.FC<{ text: string; durationInFrames: number }> = ({ text, durationInFrames }) => {
+// ═══════════════════════════════════════════════════════
+// ESCENA CTA — SIEMPRE FIJO, copy de firma de IA
+// ═══════════════════════════════════════════════════════
+const CtaScene: React.FC<{ dur: number }> = ({ dur }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Cortina de color que barre de arriba a abajo
-  const curtainH = interpolate(frame, [0, 18], [0, 100], { extrapolateRight: 'clamp' });
+  const curtainH = interpolate(frame, [0, 20], [0, 100], { extrapolateRight: 'clamp' });
+  const logoScale = spring({ fps, frame: Math.max(0, frame - 16), from: 0, to: 1, config: { damping: 7, stiffness: 280 } });
+  const logoRotate = spring({ fps, frame: Math.max(0, frame - 16), from: -180, to: 0, config: { damping: 10 } });
+  const headlineY = spring({ fps, frame: Math.max(0, frame - 28), from: 60, to: 0, config: { damping: 13 } });
+  const subY = spring({ fps, frame: Math.max(0, frame - 40), from: 80, to: 0, config: { damping: 13 } });
+  const urlY = spring({ fps, frame: Math.max(0, frame - 52), from: 200, to: 0, config: { damping: 12 } });
+  const headlineOpacity = interpolate(frame, [28, 42], [0, 1], { extrapolateRight: 'clamp' });
 
-  // Logo entra con rebote
-  const logoScale = spring({ fps, frame: Math.max(0, frame - 14), from: 0, to: 1, config: { damping: 8, stiffness: 300 } });
-
-  // Texto se revela con delay
-  const textOpacity = interpolate(frame, [22, 35], [0, 1], { extrapolateRight: 'clamp' });
-  const textY = spring({ fps, frame: Math.max(0, frame - 22), from: 50, to: 0, config: { damping: 14 } });
-
-  // URL desliza desde abajo al final
-  const urlY = spring({ fps, frame: Math.max(0, frame - 38), from: 300, to: 0, config: { damping: 12 } });
-
-  // Rotación dramática del logo
-  const logoRotate = spring({ fps, frame: Math.max(0, frame - 14), from: -180, to: 0, config: { damping: 10 } });
+  // Parpadeo sutil del badge IA
+  const badgePulse = interpolate(frame % 30, [0, 15, 30], [1, 0.7, 1]);
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
-      <GlitchOverlay />
+      <GlitchCut />
       <Scanlines />
 
-      {/* CORTINA de entrada */}
+      {/* Cortina de entrada */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0,
-        height: `${curtainH}%`, backgroundColor: TC,
-        zIndex: 5,
+        height: `${curtainH}%`, backgroundColor: TC, zIndex: 5,
       }} />
 
-      {/* Patrón de puntos de fondo */}
+      {/* Fondo de puntos */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 1,
-        backgroundImage: `radial-gradient(${TC}40 2px, transparent 2px)`,
-        backgroundSize: '40px 40px',
+        backgroundImage: `radial-gradient(${TC}35 2px, transparent 2px)`,
+        backgroundSize: '42px 42px',
       }} />
 
-      {/* CONTENIDO centrado */}
-      <div style={{ zIndex: 20, textAlign: 'center', padding: '0 80px' }}>
+      {/* Contenido */}
+      <div style={{ zIndex: 20, textAlign: 'center', padding: '0 70px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
 
-        {/* Logo TCT girando */}
-        <div style={{
-          transform: `scale(${logoScale}) rotate(${logoRotate}deg)`,
-          marginBottom: 40, display: 'inline-block',
-        }}>
+        {/* Logo TCT rotando */}
+        <div style={{ transform: `scale(${logoScale}) rotate(${logoRotate}deg)`, marginBottom: 36 }}>
           <div style={{
-            backgroundColor: TC, padding: 30,
+            backgroundColor: TC, padding: 28,
             border: '10px solid #FFF', boxShadow: '16px 16px 0 #FFF',
             display: 'inline-block',
           }}>
-            <Img src={staticFile('tct_logo.svg')} style={{ width: 180, height: 180 }} />
+            <Img src={staticFile('tct_logo.svg')} style={{ width: 160, height: 160 }} />
           </div>
         </div>
 
-        {/* Frase CTA */}
-        <div style={{ opacity: textOpacity, transform: `translateY(${textY}px)` }}>
+        {/* Headline principal */}
+        <div style={{ opacity: headlineOpacity, transform: `translateY(${headlineY}px)`, marginBottom: 16 }}>
           <h1 style={{
-            fontSize: 90, margin: '0 0 16px 0', color: '#FFF',
+            fontSize: 76, margin: 0, color: '#FFF',
             fontFamily: 'Impact, sans-serif', textTransform: 'uppercase',
-            lineHeight: 1,
-            textShadow: `6px 6px 0 ${TC}`,
+            lineHeight: 1, textShadow: `6px 6px 0 ${TC}`,
           }}>
-            {text}
+            ESTE VIDEO FUE CREADO
+          </h1>
+          <h1 style={{
+            fontSize: 76, margin: 0, color: TC,
+            fontFamily: 'Impact, sans-serif', textTransform: 'uppercase',
+            lineHeight: 1, textShadow: `6px 6px 0 #FFF`,
+          }}>
+            100% CON IA. AUTOMÁTICO.
           </h1>
         </div>
 
-        {/* Separador */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '30px 0', justifyContent: 'center' }}>
-          <div style={{ flex: 1, height: 6, backgroundColor: TC }} />
-          <div style={{ width: 20, height: 20, backgroundColor: '#FFF', transform: 'rotate(45deg)' }} />
-          <div style={{ flex: 1, height: 6, backgroundColor: TC }} />
+        {/* Subtexto */}
+        <div style={{ transform: `translateY(${subY}px)`, marginBottom: 32, maxWidth: 900 }}>
+          <p style={{
+            fontSize: 40, margin: 0, color: '#CCC',
+            fontFamily: 'Arial, sans-serif', lineHeight: 1.3,
+            fontStyle: 'italic',
+          }}>
+            Imagina lo que <span style={{ color: TC, fontStyle: 'normal', fontWeight: 900 }}>tu negocio</span> podría
+            hacer con este superpoder.
+          </p>
         </div>
 
-        {/* URL — entra desde abajo */}
-        <div style={{ transform: `translateY(${urlY}px)` }}>
+        {/* Separador */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '80%', marginBottom: 32 }}>
+          <div style={{ flex: 1, height: 5, backgroundColor: TC }} />
+          <div style={{ width: 18, height: 18, backgroundColor: '#FFF', transform: 'rotate(45deg)' }} />
+          <div style={{ flex: 1, height: 5, backgroundColor: TC }} />
+        </div>
+
+        {/* Badge IA pulsante */}
+        <div style={{ transform: `translateY(${urlY}px)`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
           <div style={{
-            backgroundColor: TC, padding: '22px 50px',
-            border: '10px solid #FFF', boxShadow: '14px 14px 0 #FFF',
-            display: 'inline-flex', alignItems: 'center', gap: 24,
+            opacity: badgePulse,
+            backgroundColor: '#000', border: `4px solid ${TC}`,
+            padding: '8px 30px', display: 'inline-block',
           }}>
-            <div style={{ width: 18, height: 18, backgroundColor: '#000', borderRadius: '50%' }} />
-            <span style={{ fontSize: 52, fontWeight: 900, color: '#000', fontFamily: 'monospace', letterSpacing: 2 }}>
+            <span style={{ fontSize: 28, color: TC, fontFamily: 'monospace', letterSpacing: 4 }}>
+              ✦ POWERED BY AI ✦
+            </span>
+          </div>
+
+          {/* URL / CTA de contacto */}
+          <div style={{
+            backgroundColor: TC, padding: '22px 48px',
+            border: '10px solid #FFF', boxShadow: '14px 14px 0 #FFF',
+            display: 'inline-flex', alignItems: 'center', gap: 22,
+          }}>
+            <div style={{ width: 16, height: 16, backgroundColor: '#000', borderRadius: '50%' }} />
+            <span style={{ fontSize: 48, fontWeight: 900, color: '#000', fontFamily: 'monospace', letterSpacing: 2 }}>
               TALENTOCONTARIFA.LAT
             </span>
-            <div style={{ width: 18, height: 18, backgroundColor: '#000', borderRadius: '50%' }} />
+            <div style={{ width: 16, height: 16, backgroundColor: '#000', borderRadius: '50%' }} />
           </div>
         </div>
 
       </div>
 
-      <SceneProgressBar durationInFrames={durationInFrames} />
+      <ProgressBar dur={dur} />
     </AbsoluteFill>
   );
 };
 
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
 // COMPOSITOR PRINCIPAL
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
 export const LatamAINews: React.FC = () => {
   let accumulatedFrames = 0;
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#000', fontFamily: 'Impact, Arial Black, sans-serif' }}>
 
-      {/* AUDIO */}
       <Audio src={staticFile('news_voice.mp3')} volume={1.4} />
-      <Audio src={staticFile('tct_music.mp3')} volume={0.12} />
+      <Audio src={staticFile('tct_music.mp3')} volume={0.11} />
 
-      {/* ESCENAS — cada una montada en su Sequence */}
       {newsData.scenes.map((scene: any, i: number) => {
         const from = accumulatedFrames;
         accumulatedFrames += scene.durationInFrames;
+        const dur = scene.durationInFrames;
 
         return (
-          <Sequence key={i} from={from} durationInFrames={scene.durationInFrames}>
-            {scene.type === 'title' && (
-              <TitleScene text1={scene.text1} text2={scene.text2} durationInFrames={scene.durationInFrames} />
-            )}
-            {scene.type === 'image_text' && (
-              <ImageTextScene text={scene.text} imageFile={`scene_${i}.png`} durationInFrames={scene.durationInFrames} />
-            )}
-            {scene.type === 'big_percentage' && (
-              <PercentageScene number={scene.number} text={scene.text} durationInFrames={scene.durationInFrames} />
-            )}
-            {scene.type === 'cta' && (
-              <CtaScene text={scene.text} durationInFrames={scene.durationInFrames} />
-            )}
+          <Sequence key={i} from={from} durationInFrames={dur}>
+            {scene.type === 'title' && <TitleScene text1={scene.text1} text2={scene.text2} dur={dur} />}
+            {scene.type === 'image_text' && <ImageTextScene text={scene.text} imageFile={`scene_${i}.png`} dur={dur} />}
+            {scene.type === 'big_percentage' && <PercentageScene number={scene.number} text={scene.text} dur={dur} />}
+            {/* CTA siempre ignora el 'text' de Gemini y usa el copy fijo de firma */}
+            {scene.type === 'cta' && <CtaScene dur={dur} />}
           </Sequence>
         );
       })}

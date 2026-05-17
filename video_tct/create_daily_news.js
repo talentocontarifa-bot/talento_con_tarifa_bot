@@ -7,7 +7,7 @@ const { getAudioDurationInSeconds } = require('get-audio-duration');
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const HF_API_KEY = process.env.HF_API_KEY;
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE_ID = '9F4C8ztpNUmXkdDDbz3J';
+const ELEVENLABS_VOICE_ID = 'ulJB4yAMefhHYn0FWgGy';
 const FPS = 30;
 
 if (!GEMINI_API_KEY || !HF_API_KEY || !ELEVENLABS_API_KEY) {
