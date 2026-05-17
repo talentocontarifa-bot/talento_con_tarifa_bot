@@ -29,26 +29,38 @@ Tu misión: diseñar un video de noticias de IA para emprendedores latinoamerica
 
 Tienes 4 tipos de escena:
 - "title": Inicio impactante. Requiere 'text1' y 'text2' (máximo 10 letras cada uno, solo mayúsculas).
-- "image_text": Imagen de IA + subtítulo. Requiere 'text' (max 25 letras) y 'image_prompt' en inglés (detallado, neo-brutalist, 8k).
-- "big_percentage": Estadística en pantalla gigante. Requiere 'number' (1-99) y 'text' (max 20 letras). Usa un número REAL y RELEVANTE.
-- "cta": Cierre con logo y llamada a la acción. Requiere 'text' (frase corta de impacto).
+- "image_text": Imagen de IA con IDEAS CLAVE superpuestas. Requiere:
+    'text': título principal de la escena (max 20 letras)
+    'image_prompt': prompt detallado en inglés para SDXL (neo-brutalist, 8k, vertical)
+    'key_points': array de EXACTAMENTE 3 frases cortas e impactantes en español (max 6 palabras cada una)
+      que resumen las ideas más importantes del tema. Aparecen secuencialmente sobre la imagen.
+- "big_percentage": Estadística gigante. Requiere 'number' (1-99 REAL) y 'text' (max 20 letras).
+- "cta": Cierre automático. Solo requiere 'text' (frase de 3-5 palabras).
 
 Reglas estrictas:
 1. "theme_color": elige UNO aleatoriamente entre: #CCFF00, #FF00FF, #00FFFF, #FF3300, #00FF66
 2. Mezcla las escenas creativamente — el orden puede variar cada vez.
-3. NO definas 'durationInFrames' — el sistema lo calculará automáticamente desde el audio.
-4. "script": El guion de voz en español. Exactamente 55-65 palabras, ritmo dinámico, NO menciones el color ni el diseño. NO incluyas ninguna despedida ni cierre — el sistema agrega uno automáticamente.
-5. Los porcentajes y datos deben ser reales y verificables de tendencias actuales de IA.
+3. NO definas 'durationInFrames' — el sistema lo calculará desde el audio.
+4. "script": guion de voz en español, 55-65 palabras, ritmo dinámico, sin despedida ni cierre.
+5. Los porcentajes deben ser datos reales verificables de IA 2024-2025.
+6. Los 'key_points' deben ser DATOS CONCRETOS o AFIRMACIONES PODEROSAS, no descripciones genéricas.
+   Ejemplos buenos: "Reduce costos 40%", "Disponible ahora", "Sin código requerido"
+   Ejemplos malos: "Es muy útil", "Tecnología avanzada"
 
 Responde ÚNICAMENTE con JSON válido:
 {
-  "theme_color": "#CCFF00",
-  "script": "Guion de 60-70 palabras aquí...",
+  "theme_color": "#FF3300",
+  "script": "Guion de 55-65 palabras aquí...",
   "scenes": [
-    { "type": "title", "text1": "AGENTES", "text2": "IA HOY", "image_prompt": null },
-    { "type": "image_text", "text": "Automatiza tu empresa", "image_prompt": "Futuristic cyberpunk entrepreneur..." },
+    { "type": "title", "text1": "AGENTES", "text2": "IA HOY" },
+    {
+      "type": "image_text",
+      "text": "AUTOMATIZA YA",
+      "image_prompt": "Futuristic cyberpunk office with glowing AI screens...",
+      "key_points": ["Reduce costos 40%", "Sin código requerido", "Disponible hoy"]
+    },
     { "type": "big_percentage", "number": 73, "text": "Más productivo" },
-    { "type": "cta", "text": "¿Ya lo usas?" }
+    { "type": "cta", "text": "¿Listo para dominar?" }
   ]
 }`;
 

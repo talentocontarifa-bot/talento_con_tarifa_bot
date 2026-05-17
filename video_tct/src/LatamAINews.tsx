@@ -232,9 +232,9 @@ const TitleScene: React.FC<{ text1: string; text2: string; dur: number }> = ({ t
 };
 
 // ═══════════════════════════════════════════════════════
-// ESCENA IMAGEN — Pantalla dividida + glitch en imagen + typing en texto
+// ESCENA IMAGEN — Imagen + key_points secuenciales + panel inferior
 // ═══════════════════════════════════════════════════════
-const ImageTextScene: React.FC<{ text: string; imageFile: string; dur: number }> = ({ text, imageFile, dur }) => {
+const ImageTextScene: React.FC<{ text: string; imageFile: string; keyPoints: string[]; dur: number }> = ({ text, imageFile, keyPoints, dur }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -242,11 +242,17 @@ const ImageTextScene: React.FC<{ text: string; imageFile: string; dur: number }>
   const panelY = spring({ fps, frame, from: 900, to: 0, config: { damping: 15 } });
   const lineW = interpolate(frame, [5, 25], [0, 100], { extrapolateRight: 'clamp' });
 
+  // Cada key_point aparece con un retardo escalonado
+  // Distribuidos en el primer 65% de la escena para que se lean bien
+  const pointInterval = Math.floor(dur * 0.22); // cada punto dura ~22% de la escena
+
+  const points = (keyPoints || []).slice(0, 3);
+
   return (
     <AbsoluteFill>
       <GlitchCut />
 
-      {/* IMAGEN con Ken Burns Y glitch periódico */}
+      {/* IMAGEN con Ken Burns + glitch periódico */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '72%', overflow: 'hidden' }}>
         <ImageGlitch>
           <Img
@@ -256,28 +262,106 @@ const ImageTextScene: React.FC<{ text: string; imageFile: string; dur: number }>
         </ImageGlitch>
       </div>
 
-      {/* Degradado al panel */}
+      {/* ── KEY POINTS secuenciales sobre la imagen ── */}
+      {points.map((point, idx) => {
+        const startAt = 6 + idx * pointInterval;
+        const exitAt = startAt + pointInterval - 4;
+
+        // Entrada: sube desde abajo con spring
+        const entryY = spring({ fps, frame: Math.max(0, frame - startAt), from: 120, to: 0, config: { damping: 12 } });
+        // Salida: se va hacia arriba
+        const exitY = frame > exitAt
+          ? interpolate(frame, [exitAt, exitAt + 8], [0, -140], { extrapolateRight: 'clamp' })
+          : 0;
+        const opacity = frame < startAt
+          ? 0
+          : frame > exitAt + 6 ? 0 : 1;
+
+        // Posición horizontal alterna: izq / der / izq
+        const isRight = idx % 2 === 1;
+        // Número de badge
+        const badgeNum = idx + 1;
+
+        // Icono según posición — neo-brutalista
+        const icons = ['▶', '◆', '★'];
+
+        return (
+          <div
+            key={idx}
+            style={{
+              position: 'absolute',
+              // Posiciones verticales escalonadas en el área de la imagen
+              top: `${14 + idx * 16}%`,
+              left: isRight ? 'auto' : '40px',
+              right: isRight ? '40px' : 'auto',
+              zIndex: 100 + idx,
+              opacity,
+              transform: `translateY(${entryY + exitY}px)`,
+              maxWidth: '580px',
+            }}
+          >
+            {/* Número de secuencia */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 0,
+              filter: 'drop-shadow(6px 6px 0px rgba(0,0,0,0.9))',
+            }}>
+              {/* Badge numerado */}
+              <div style={{
+                backgroundColor: TC, width: 60, height: 60,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '5px solid #000', flexShrink: 0,
+              }}>
+                <span style={{ fontSize: 32, fontWeight: 900, color: '#000', fontFamily: 'Impact, sans-serif' }}>
+                  {badgeNum}
+                </span>
+              </div>
+              {/* Texto del punto */}
+              <div style={{
+                backgroundColor: '#000', padding: '12px 22px',
+                border: '5px solid #000',
+                borderLeft: 'none',
+              }}>
+                <span style={{
+                  fontSize: 48, color: '#FFF',
+                  fontFamily: 'Impact, sans-serif',
+                  textTransform: 'uppercase', letterSpacing: 1,
+                  lineHeight: 1,
+                }}>
+                  <TypeReveal text={point} startFrame={startAt} style={{ color: '#FFF' }} />
+                </span>
+              </div>
+              {/* Acento de color al final */}
+              <div style={{
+                width: 12, height: 60,
+                backgroundColor: TC,
+                border: '5px solid #000',
+                borderLeft: 'none',
+                flexShrink: 0,
+              }} />
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Degradado al panel inferior */}
       <div style={{ position: 'absolute', top: '58%', left: 0, right: 0, height: '18%', background: 'linear-gradient(transparent, #000)' }} />
 
-      {/* PANEL INFERIOR */}
+      {/* PANEL INFERIOR con título de la escena */}
       <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: '32%',
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%',
         backgroundColor: '#000', borderTop: `12px solid ${TC}`,
         transform: `translateY(${panelY}px)`,
-        padding: '28px 50px 28px 50px',
+        padding: '22px 50px',
         display: 'flex', flexDirection: 'column', justifyContent: 'center',
       }}>
-        {/* Línea que se dibuja */}
-        <div style={{ height: 6, width: `${lineW}%`, backgroundColor: TC, marginBottom: 18 }} />
-
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20 }}>
-          {/* Bloque lateral de color */}
-          <div style={{ width: 14, flexShrink: 0, alignSelf: 'stretch', backgroundColor: TC, minHeight: 80 }} />
+        <div style={{ height: 6, width: `${lineW}%`, backgroundColor: TC, marginBottom: 16 }} />
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 18 }}>
+          <div style={{ width: 14, flexShrink: 0, alignSelf: 'stretch', backgroundColor: TC, minHeight: 70 }} />
           <h2 style={{
-            fontSize: 68, margin: 0, color: '#FFF',
+            fontSize: 64, margin: 0, color: '#FFF',
             fontFamily: 'Impact, sans-serif', textTransform: 'uppercase', lineHeight: 1.05,
           }}>
-            <TypeReveal text={text} startFrame={12} style={{ color: '#FFF' }} />
+            <TypeReveal text={text} startFrame={4} style={{ color: '#FFF' }} />
           </h2>
         </div>
       </div>
@@ -288,6 +372,7 @@ const ImageTextScene: React.FC<{ text: string; imageFile: string; dur: number }>
     </AbsoluteFill>
   );
 };
+
 
 // ═══════════════════════════════════════════════════════
 // ESCENA PORCENTAJE — Contador con overshoot + fondo animado
@@ -509,7 +594,7 @@ export const LatamAINews: React.FC = () => {
         return (
           <Sequence key={i} from={from} durationInFrames={dur}>
             {scene.type === 'title' && <TitleScene text1={scene.text1} text2={scene.text2} dur={dur} />}
-            {scene.type === 'image_text' && <ImageTextScene text={scene.text} imageFile={`scene_${i}.png`} dur={dur} />}
+            {scene.type === 'image_text' && <ImageTextScene text={scene.text} imageFile={`scene_${i}.png`} keyPoints={scene.key_points || []} dur={dur} />}
             {scene.type === 'big_percentage' && <PercentageScene number={scene.number} text={scene.text} dur={dur} />}
             {/* CTA siempre ignora el 'text' de Gemini y usa el copy fijo de firma */}
             {scene.type === 'cta' && <CtaScene dur={dur} />}
