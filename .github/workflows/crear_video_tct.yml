@@ -39,7 +39,15 @@ jobs:
           cd video_tct
           npx remotion render src/index.ts LatamAINews out/video_final_tct.mp4
 
-      - name: Upload Artifact
+      - name: Publish to Facebook
+        env:
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+        run: |
+          cd video_tct
+          node publish_video.js
+
+      - name: Upload Artifact (backup)
         uses: actions/upload-artifact@v4
         with:
           name: video-tct-${{ github.run_number }}
