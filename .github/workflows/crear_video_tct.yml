@@ -2,6 +2,8 @@ name: Crear Video TCT
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 13 * * *'  # 8am Ciudad de México (UTC-5)
 
 jobs:
   render-video:
@@ -13,24 +15,24 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install dependencies
         run: |
           cd video_tct
           npm install
 
-      - name: Setup Python & edge-tts
-        run: |
-          pip3 install edge-tts --break-system-packages
-          
-      - name: Generate Daily News (Gemini + TTS + HF)
+      - name: Generate Daily News (Gemini + ElevenLabs + HF)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           HF_API_KEY: ${{ secrets.HF_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
         run: |
           cd video_tct
           node create_daily_news.js
+
+      - name: Install ffmpeg (para medición de audio)
+        run: sudo apt-get install -y ffmpeg
 
       - name: Render Video
         run: |
@@ -40,6 +42,6 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: video-tct
+          name: video-tct-${{ github.run_number }}
           path: video_tct/out/video_final_tct.mp4
           retention-days: 1
