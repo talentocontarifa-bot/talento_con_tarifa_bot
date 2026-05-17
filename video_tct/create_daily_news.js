@@ -19,48 +19,88 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const hf = new HfInference(HF_API_KEY);
 
 // ─────────────────────────────────────────
+// 0. QUEUE — Lee el contexto del post programado del día
+// ─────────────────────────────────────────
+function getTodaysContext() {
+  const queuePath = path.join(__dirname, '..', 'talento_queue.json');
+  if (!fs.existsSync(queuePath)) {
+    console.log('⚠️  No se encontró talento_queue.json — Gemini generará contenido sin contexto.');
+    return null;
+  }
+
+  const queue = JSON.parse(fs.readFileSync(queuePath, 'utf-8'));
+  const items = Array.isArray(queue) ? queue : (queue.value || []);
+
+  // Prioridad: posts de hoy → posts scheduled → cualquier post reciente
+  const today = new Date().toISOString().substring(0, 10);
+  const todaysPosts = items.filter(p =>
+    p.publishedAt && p.publishedAt.startsWith(today) && p.status === 'scheduled'
+  );
+  const fallback = items.filter(p => p.status === 'scheduled').slice(-3);
+  const candidates = todaysPosts.length > 0 ? todaysPosts : fallback;
+
+  if (candidates.length === 0) {
+    console.log('⚠️  No hay posts en el queue — Gemini usará tendencias actuales.');
+    return null;
+  }
+
+  // Tomar el más relevante y extraer mensaje + link
+  const chosen = candidates[0];
+  const contextText = (chosen.message || '').substring(0, 600); // máx 600 chars
+  console.log(`📋 Contexto del queue: "${contextText.substring(0, 100)}..."`);
+  return { message: contextText, link: chosen.link || '' };
+}
+
+// ─────────────────────────────────────────
 // 1. GEMINI — Genera guion + estructura de escenas
 // ─────────────────────────────────────────
 async function generateScriptAndScenes() {
   console.log("🤖 [1/4] Consultando a Gemini para guion y estructura de escenas...");
 
-  const prompt = `Actúa como un director de arte y curador de contenido de "Talento con Tarifa".
-Tu misión: diseñar un video de noticias de IA para emprendedores latinoamericanos.
+  const queueContext = getTodaysContext();
+  const contextSection = queueContext
+    ? `\nCONTEXTO DEL DÍA (úsalo como base del video — adapta el tono y la idea central):
+"""
+${queueContext.message}
+"""
+Fuente: ${queueContext.link}
+`
+    : `\nCONTEXTO DEL DÍA: No hay posts programados. Usa una tendencia real y verificable de IA 2025 para emprendedores latinoamericanos.\n`;
 
+  const prompt = `Actúa como director de arte y curador de "Talento con Tarifa".
+Tu misión: convertir el contexto del día en un video de impacto para emprendedores latinoamericanos.
+${contextSection}
 Tienes 4 tipos de escena:
 - "title": Inicio impactante. Requiere 'text1' y 'text2' (máximo 10 letras cada uno, solo mayúsculas).
 - "image_text": Imagen de IA con IDEAS CLAVE superpuestas. Requiere:
-    'text': título principal de la escena (max 20 letras)
+    'text': título de la escena (max 20 letras)
     'image_prompt': prompt detallado en inglés para SDXL (neo-brutalist, 8k, vertical)
-    'key_points': array de EXACTAMENTE 3 frases cortas e impactantes en español (max 6 palabras cada una)
-      que resumen las ideas más importantes del tema. Aparecen secuencialmente sobre la imagen.
-- "big_percentage": Estadística gigante. Requiere 'number' (1-99 REAL) y 'text' (max 20 letras).
-- "cta": Cierre automático. Solo requiere 'text' (frase de 3-5 palabras).
+    'key_points': array de EXACTAMENTE 3 frases cortas e impactantes en español (max 6 palabras cada una).
+      DEBEN ser datos concretos del tema del día, no frases genéricas.
+- "big_percentage": Estadística gigante. Requiere 'number' (1-99 REAL del tema) y 'text' (max 20 letras).
+- "cta": Cierre. Solo requiere 'text' (frase de 3-5 palabras).
 
-Reglas estrictas:
-1. "theme_color": elige UNO aleatoriamente entre: #CCFF00, #FF00FF, #00FFFF, #FF3300, #00FF66
-2. Mezcla las escenas creativamente — el orden puede variar cada vez.
-3. NO definas 'durationInFrames' — el sistema lo calculará desde el audio.
-4. "script": guion de voz en español, 55-65 palabras, ritmo dinámico, sin despedida ni cierre.
-5. Los porcentajes deben ser datos reales verificables de IA 2024-2025.
-6. Los 'key_points' deben ser DATOS CONCRETOS o AFIRMACIONES PODEROSAS, no descripciones genéricas.
-   Ejemplos buenos: "Reduce costos 40%", "Disponible ahora", "Sin código requerido"
-   Ejemplos malos: "Es muy útil", "Tecnología avanzada"
+Reglas:
+1. "theme_color": elige aleatoriamente entre: #CCFF00, #FF00FF, #00FFFF, #FF3300, #00FF66
+2. Mezcla escenas creativamente — el orden varía cada día.
+3. NO definas 'durationInFrames'.
+4. "script": guion hablado en español, 55-65 palabras, basado en el contexto del día, sin despedida ni cierre.
+5. Los datos (porcentajes, key_points) deben derivarse del contexto o ser verificables.
 
 Responde ÚNICAMENTE con JSON válido:
 {
   "theme_color": "#FF3300",
-  "script": "Guion de 55-65 palabras aquí...",
+  "script": "Guion de 55-65 palabras basado en el contexto...",
   "scenes": [
-    { "type": "title", "text1": "AGENTES", "text2": "IA HOY" },
+    { "type": "title", "text1": "NVIDIA", "text2": "VS IA" },
     {
       "type": "image_text",
-      "text": "AUTOMATIZA YA",
-      "image_prompt": "Futuristic cyberpunk office with glowing AI screens...",
-      "key_points": ["Reduce costos 40%", "Sin código requerido", "Disponible hoy"]
+      "text": "CHIPS EN GUERRA",
+      "image_prompt": "Epic battle between giant robot AI chips in neon cyberpunk city, neo-brutalist...",
+      "key_points": ["Cerebras supera a Nvidia", "Chips 50x más rápidos", "IA accesible ya"]
     },
-    { "type": "big_percentage", "number": 73, "text": "Más productivo" },
-    { "type": "cta", "text": "¿Listo para dominar?" }
+    { "type": "big_percentage", "number": 50, "text": "Más velocidad" },
+    { "type": "cta", "text": "¿Estás listo?" }
   ]
 }`;
 
@@ -75,6 +115,7 @@ Responde ÚNICAMENTE con JSON válido:
   console.log(`✅ Color del día: ${data.theme_color} | Escenas: ${data.scenes.length}`);
   return data;
 }
+
 
 // ─────────────────────────────────────────
 // 2. ELEVENLABS — Genera el audio de alta calidad
