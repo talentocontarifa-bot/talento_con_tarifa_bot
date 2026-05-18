@@ -9,6 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const FormData = require('form-data');
+const axios = require('axios');
 
 const PAGE_ID = process.env.META_PAGE_ID;
 const ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN;
@@ -82,13 +83,12 @@ async function publishVideo() {
   const url = `https://graph.facebook.com/v19.0/${PAGE_ID}/videos`;
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      body: form,
+    const response = await axios.post(url, form, {
       headers: form.getHeaders(),
+      validateStatus: () => true // Evita que axios lance un error con status 400 y nos deje leer el JSON del error
     });
 
-    const data = await response.json();
+    const data = response.data;
 
     if (data.error) {
       console.error('❌ Error de Meta API:', JSON.stringify(data.error, null, 2));
