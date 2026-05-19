@@ -55,7 +55,7 @@ async function extractLatestNews(count = 3) {
 async function generatePostWithAI(newsItem) {
     console.log("🧠 Despertando a Gemini AI...");
     
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
     Actúa como el copywriter estrella de una agencia de marketing llamada "Talento con Tarifa". 
