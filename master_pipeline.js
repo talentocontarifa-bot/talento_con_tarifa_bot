@@ -69,7 +69,7 @@ async function extractText(url) {
  */
 async function generateAIContent(markdown, customInstruction) {
     console.log("🧠 3. Procesando con Gemini... Aplicando tono Neo-Brutalista.");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     
     let systemPrompt = `Eres el Director Creativo de "Talento con Tarifa", una agencia de automatización de marketing y automatización con agentes autónomos para empresas.
 Vas a recibir el texto de una página web o noticia sobre IA o Negocios.
