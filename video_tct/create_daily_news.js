@@ -31,23 +31,26 @@ function getTodaysContext() {
   const queue = JSON.parse(fs.readFileSync(queuePath, 'utf-8'));
   const items = Array.isArray(queue) ? queue : (queue.value || []);
 
-  // Prioridad: posts de hoy → posts scheduled → cualquier post reciente
+  // Prioridad: posts de hoy → posts scheduled → el post publicado más reciente (fallback total)
   const today = new Date().toISOString().substring(0, 10);
   const todaysPosts = items.filter(p =>
     p.publishedAt && p.publishedAt.startsWith(today) && p.status === 'scheduled'
   );
-  const fallback = items.filter(p => p.status === 'scheduled').slice(-3);
-  const candidates = todaysPosts.length > 0 ? todaysPosts : fallback;
+  const scheduledFallback = items.filter(p => p.status === 'scheduled').slice(-3);
+  const publishedFallback = items.filter(p => p.status === 'published').slice(-1);
+  
+  let candidates = todaysPosts.length > 0 ? todaysPosts : scheduledFallback;
+  if (candidates.length === 0) candidates = publishedFallback;
 
   if (candidates.length === 0) {
     console.log('⚠️  No hay posts en el queue — Gemini usará tendencias actuales.');
     return null;
   }
 
-  // Tomar el más relevante y extraer mensaje + link
-  const chosen = candidates[0];
+  // Tomar el más relevante (el último del array para agarrar el más reciente)
+  const chosen = candidates[candidates.length - 1];
   const contextText = (chosen.message || '').substring(0, 600); // máx 600 chars
-  console.log(`📋 Contexto del queue: "${contextText.substring(0, 100)}..."`);
+  console.log(`📋 Contexto del queue (Status: ${chosen.status}): "${contextText.substring(0, 100)}..."`);
   return { message: contextText, link: chosen.link || '' };
 }
 
@@ -68,7 +71,7 @@ Fuente: ${queueContext.link}
     : `\nCONTEXTO DEL DÍA: No hay posts programados. Usa una tendencia real y verificable de IA 2025 para emprendedores latinoamericanos.\n`;
 
   const prompt = `Actúa como director de arte y curador de "Talento con Tarifa".
-Tu misión: convertir el contexto del día en un video de impacto para emprendedores latinoamericanos.
+Tu misión: convertir el contexto del día en un video narrativo de impacto para emprendedores latinoamericanos.
 ${contextSection}
 Tienes 4 tipos de escena:
 - "title": Inicio impactante. Requiere 'text1' y 'text2' (máximo 10 letras cada uno, solo mayúsculas).
@@ -80,27 +83,27 @@ Tienes 4 tipos de escena:
 - "big_percentage": Estadística gigante. Requiere 'number' (1-99 REAL del tema) y 'text' (max 20 letras).
 - "cta": Cierre. Solo requiere 'text' (frase de 3-5 palabras).
 
-Reglas:
-1. "theme_color": elige aleatoriamente entre: #CCFF00, #FF00FF, #00FFFF, #FF3300, #00FF66
-2. Mezcla escenas creativamente — el orden varía cada día.
-3. NO definas 'durationInFrames'.
-4. "script": guion hablado en español, 55-65 palabras, basado en el contexto del día, sin despedida ni cierre.
-5. Los datos (porcentajes, key_points) deben derivarse del contexto o ser verificables.
+Reglas de Storytelling Obligatorias:
+1. Las escenas DEBEN seguir un hilo lógico (Gancho -> Problema/Dato -> Solución/IA -> Cierre). NO las mezcles al azar.
+2. "script": guion hablado en español, 55-65 palabras. Debe ser contundente, contando una historia o revelando una verdad basada en el contexto. Las visuales deben coincidir con la narrativa del guion.
+3. Los datos (porcentajes, key_points) deben estar directamente conectados al mensaje principal.
+4. "theme_color": elige aleatoriamente entre: #CCFF00, #FF00FF, #00FFFF, #FF3300, #00FF66
+5. NO definas 'durationInFrames'.
 
 Responde ÚNICAMENTE con JSON válido:
 {
   "theme_color": "#FF3300",
-  "script": "Guion de 55-65 palabras basado en el contexto...",
+  "script": "El guion coherente de 55-65 palabras con un mensaje fuerte...",
   "scenes": [
-    { "type": "title", "text1": "NVIDIA", "text2": "VS IA" },
+    { "type": "title", "text1": "EL FIN", "text2": "DEL SEO" },
+    { "type": "big_percentage", "number": 80, "text": "Caída de tráfico" },
     {
       "type": "image_text",
-      "text": "CHIPS EN GUERRA",
-      "image_prompt": "Epic battle between giant robot AI chips in neon cyberpunk city, neo-brutalist...",
-      "key_points": ["Cerebras supera a Nvidia", "Chips 50x más rápidos", "IA accesible ya"]
+      "text": "LA SOLUCIÓN",
+      "image_prompt": "Neon brutalist robot working fast in a cyberpunk office...",
+      "key_points": ["IA Generativa domina", "Agentes autónomos", "Eficiencia total"]
     },
-    { "type": "big_percentage", "number": 50, "text": "Más velocidad" },
-    { "type": "cta", "text": "¿Estás listo?" }
+    { "type": "cta", "text": "Adáptate hoy" }
   ]
 }`;
 
