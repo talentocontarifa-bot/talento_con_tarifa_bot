@@ -53,10 +53,6 @@ async function extractLatestNews(count = 3) {
 }
 
 async function generatePostWithAI(newsItem) {
-    console.log("🧠 Despertando a Gemini AI...");
-    
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
     const prompt = `
     Actúa como el copywriter estrella de una agencia de marketing llamada "Talento con Tarifa". 
     Tu estilo es Neo-Brutalista: directo, al grano, sarcástico pero inteligente, y muy orientado a resultados. No usas lenguaje corporativo aburrido.
@@ -76,11 +72,72 @@ async function generatePostWithAI(newsItem) {
     Responde ÚNICAMENTE con el texto del post, sin explicaciones extras.
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    // 1. Intentar con Groq si está disponible
+    if (process.env.GROQ_API_KEY) {
+        console.log("🧠 Despertando a Groq (Llama 3.3 70B)...");
+        const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+        for (const model of models) {
+            let attempts = 0;
+            while (attempts < 3) {
+                try {
+                    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [
+                                { role: "user", content: prompt }
+                            ],
+                            temperature: 0.7
+                        })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        console.log(`✅ Post generado exitosamente con Groq (${model})`);
+                        return data.choices[0].message.content.trim();
+                    } else {
+                        throw new Error(data.error?.message || "Error de Groq");
+                    }
+                } catch (e) {
+                    attempts++;
+                    console.log(`⚠️ Intento ${attempts} con Groq (${model}) fallido: ${e.message}`);
+                    await new Promise(r => setTimeout(r, 2000));
+                }
+            }
+        }
+        console.log("❌ Todos los intentos con Groq fallaron. Pasando a Gemini como respaldo...");
+    }
+
+    // 2. Respaldo a Gemini
+    console.log("🧠 Despertando a Gemini AI...");
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     
-    return text.trim();
+    let attempts = 0;
+    while (true) {
+        try {
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            return response.text().trim();
+        } catch (e) {
+            attempts++;
+            const err_msg = e.message || '';
+            console.log(`⚠️ Intento Gemini fallido: ${err_msg}`);
+            if (attempts >= 5) {
+                throw e;
+            }
+            let waitTime = attempts * 5000 + 10000;
+            if (err_msg.includes("429") || err_msg.toLowerCase().includes("quota")) {
+                waitTime = 65000;
+                console.log("Rate limit o Cuota detectada en Gemini. Esperando 65s...");
+            } else {
+                console.log(`Esperando ${waitTime / 1000}s antes de reintentar...`);
+            }
+            await new Promise(r => setTimeout(r, waitTime));
+        }
+    }
 }
 
 async function curadorMain() {

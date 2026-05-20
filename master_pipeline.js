@@ -88,12 +88,9 @@ async function callGeminiWithRetry(model, content, maxRetries = 5) {
 }
 
 /**
- * 3. CEREBRO (Generación de Copy con Gemini + Instrucciones)
+ * 3. CEREBRO (Generación de Copy con Groq + Fallback a Gemini)
  */
 async function generateAIContent(markdown, customInstruction) {
-    console.log("🧠 3. Procesando con Gemini... Aplicando tono Neo-Brutalista.");
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    
     let systemPrompt = `Eres el Director Creativo de "Talento con Tarifa", una agencia de automatización de marketing y automatización con agentes autónomos para empresas.
 Vas a recibir el texto de una página web o noticia sobre IA o Negocios.
 Tu objetivo es redactar un post para Facebook (máximo 2 párrafos).
@@ -103,9 +100,54 @@ TONO BASE: Irreverente, al grano, Neo-Brutalista. Enfócate en cómo esto reduce
 Si la instrucción a continuación NO dice "Ninguna", debes OBEDECERLA por encima del estilo base y adoptarla como tu línea editorial para este post.
 INSTRUCCIÓN DEL JEFE: "${customInstruction}"`;
 
+    const userPrompt = `CONTENIDO DE LA WEB:\n${markdown}`;
+
+    // 1. Intentar con Groq si está disponible
+    if (process.env.GROQ_API_KEY) {
+        console.log("🧠 3. Procesando con Groq (Llama 3.3 70B)...");
+        const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+        for (const model of models) {
+            let attempts = 0;
+            while (attempts < 3) {
+                try {
+                    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [
+                                { role: "system", content: systemPrompt },
+                                { role: "user", content: userPrompt }
+                            ],
+                            temperature: 0.7
+                        })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        console.log(`✅ Copy generado exitosamente con Groq (${model})`);
+                        return data.choices[0].message.content;
+                    } else {
+                        throw new Error(data.error?.message || "Error de Groq");
+                    }
+                } catch (e) {
+                    attempts++;
+                    console.log(`⚠️ Intento ${attempts} con Groq (${model}) fallido: ${e.message}`);
+                    await new Promise(r => setTimeout(r, 2000));
+                }
+            }
+        }
+        console.log("❌ Todos los intentos con Groq fallaron. Pasando a Gemini como respaldo...");
+    }
+
+    console.log("🧠 3. Procesando con Gemini... Aplicando tono Neo-Brutalista.");
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    
     const result = await callGeminiWithRetry(model, [
         { text: systemPrompt },
-        { text: `CONTENIDO DE LA WEB:\n${markdown}` }
+        { text: userPrompt }
     ]);
     return result.response.text();
 }
