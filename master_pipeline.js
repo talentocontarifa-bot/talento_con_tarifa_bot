@@ -75,10 +75,10 @@ async function callGeminiWithRetry(model, content, maxRetries = 5) {
             if (attempts >= maxRetries) {
                 throw error;
             }
-            let waitTime = Math.pow(2, attempts) * 1000;
-            if (error.message.includes("429") || error.message.toLowerCase().includes("quota exceeded")) {
-                waitTime = 40000; // Espera 40 segundos si es cuota/rate limit
-                console.log(`Rate limit (429) detectado. Esperando 40s para limpiar la cuota...`);
+            let waitTime = Math.pow(2, attempts) * 1000 + 10000;
+            if (error.message.includes("429") || error.message.toLowerCase().includes("quota exceeded") || attempts > 2) {
+                waitTime = 40000; // Espera 40 segundos si es cuota o si ya van varios intentos
+                console.log(`Error persistente o rate limit detectado. Esperando 40s para enfriar la API...`);
             } else {
                 console.log(`Espera de ${waitTime/1000}s antes del próximo intento...`);
             }
