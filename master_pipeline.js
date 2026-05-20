@@ -205,7 +205,7 @@ async function run() {
         // 5. Limpieza (Manejo de estado)
         if (source.type === 'issue') {
             console.log(`\n🔒 Cerrando el Issue #${source.issueNumber} para evitar reciclaje...`);
-            execSync(`gh issue close ${source.issueNumber} -m "✅ Post generado por Gemini y publicado. Post ID: ${postId}"`);
+            execSync(`gh issue close ${source.issueNumber} -c "✅ Post generado por IA y publicado. Post ID: ${postId}"`);
         } else {
             console.log(`\n✅ Flujo RSS terminado.`);
         }
