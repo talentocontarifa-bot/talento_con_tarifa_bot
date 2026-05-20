@@ -64,6 +64,24 @@ async function extractText(url) {
     }
 }
 
+async function callGeminiWithRetry(model, content, maxRetries = 3) {
+    let attempts = 0;
+    while (attempts < maxRetries) {
+        try {
+            return await model.generateContent(content);
+        } catch (error) {
+            attempts++;
+            console.warn(`⚠️ Intento ${attempts} fallido al llamar a Gemini: ${error.message}`);
+            if (attempts >= maxRetries) {
+                throw error;
+            }
+            const waitTime = Math.pow(2, attempts) * 1000;
+            console.log(`Espera de ${waitTime/1000}s antes del próximo intento...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+    }
+}
+
 /**
  * 3. CEREBRO (Generación de Copy con Gemini + Instrucciones)
  */
@@ -80,7 +98,7 @@ TONO BASE: Irreverente, al grano, Neo-Brutalista. Enfócate en cómo esto reduce
 Si la instrucción a continuación NO dice "Ninguna", debes OBEDECERLA por encima del estilo base y adoptarla como tu línea editorial para este post.
 INSTRUCCIÓN DEL JEFE: "${customInstruction}"`;
 
-    const result = await model.generateContent([
+    const result = await callGeminiWithRetry(model, [
         { text: systemPrompt },
         { text: `CONTENIDO DE LA WEB:\n${markdown}` }
     ]);
