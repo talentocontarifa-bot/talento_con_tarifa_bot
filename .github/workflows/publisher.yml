@@ -32,6 +32,7 @@ jobs:
       - name: Ejecutar el Master Pipeline de Contenido (Issues + RSS)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Necesario para que gh cli pueda cerrar los issues
