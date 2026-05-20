@@ -54,10 +54,23 @@ async function getContentSource() {
 /**
  * 2. SCRAPER (Transforma URLs en texto legible para la IA usando Jina Reader)
  */
+async function resolveUrl(url) {
+    try {
+        const response = await fetch(url, { method: 'HEAD', redirect: 'follow' });
+        return response.url;
+    } catch (e) {
+        return url;
+    }
+}
+
 async function extractText(url) {
     console.log(`📄 2. Extrayendo texto limpio de: ${url}`);
     try {
-        const response = await axios.get(`https://r.jina.ai/${url}`);
+        const resolvedUrl = await resolveUrl(url);
+        if (resolvedUrl !== url) {
+            console.log(`   URL redireccionada: ${resolvedUrl}`);
+        }
+        const response = await axios.get(`https://r.jina.ai/${resolvedUrl}`);
         return response.data;
     } catch (e) {
         throw new Error("El anti-bot de la página bloqueó la lectura, o el link es inválido.");
