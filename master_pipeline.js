@@ -133,7 +133,12 @@ async function run() {
         }
         
     } catch (e) {
-        console.error("\n❌ Error Crítico en el Pipeline:", e.message);
+        console.error("\n❌ Error Crítico en el Pipeline:");
+        if (e.response && e.response.data) {
+            console.error("Detalles del Error (API):", JSON.stringify(e.response.data, null, 2));
+        } else {
+            console.error(e.stack || e);
+        }
         process.exit(1); // Forzar fallo en GitHub Actions
     }
 }
