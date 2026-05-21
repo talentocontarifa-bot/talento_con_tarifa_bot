@@ -66,14 +66,21 @@ async function resolveUrl(url) {
 async function extractText(url) {
     console.log(`📄 2. Extrayendo texto limpio de: ${url}`);
     try {
-        const resolvedUrl = await resolveUrl(url);
-        if (resolvedUrl !== url) {
-            console.log(`   URL redireccionada: ${resolvedUrl}`);
-        }
-        const response = await axios.get(`https://r.jina.ai/${resolvedUrl}`);
+        console.log(`   Scrapeando directamente con Jina Reader...`);
+        const response = await axios.get(`https://r.jina.ai/${url}`);
         return response.data;
     } catch (e) {
-        throw new Error("El anti-bot de la página bloqueó la lectura, o el link es inválido.");
+        console.log(`⚠️ Error scrapeando directamente con Jina: ${e.message}. Intentando resolver URL primero...`);
+        try {
+            const resolvedUrl = await resolveUrl(url);
+            if (resolvedUrl !== url) {
+                console.log(`   URL redireccionada: ${resolvedUrl}`);
+            }
+            const response = await axios.get(`https://r.jina.ai/${resolvedUrl}`);
+            return response.data;
+        } catch (err) {
+            throw new Error("El anti-bot de la página bloqueó la lectura, o el link es inválido.");
+        }
     }
 }
 
