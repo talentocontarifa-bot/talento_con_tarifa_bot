@@ -5,6 +5,8 @@ const { HfInference } = require('@huggingface/inference');
 const { getAudioDurationInSeconds } = require('get-audio-duration');
 const Parser = require('rss-parser');
 const axios = require('axios');
+const googleTTS = require('google-tts-api');
+
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const HF_API_KEY = process.env.HF_API_KEY;
@@ -249,45 +251,67 @@ const AI_SIGNATURE_AUDIO =
 async function generateVoice(script) {
   // El audio completo = guion de Gemini + firma de IA siempre fija
   const fullScript = script.trim() + ' ... ' + AI_SIGNATURE_AUDIO;
-  console.log(`\n🎙️ [2/4] Generando voz con ElevenLabs (voz: ${ELEVENLABS_VOICE_ID})...`);
-  console.log(`   Script completo (${fullScript.split(' ').length} palabras)`);
-
-
-  const response = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`,
-    {
-      method: 'POST',
-      headers: {
-        'xi-api-key': ELEVENLABS_API_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        text: fullScript,
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: {
-          stability: 0.45,
-          similarity_boost: 0.82,
-          style: 0.35,
-          use_speaker_boost: true,
-        },
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`ElevenLabs error: ${response.status} — ${err}`);
-  }
-
-  const audioBuffer = await response.arrayBuffer();
   const audioPath = path.join(__dirname, 'public', 'news_voice.mp3');
-  fs.writeFileSync(audioPath, Buffer.from(audioBuffer));
+
+  try {
+    console.log(`\n🎙️ [2/4] Generando voz con ElevenLabs (voz: ${ELEVENLABS_VOICE_ID})...`);
+    console.log(`   Script completo (${fullScript.split(' ').length} palabras)`);
+
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`,
+      {
+        method: 'POST',
+        headers: {
+          'xi-api-key': ELEVENLABS_API_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: fullScript,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: 0.45,
+            similarity_boost: 0.82,
+            style: 0.35,
+            use_speaker_boost: true,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`ElevenLabs error: ${response.status} — ${err}`);
+    }
+
+    const audioBuffer = await response.arrayBuffer();
+    fs.writeFileSync(audioPath, Buffer.from(audioBuffer));
+    console.log(`✅ Audio ElevenLabs guardado.`);
+  } catch (error) {
+    console.warn(`\n⚠️ ADVERTENCIA: Error en ElevenLabs: ${error.message}`);
+    console.warn(`📢 Iniciando fallback a Google TTS (Gratuito)...`);
+
+    try {
+      const base64s = await googleTTS.getAllAudioBase64(fullScript, {
+        lang: 'es',
+        slow: false,
+        host: 'https://translate.google.com',
+        timeout: 10000,
+      });
+
+      const buffer = Buffer.concat(base64s.map(chunk => Buffer.from(chunk.base64, 'base64')));
+      fs.writeFileSync(audioPath, buffer);
+      console.log(`✅ Audio de Fallback (Google TTS) guardado exitosamente.`);
+    } catch (ttsError) {
+      console.error(`❌ Error crítico en fallback de Google TTS:`, ttsError.message);
+      throw error; // Re-lanzamos el error de ElevenLabs original si el fallback también falla
+    }
+  }
 
   // Medir duración REAL del MP3 generado
   const durationSeconds = await getAudioDurationInSeconds(audioPath);
   const totalFrames = Math.ceil(durationSeconds * FPS) + 30; // +30 frames (1 seg) de cola al final
 
-  console.log(`✅ Audio ElevenLabs guardado. Duración: ${durationSeconds.toFixed(2)}s → ${totalFrames} frames`);
+  console.log(`⏱️ Duración detectada: ${durationSeconds.toFixed(2)}s → ${totalFrames} frames`);
   return { audioPath, durationSeconds, totalFrames };
 }
 
