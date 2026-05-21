@@ -3,6 +3,8 @@ const path = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { HfInference } = require('@huggingface/inference');
 const { getAudioDurationInSeconds } = require('get-audio-duration');
+const Parser = require('rss-parser');
+const axios = require('axios');
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const HF_API_KEY = process.env.HF_API_KEY;
@@ -10,6 +12,17 @@ const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const ELEVENLABS_VOICE_ID = '4XUsiqPDK4UACIM2BILe';
 const FPS = 30;
+
+const parser = new Parser();
+const FEEDS = [
+  'https://www.entrepreneur.com/es/feed',
+  'https://feeds.weblogssl.com/xataka2',
+  'https://feeds.weblogssl.com/genbeta',
+  'https://wwwhatsnew.com/feed/'
+];
+
+// Variable global para guardar el link de la noticia procesada en esta corrida
+let processedNewsLink = null;
 
 if ((!GEMINI_API_KEY && !GROQ_API_KEY) || !HF_API_KEY || !ELEVENLABS_API_KEY) {
   console.error("❌ Faltan variables de entorno: (GEMINI_API_KEY o GROQ_API_KEY), HF_API_KEY, ELEVENLABS_API_KEY");
@@ -20,38 +33,92 @@ const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 const hf = new HfInference(HF_API_KEY);
 
 // ─────────────────────────────────────────
-// 0. QUEUE — Lee el contexto del post programado del día
+// 0. QUEUE/RSS — Lee el contexto del post programado del día o feeds RSS
 // ─────────────────────────────────────────
-function getTodaysContext() {
+async function getTodaysContext() {
   const queuePath = path.join(__dirname, '..', 'talento_queue.json');
-  if (!fs.existsSync(queuePath)) {
-    console.log('⚠️  No se encontró talento_queue.json — Gemini generará contenido sin contexto.');
+  if (fs.existsSync(queuePath)) {
+    try {
+      const queue = JSON.parse(fs.readFileSync(queuePath, 'utf-8'));
+      const items = Array.isArray(queue) ? queue : (queue.value || []);
+
+      const now = new Date();
+      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+      // Filtrar posts de las últimas 24 horas (ya sean publicados o programados para hoy)
+      const recentPosts = items.filter(p => {
+        if (!p.publishedAt) return false;
+        const pDate = new Date(p.publishedAt);
+        return pDate >= oneDayAgo;
+      });
+
+      if (recentPosts.length > 0) {
+        const chosen = recentPosts[recentPosts.length - 1];
+        const contextText = (chosen.message || '').substring(0, 600); // máx 600 chars
+        console.log(`📋 Contexto reciente encontrado en queue.json (ID: ${chosen.id}): "${contextText.substring(0, 100)}..."`);
+        processedNewsLink = chosen.link || '';
+        return { message: contextText, link: chosen.link || '' };
+      }
+    } catch (e) {
+      console.log('⚠️ Error al leer talento_queue.json:', e.message);
+    }
+  }
+
+  // Fallback / Piloto automático: Buscar en feeds RSS una noticia no utilizada
+  console.log('🤖 Buscando noticia fresca en feeds RSS...');
+
+  const historyPath = path.join(__dirname, 'used_video_news.json');
+  let usedLinks = [];
+  if (fs.existsSync(historyPath)) {
+    try {
+      usedLinks = JSON.parse(fs.readFileSync(historyPath, 'utf-8'));
+    } catch (e) {
+      console.log('⚠️ Error al leer used_video_news.json:', e.message);
+    }
+  }
+
+  let selectedItem = null;
+  for (const feedUrl of FEEDS) {
+    try {
+      console.log(`📡 Consultando feed: ${feedUrl}`);
+      const feed = await parser.parseURL(feedUrl);
+      for (const item of feed.items) {
+        if (item.link && !usedLinks.includes(item.link)) {
+          selectedItem = item;
+          console.log(`📰 Noticia seleccionada: "${item.title}" (${item.link})`);
+          break;
+        }
+      }
+      if (selectedItem) break;
+    } catch (err) {
+      console.log(`⚠️ Error leyendo el feed ${feedUrl}:`, err.message);
+    }
+  }
+
+  if (!selectedItem) {
+    console.log('🤷 No hay noticias nuevas en los feeds RSS. Usando fallback genérico de tendencias.');
     return null;
   }
 
-  const queue = JSON.parse(fs.readFileSync(queuePath, 'utf-8'));
-  const items = Array.isArray(queue) ? queue : (queue.value || []);
-
-  const now = new Date();
-  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-  // Filtrar posts de las últimas 24 horas (ya sean publicados o programados para hoy)
-  const recentPosts = items.filter(p => {
-    if (!p.publishedAt) return false;
-    const pDate = new Date(p.publishedAt);
-    return pDate >= oneDayAgo;
-  });
-
-  if (recentPosts.length === 0) {
-    console.log('⚠️ No hay posts recientes (últimas 24h) en el queue — Gemini usará tendencias actuales.');
-    return null;
+  // Scrapear el contenido limpio con Jina Reader
+  const articleUrl = selectedItem.link;
+  console.log(`📄 Scrapeando con Jina Reader: ${articleUrl}`);
+  try {
+    const response = await axios.get(`https://r.jina.ai/${articleUrl}`, { timeout: 15000 });
+    const scrapedText = response.data || '';
+    processedNewsLink = articleUrl;
+    return {
+      message: scrapedText.substring(0, 10000),
+      link: articleUrl
+    };
+  } catch (e) {
+    console.log(`⚠️ Error scrapeando con Jina Reader: ${e.message}. Usando el fragmento del RSS.`);
+    processedNewsLink = articleUrl;
+    return {
+      message: `${selectedItem.title}\n\n${selectedItem.contentSnippet || selectedItem.content || ''}`,
+      link: articleUrl
+    };
   }
-
-  // Tomar el más relevante (el último del array para agarrar el más reciente)
-  const chosen = recentPosts[recentPosts.length - 1];
-  const contextText = (chosen.message || '').substring(0, 600); // máx 600 chars
-  console.log(`📋 Contexto reciente encontrado (ID: ${chosen.id}): "${contextText.substring(0, 100)}..."`);
-  return { message: contextText, link: chosen.link || '' };
 }
 
 // ─────────────────────────────────────────
@@ -60,7 +127,7 @@ function getTodaysContext() {
 async function generateScriptAndScenes() {
   console.log("🤖 [1/4] Consultando a Gemini para guion y estructura de escenas...");
 
-  const queueContext = getTodaysContext();
+  const queueContext = await getTodaysContext();
   const contextSection = queueContext
     ? `\nCONTEXTO DEL DÍA (úsalo como base del video — adapta el tono y la idea central):
 """
@@ -295,6 +362,24 @@ async function main() {
     const jsonPath = path.join(__dirname, 'src', 'news_data.json');
     fs.writeFileSync(jsonPath, JSON.stringify(newsData, null, 2));
     console.log(`\n✅ [4/4] news_data.json actualizado (${totalFrames} frames totales)`);
+
+    // Guardar el link procesado en el historial de noticias utilizadas para video
+    if (processedNewsLink) {
+      const historyPath = path.join(__dirname, 'used_video_news.json');
+      let usedLinks = [];
+      if (fs.existsSync(historyPath)) {
+        try {
+          usedLinks = JSON.parse(fs.readFileSync(historyPath, 'utf-8'));
+        } catch (e) {
+          console.log('⚠️ Error al leer used_video_news.json al guardar:', e.message);
+        }
+      }
+      if (!usedLinks.includes(processedNewsLink)) {
+        usedLinks.push(processedNewsLink);
+        fs.writeFileSync(historyPath, JSON.stringify(usedLinks, null, 2));
+        console.log(`💾 Link guardado en historial de videos: ${processedNewsLink}`);
+      }
+    }
 
     // PASO 5: Generar imágenes
     await generateImages(scenesWithFrames);
