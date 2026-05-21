@@ -155,11 +155,13 @@ Reglas de Storytelling Obligatorias:
 2. "script": guion hablado en español, 55-65 palabras. Debe ser contundente, contando una historia o revelando una verdad basada en el contexto. Las visuales deben coincidir con la narrativa del guion.
 3. Los datos (porcentajes, key_points) deben estar directamente conectados al mensaje principal.
 4. "theme_color": elige aleatoriamente entre: #CCFF00, #FF00FF, #00FFFF, #FF3300, #00FF66
-5. NO definas 'durationInFrames'.
+5. "layout_type": elige entre: "neo_brutalist" (estilo CRT, glitch y cajas gruesas), "minimal_clean" (diseño moderno, elegante, sin glitches, bordes redondeados) o "glassmorphism" (efecto cristal con fondo desenfocado y brillos premium de neón).
+6. NO definas 'durationInFrames'.
 
 Responde ÚNICAMENTE con JSON válido:
 {
   "theme_color": "#FF3300",
+  "layout_type": "neo_brutalist",
   "script": "El guion coherente de 55-65 palabras con un mensaje fuerte...",
   "scenes": [
     { "type": "title", "text1": "EL FIN", "text2": "DEL SEO" },
@@ -356,6 +358,7 @@ async function main() {
     // PASO 4: Guardar el JSON final (con frames reales) para Remotion
     const newsData = {
       theme_color: data.theme_color,
+      layout_type: data.layout_type || 'neo_brutalist',
       script: data.script,
       scenes: scenesWithFrames,
     };
