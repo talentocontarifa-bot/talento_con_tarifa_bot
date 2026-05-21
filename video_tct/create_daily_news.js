@@ -32,26 +32,25 @@ function getTodaysContext() {
   const queue = JSON.parse(fs.readFileSync(queuePath, 'utf-8'));
   const items = Array.isArray(queue) ? queue : (queue.value || []);
 
-  // Prioridad: posts de hoy → posts scheduled → el post publicado más reciente (fallback total)
-  const today = new Date().toISOString().substring(0, 10);
-  const todaysPosts = items.filter(p =>
-    p.publishedAt && p.publishedAt.startsWith(today) && p.status === 'scheduled'
-  );
-  const scheduledFallback = items.filter(p => p.status === 'scheduled').slice(-3);
-  const publishedFallback = items.filter(p => p.status === 'published').slice(-1);
-  
-  let candidates = todaysPosts.length > 0 ? todaysPosts : scheduledFallback;
-  if (candidates.length === 0) candidates = publishedFallback;
+  const now = new Date();
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-  if (candidates.length === 0) {
-    console.log('⚠️  No hay posts en el queue — Gemini usará tendencias actuales.');
+  // Filtrar posts de las últimas 24 horas (ya sean publicados o programados para hoy)
+  const recentPosts = items.filter(p => {
+    if (!p.publishedAt) return false;
+    const pDate = new Date(p.publishedAt);
+    return pDate >= oneDayAgo;
+  });
+
+  if (recentPosts.length === 0) {
+    console.log('⚠️ No hay posts recientes (últimas 24h) en el queue — Gemini usará tendencias actuales.');
     return null;
   }
 
   // Tomar el más relevante (el último del array para agarrar el más reciente)
-  const chosen = candidates[candidates.length - 1];
+  const chosen = recentPosts[recentPosts.length - 1];
   const contextText = (chosen.message || '').substring(0, 600); // máx 600 chars
-  console.log(`📋 Contexto del queue (Status: ${chosen.status}): "${contextText.substring(0, 100)}..."`);
+  console.log(`📋 Contexto reciente encontrado (ID: ${chosen.id}): "${contextText.substring(0, 100)}..."`);
   return { message: contextText, link: chosen.link || '' };
 }
 
