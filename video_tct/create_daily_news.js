@@ -7,15 +7,16 @@ const { getAudioDurationInSeconds } = require('get-audio-duration');
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const HF_API_KEY = process.env.HF_API_KEY;
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const ELEVENLABS_VOICE_ID = '4XUsiqPDK4UACIM2BILe';
 const FPS = 30;
 
-if (!GEMINI_API_KEY || !HF_API_KEY || !ELEVENLABS_API_KEY) {
-  console.error("❌ Faltan variables de entorno: GEMINI_API_KEY, HF_API_KEY, ELEVENLABS_API_KEY");
+if ((!GEMINI_API_KEY && !GROQ_API_KEY) || !HF_API_KEY || !ELEVENLABS_API_KEY) {
+  console.error("❌ Faltan variables de entorno: (GEMINI_API_KEY o GROQ_API_KEY), HF_API_KEY, ELEVENLABS_API_KEY");
   process.exit(1);
 }
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 const hf = new HfInference(HF_API_KEY);
 
 // ─────────────────────────────────────────
@@ -107,6 +108,54 @@ Responde ÚNICAMENTE con JSON válido:
   ]
 }`;
 
+  // 1. Intentar con Groq si está disponible
+  if (process.env.GROQ_API_KEY) {
+      console.log("🧠 Intentando generar guion con Groq (Llama 3.3 70B)...");
+      const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+      for (const modelName of models) {
+          let attempts = 0;
+          while (attempts < 3) {
+              try {
+                  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                      method: "POST",
+                      headers: {
+                          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+                          "Content-Type": "application/json"
+                      },
+                      body: JSON.stringify({
+                          model: modelName,
+                          response_format: { type: "json_object" },
+                          messages: [
+                              { role: "user", content: prompt }
+                          ],
+                          temperature: 0.7
+                      })
+                  });
+                  const data = await response.json();
+                  if (response.ok) {
+                      const parsed = JSON.parse(data.choices[0].message.content.trim());
+                      console.log(`✅ Guion generado exitosamente con Groq (${modelName})`);
+                      console.log(`✅ Guion: "${parsed.script.substring(0, 80)}..."`);
+                      console.log(`✅ Color del día: ${parsed.theme_color} | Escenas: ${parsed.scenes.length}`);
+                      return parsed;
+                  } else {
+                      throw new Error(data.error?.message || "Error de Groq");
+                  }
+              } catch (e) {
+                  attempts++;
+                  console.log(`⚠️ Intento ${attempts} con Groq (${modelName}) fallido: ${e.message}`);
+                  await new Promise(r => setTimeout(r, 2000));
+              }
+          }
+      }
+      console.log("❌ Todos los intentos con Groq fallaron. Pasando a Gemini como respaldo...");
+  }
+
+  // 2. Respaldo a Gemini
+  if (!genAI) {
+      throw new Error("No hay API Key de Groq ni de Gemini disponible.");
+  }
+  console.log("🧠 Usando Gemini para generar guion...");
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash",
     generationConfig: { responseMimeType: "application/json" }
