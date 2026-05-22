@@ -38,6 +38,25 @@ const hf = new HfInference(HF_API_KEY);
 // 0. QUEUE/RSS — Lee el contexto del post programado del día o feeds RSS
 // ─────────────────────────────────────────
 async function getTodaysContext() {
+  const PAGE_ID = process.env.META_PAGE_ID;
+  const ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN;
+
+  // A. Obtener descripciones de los videos publicados recientemente en Facebook para evitar duplicados
+  let recentVideoTexts = [];
+  if (PAGE_ID && ACCESS_TOKEN) {
+    try {
+      console.log("📊 Consultando videos publicados recientemente en Facebook para evitar duplicados...");
+      const fbUrl = `https://graph.facebook.com/v19.0/${PAGE_ID}/videos?fields=description,title&limit=15&access_token=${ACCESS_TOKEN}`;
+      const res = await axios.get(fbUrl, { timeout: 10000 });
+      if (res.data && res.data.data) {
+        recentVideoTexts = res.data.data.map(v => `${v.title || ''} ${v.description || ''}`);
+        console.log(`✅ Obtenidas descripciones de los últimos ${recentVideoTexts.length} videos de Facebook.`);
+      }
+    } catch (fbErr) {
+      console.warn("⚠️ Error conectando con API de Meta para verificar videos duplicados:", fbErr.message);
+    }
+  }
+
   const queuePath = path.join(__dirname, '..', 'talento_queue.json');
   if (fs.existsSync(queuePath)) {
     try {
@@ -56,10 +75,26 @@ async function getTodaysContext() {
 
       if (recentPosts.length > 0) {
         const chosen = recentPosts[recentPosts.length - 1];
-        const contextText = (chosen.message || '').substring(0, 600); // máx 600 chars
-        console.log(`📋 Contexto reciente encontrado en queue.json (ID: ${chosen.id}): "${contextText.substring(0, 100)}..."`);
-        processedNewsLink = chosen.link || '';
-        return { message: contextText, link: chosen.link || '' };
+
+        // Verificar si el post seleccionado ya tiene un video publicado en Facebook
+        const isUsedInFb = recentVideoTexts.some(text => {
+          if (chosen.link && text.includes(chosen.link)) return true;
+          const cleanMsg = (chosen.message || '').trim().toLowerCase();
+          const keywords = cleanMsg.split(/\s+/).filter(w => w.length > 4).slice(0, 3);
+          if (keywords.length > 0) {
+            return keywords.every(kw => text.toLowerCase().includes(kw));
+          }
+          return false;
+        });
+
+        if (isUsedInFb) {
+          console.log(`⏭️ El post de hoy ya tiene un video publicado en Facebook. Saltando al flujo RSS.`);
+        } else {
+          const contextText = (chosen.message || '').substring(0, 600); // máx 600 chars
+          console.log(`📋 Contexto reciente encontrado en queue.json (ID: ${chosen.id}): "${contextText.substring(0, 100)}..."`);
+          processedNewsLink = chosen.link || '';
+          return { message: contextText, link: chosen.link || '' };
+        }
       }
     } catch (e) {
       console.log('⚠️ Error al leer talento_queue.json:', e.message);
@@ -85,7 +120,26 @@ async function getTodaysContext() {
       console.log(`📡 Consultando feed: ${feedUrl}`);
       const feed = await parser.parseURL(feedUrl);
       for (const item of feed.items) {
-        if (item.link && !usedLinks.includes(item.link)) {
+        if (item.link) {
+          // Comprobar si ya se usó en el historial local
+          if (usedLinks.includes(item.link)) continue;
+
+          // Comprobar si ya se usó en los videos recientes de Facebook
+          const isUsedInFb = recentVideoTexts.some(text => {
+            if (text.includes(item.link)) return true;
+            const cleanTitle = (item.title || '').trim().toLowerCase();
+            const keywords = cleanTitle.split(/\s+/).filter(w => w.length > 3).slice(0, 3);
+            if (keywords.length > 0) {
+              return keywords.every(kw => text.toLowerCase().includes(kw));
+            }
+            return false;
+          });
+
+          if (isUsedInFb) {
+            console.log(`⏭️ Saltando noticia (detectada en videos recientes de Facebook): "${item.title}"`);
+            continue;
+          }
+
           selectedItem = item;
           console.log(`📰 Noticia seleccionada: "${item.title}" (${item.link})`);
           break;
