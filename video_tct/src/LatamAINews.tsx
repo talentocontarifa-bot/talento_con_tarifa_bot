@@ -10,6 +10,9 @@ import {
   spring,
   Img,
 } from 'remotion';
+import { Lottie } from '@remotion/lottie';
+import starLottie from '../public/lottie/star.json';
+import ellipseLottie from '../public/lottie/ellipse.json';
 import newsData from './news_data.json';
 
 const TC = newsData.theme_color;
@@ -282,6 +285,10 @@ const TitleScene: React.FC<{ text1: string; text2: string; dur: number }> = ({ t
       )}
 
       <div style={{ transform: `rotate(${tilt}deg) scale(${scaleIn})`, textAlign: 'center', zIndex: 10 }}>
+        {/* Animación Lottie de estrella girando / latiendo */}
+        <div style={{ width: 160, height: 160, margin: '0 auto 20px', filter: LAYOUT === 'neo_brutalist' ? 'drop-shadow(6px 6px 0px #000)' : 'none' }}>
+          <Lottie animationData={starLottie} />
+        </div>
 
         {/* --- NEO BRUTALIST --- */}
         {LAYOUT === 'neo_brutalist' && (
@@ -509,11 +516,13 @@ const ImageTextScene: React.FC<{ text: string; imageFile: string; keyPoints: str
             >
               <div style={{ display: 'inline-flex', alignItems: 'center', filter: 'drop-shadow(6px 6px 0px rgba(0,0,0,0.9))' }}>
                 <div style={{
-                  backgroundColor: TC, width: 60, height: 60,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: '5px solid #000', flexShrink: 0,
+                  position: 'relative', width: 72, height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  backgroundColor: '#000', border: '5px solid #000',
                 }}>
-                  <span style={{ fontSize: 32, fontWeight: 900, color: '#000', fontFamily: 'Impact, sans-serif' }}>
+                  <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+                    <Lottie animationData={ellipseLottie} />
+                  </div>
+                  <span style={{ position: 'relative', zIndex: 1, fontSize: 32, fontWeight: 900, color: '#FFF', fontFamily: 'Impact, sans-serif' }}>
                     {badgeNum}
                   </span>
                 </div>
@@ -522,7 +531,7 @@ const ImageTextScene: React.FC<{ text: string; imageFile: string; keyPoints: str
                     <TypeReveal text={point} startFrame={startAt} style={{ color: '#FFF' }} />
                   </span>
                 </div>
-                <div style={{ width: 12, height: 60, backgroundColor: TC, border: '5px solid #000', borderLeft: 'none', flexShrink: 0 }} />
+                <div style={{ width: 12, height: 72, backgroundColor: TC, border: '5px solid #000', borderLeft: 'none', flexShrink: 0 }} />
               </div>
             </div>
           );
@@ -549,10 +558,12 @@ const ImageTextScene: React.FC<{ text: string; imageFile: string; keyPoints: str
                 boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
               }}>
                 <div style={{
-                  backgroundColor: TC, width: 44, height: 44, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  position: 'relative', width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
-                  <span style={{ fontSize: 24, fontWeight: 900, color: '#000', fontFamily: 'sans-serif' }}>
+                  <div style={{ position: 'absolute', inset: -6, zIndex: 0 }}>
+                    <Lottie animationData={ellipseLottie} />
+                  </div>
+                  <span style={{ position: 'relative', zIndex: 1, fontSize: 24, fontWeight: 900, color: '#FFF', fontFamily: 'sans-serif' }}>
                     {badgeNum}
                   </span>
                 </div>
@@ -589,13 +600,20 @@ const ImageTextScene: React.FC<{ text: string; imageFile: string; keyPoints: str
               boxShadow: `0 4px 25px ${TC}15`,
             }}>
               <div style={{
-                background: `linear-gradient(135deg, ${TC}, #FFF)`, width: 48, height: 48, borderRadius: '12px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                boxShadow: `0 0 10px ${TC}60`,
+                position: 'relative', width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}>
-                <span style={{ fontSize: 26, fontWeight: 900, color: '#000', fontFamily: 'monospace' }}>
-                  {badgeNum}
-                </span>
+                <div style={{ position: 'absolute', inset: -6, zIndex: 0 }}>
+                  <Lottie animationData={starLottie} />
+                </div>
+                <div style={{
+                  position: 'relative', zIndex: 1, background: `linear-gradient(135deg, ${TC}, #FFF)`, width: 38, height: 38, borderRadius: '12px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: `0 0 10px ${TC}60`,
+                }}>
+                  <span style={{ fontSize: 20, fontWeight: 900, color: '#000', fontFamily: 'monospace' }}>
+                    {badgeNum}
+                  </span>
+                </div>
               </div>
               <span style={{ fontSize: 42, fontWeight: 800, color: '#FFF', fontFamily: 'sans-serif', textTransform: 'uppercase', textShadow: '0 0 8px rgba(255,255,255,0.3)' }}>
                 <TypeReveal text={point} startFrame={startAt} style={{ color: '#FFF' }} />
