@@ -52,14 +52,37 @@ async function extractLatestNews(count = 3) {
     return foundNews;
 }
 
+function extractWithScrapling(url) {
+    const { execSync } = require('child_process');
+    try {
+        console.log(`   [Scrapling] Intentando obtener texto completo de la noticia: ${url}`);
+        const escapedUrl = url.replace(/"/g, '\\"');
+        const helperPath = path.join(__dirname, 'scrapling_helper.py');
+        const output = execSync(`python "${helperPath}" --url "${escapedUrl}"`, { encoding: 'utf-8' });
+        const parsed = JSON.parse(output);
+        if (parsed.success && parsed.text && parsed.text.length > 100) {
+            return parsed.text;
+        }
+    } catch (e) {
+        console.warn(`   [Scrapling] No se pudo extraer texto completo: ${e.message}`);
+    }
+    return null;
+}
+
 async function generatePostWithAI(newsItem) {
+    // Intentar extraer texto completo
+    let fullText = extractWithScrapling(newsItem.link);
+    let contextContent = fullText 
+        ? `Texto Completo del Artículo:\n"${fullText.substring(0, 3000)}..."` 
+        : `Resumen/Fragmento del RSS:\n"${newsItem.contentSnippet}"`;
+
     const prompt = `
     Actúa como el copywriter estrella de una agencia de marketing llamada "Talento con Tarifa". 
     Tu estilo es Neo-Brutalista: directo, al grano, sarcástico pero inteligente, y muy orientado a resultados. No usas lenguaje corporativo aburrido.
     
     Acabo de encontrar esta noticia:
     Título: "${newsItem.title}"
-    Resumen/Fragmento: "${newsItem.contentSnippet}"
+    ${contextContent}
     
     Tu objetivo es redactar un post para Facebook (máximo 3 párrafos cortos) donde tomes esta noticia y le des un enfoque obligatorio sobre Inteligencia Artificial para emprendedores. 
     Incluso si la noticia no habla de IA directamente, encuéntrale el ángulo: ¿Cómo la IA cambiaría esto? ¿Cómo pueden los emprendedores usar la IA para sacar ventaja de esto?

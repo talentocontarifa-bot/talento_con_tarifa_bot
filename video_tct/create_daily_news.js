@@ -168,7 +168,25 @@ async function getTodaysContext() {
       link: articleUrl
     };
   } catch (e) {
-    console.log(`⚠️ Error scrapeando con Jina Reader: ${e.message}. Usando el fragmento del RSS.`);
+    console.log(`⚠️ Error scrapeando con Jina Reader: ${e.message}. Intentando Scrapling local...`);
+    try {
+      const { execSync } = require('child_process');
+      const escapedUrl = articleUrl.replace(/"/g, '\\"');
+      const helperPath = path.join(__dirname, '..', 'scrapling_helper.py');
+      const output = execSync(`python "${helperPath}" --url "${escapedUrl}"`, { encoding: 'utf-8' });
+      const parsed = JSON.parse(output);
+      if (parsed.success && parsed.text && parsed.text.length > 50) {
+        console.log(`✅ Scrapling extrajo exitosamente el contenido.`);
+        processedNewsLink = articleUrl;
+        return {
+          message: parsed.text.substring(0, 10000),
+          link: articleUrl
+        };
+      }
+    } catch (scraplingErr) {
+      console.log(`⚠️ Scrapling falló: ${scraplingErr.message}. Usando el fragmento del RSS.`);
+    }
+    
     processedNewsLink = articleUrl;
     return {
       message: `${selectedItem.title}\n\n${selectedItem.contentSnippet || selectedItem.content || ''}`,

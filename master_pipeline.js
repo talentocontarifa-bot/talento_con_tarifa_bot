@@ -63,8 +63,30 @@ async function resolveUrl(url) {
     }
 }
 
+function extractWithScrapling(url) {
+    const { execSync } = require('child_process');
+    const path = require('path');
+    try {
+        console.log(`   [Scrapling] Ejecutando extracción local avanzada para: ${url}`);
+        const escapedUrl = url.replace(/"/g, '\\"');
+        const helperPath = path.join(__dirname, 'scrapling_helper.py');
+        const output = execSync(`python "${helperPath}" --url "${escapedUrl}"`, { encoding: 'utf-8' });
+        const parsed = JSON.parse(output);
+        if (parsed.success && parsed.text && parsed.text.length > 50) {
+            return parsed.text;
+        } else {
+            console.warn(`   [Scrapling] Texto insuficiente o error: ${parsed.error || 'Texto muy corto'}`);
+            return null;
+        }
+    } catch (e) {
+        console.error(`   [Scrapling] Error en ejecución: ${e.message}`);
+        return null;
+    }
+}
+
 async function extractText(url) {
     console.log(`📄 2. Extrayendo texto limpio de: ${url}`);
+    let resolvedUrl = url;
     try {
         console.log(`   Scrapeando directamente con Jina Reader...`);
         const response = await axios.get(`https://r.jina.ai/${url}`);
@@ -72,16 +94,25 @@ async function extractText(url) {
     } catch (e) {
         console.log(`⚠️ Error scrapeando directamente con Jina: ${e.message}. Intentando resolver URL primero...`);
         try {
-            const resolvedUrl = await resolveUrl(url);
+            resolvedUrl = await resolveUrl(url);
             if (resolvedUrl !== url) {
                 console.log(`   URL redireccionada: ${resolvedUrl}`);
             }
             const response = await axios.get(`https://r.jina.ai/${resolvedUrl}`);
             return response.data;
         } catch (err) {
-            throw new Error("El anti-bot de la página bloqueó la lectura, o el link es inválido.");
+            console.log(`⚠️ Jina Reader falló definitivamente: ${err.message}. Intentando Scrapling local...`);
         }
     }
+    
+    // Fallback absoluto: Scrapling
+    const scraplingText = extractWithScrapling(resolvedUrl);
+    if (scraplingText) {
+        console.log(`✅ Scrapling extrajo exitosamente el contenido.`);
+        return scraplingText;
+    }
+    
+    throw new Error("Jina Reader y Scrapling fallaron al extraer el contenido. El anti-bot de la página bloqueó la lectura, o el link es inválido.");
 }
 
 async function callGeminiWithRetry(model, content, maxRetries = 5) {
