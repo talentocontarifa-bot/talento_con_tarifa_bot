@@ -26,13 +26,15 @@ const FEEDS = [
 // Variable global para guardar el link de la noticia procesada en esta corrida
 let processedNewsLink = null;
 
-if ((!GEMINI_API_KEY && !GROQ_API_KEY) || !HF_API_KEY || !ELEVENLABS_API_KEY) {
-  console.error("❌ Faltan variables de entorno: (GEMINI_API_KEY o GROQ_API_KEY), HF_API_KEY, ELEVENLABS_API_KEY");
+const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
+
+if ((!GEMINI_API_KEY && !GROQ_API_KEY) || (!HF_API_KEY && !NVIDIA_API_KEY) || !ELEVENLABS_API_KEY) {
+  console.error("❌ Faltan variables de entorno: (GEMINI_API_KEY o GROQ_API_KEY), (HF_API_KEY o NVIDIA_API_KEY), ELEVENLABS_API_KEY");
   process.exit(1);
 }
 
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
-const hf = new HfInference(HF_API_KEY);
+const hf = HF_API_KEY ? new HfInference(HF_API_KEY) : null;
 
 // ─────────────────────────────────────────
 // 0. QUEUE/RSS — Lee el contexto del post programado del día o feeds RSS
@@ -410,29 +412,86 @@ function distributeFrames(scenes, totalFrames) {
 }
 
 // ─────────────────────────────────────────
-// 4. HUGGING FACE — Genera imágenes para escenas image_text
+// 4. GENERAR IMÁGENES (NVIDIA FLUX / Hugging Face Fallback)
 // ─────────────────────────────────────────
 async function generateImages(scenes) {
-  console.log(`\n🎨 [3/4] Generando imágenes con Stable Diffusion XL...`);
+  console.log(`\n🎨 [3/4] Generando imágenes para el video...`);
+
+  const nvapiKey = process.env.NVIDIA_API_KEY;
+  const hfToken = process.env.HF_API_KEY;
 
   for (let i = 0; i < scenes.length; i++) {
     const scene = scenes[i];
     if (scene.type !== 'image_text' || !scene.image_prompt) continue;
 
     const filename = `scene_${i}.png`;
-    console.log(`  → Imagen ${filename}: "${scene.image_prompt.substring(0, 60)}..."`);
+    const fullPrompt = scene.image_prompt + ', neo-brutalist, high contrast, dramatic lighting, 9:16 vertical';
+    console.log(`  → Imagen ${filename}: "${fullPrompt.substring(0, 60)}..."`);
 
-    try {
-      const blob = await hf.textToImage({
-        model: 'stabilityai/stable-diffusion-xl-base-1.0',
-        inputs: scene.image_prompt + ', neo-brutalist, high contrast, dramatic lighting, 9:16 vertical',
-        parameters: { width: 768, height: 1344 } // vertical nativo para Reels
-      });
-      const arrayBuffer = await blob.arrayBuffer();
-      fs.writeFileSync(path.join(__dirname, 'public', filename), Buffer.from(arrayBuffer));
-      console.log(`  ✅ ${filename} guardado.`);
-    } catch (e) {
-      console.error(`  ❌ Error generando ${filename}:`, e.message);
+    let buffer;
+    let success = false;
+
+    // 1. Intentar con Nvidia API (FLUX.1-schnell)
+    if (nvapiKey) {
+      try {
+        console.log("    🤖 Generando con NVIDIA API...");
+        const response = await axios.post(
+          "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell",
+          {
+            prompt: fullPrompt,
+            height: 1344,
+            width: 768,
+            steps: 4,
+            seed: 0
+          },
+          {
+            headers: {
+              "Authorization": `Bearer ${nvapiKey}`,
+              "accept": "application/json",
+              "Content-Type": "application/json"
+            },
+            timeout: 30000
+          }
+        );
+
+        if (response.data && response.data.artifacts && response.data.artifacts[0]) {
+          buffer = Buffer.from(response.data.artifacts[0].base64, 'base64');
+          success = true;
+          console.log(`    ✅ Generada con Nvidia API.`);
+        } else {
+          throw new Error("Formato de respuesta de Nvidia inesperado.");
+        }
+      } catch (error) {
+        console.error("    ⚠️ Error con Nvidia API:", error.message);
+        if (hfToken) {
+          console.log("    🔄 Intentando fallback con Hugging Face...");
+        }
+      }
+    }
+
+    // 2. Fallback a Hugging Face Stable Diffusion XL
+    if (!success && hfToken && hf) {
+      try {
+        console.log("    🎨 Generando con Hugging Face (Stable Diffusion)...");
+        const blob = await hf.textToImage({
+          model: 'stabilityai/stable-diffusion-xl-base-1.0',
+          inputs: fullPrompt,
+          parameters: { width: 768, height: 1344 }
+        });
+        const arrayBuffer = await blob.arrayBuffer();
+        buffer = Buffer.from(arrayBuffer);
+        success = true;
+        console.log(`    ✅ Generada con Hugging Face.`);
+      } catch (error) {
+        console.error("    ❌ Error con Hugging Face:", error.message);
+      }
+    }
+
+    if (success && buffer) {
+      fs.writeFileSync(path.join(__dirname, 'public', filename), buffer);
+      console.log(`    💾 ${filename} guardada.`);
+    } else {
+      console.error(`    ❌ No se pudo generar la imagen para la escena ${i}`);
     }
   }
 }
