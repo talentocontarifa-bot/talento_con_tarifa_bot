@@ -39,9 +39,29 @@ async function getContentSource() {
 
     // Piloto Automático: Lector RSS
     console.log("🤖 [MODO PILOTO AUTOMÁTICO] Leyendo feeds de RSS...");
-    const feed = await parser.parseURL('https://www.xataka.com/inteligencia-artificial/feed');
-    const latestItem = feed.items[0];
-    console.log(`📰 Noticia seleccionada: ${latestItem.title}`);
+    const feeds = [
+        'https://www.xataka.com/categoria/inteligencia-artificial/rss',
+        'https://feeds.weblogssl.com/genbeta',
+        'https://feeds.weblogssl.com/xataka2',
+        'https://www.entrepreneur.com/es/feed'
+    ];
+    let latestItem = null;
+    for (const feedUrl of feeds) {
+        try {
+            console.log(`📡 Intentando leer feed: ${feedUrl}`);
+            const feed = await parser.parseURL(feedUrl);
+            if (feed.items && feed.items.length > 0) {
+                latestItem = feed.items[0];
+                console.log(`📰 Noticia seleccionada del feed ${feedUrl}: ${latestItem.title}`);
+                break;
+            }
+        } catch (err) {
+            console.error(`⚠️ Error al leer feed ${feedUrl}: ${err.message}`);
+        }
+    }
+    if (!latestItem) {
+        throw new Error("No se pudo obtener ninguna noticia de los feeds RSS de fallback.");
+    }
     
     return {
         type: 'rss',
