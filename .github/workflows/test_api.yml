@@ -27,6 +27,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-images
-          path: |
-            output_768_1344.png
-            output_1024_1024.png
+          path: out_*.png
