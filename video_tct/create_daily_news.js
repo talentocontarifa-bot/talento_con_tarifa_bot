@@ -12,7 +12,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const HF_API_KEY = process.env.HF_API_KEY;
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
-const ELEVENLABS_VOICE_ID = '4XUsiqPDK4UACIM2BILe';
+const ELEVENLABS_VOICE_ID = 'pVSoAhDpVO8HBRVURsj5';
 const FPS = 30;
 
 const parser = new Parser();
@@ -324,7 +324,7 @@ const AI_SIGNATURE_AUDIO =
 
 async function generateVoice(script) {
   // El audio completo = guion de Gemini + firma de IA siempre fija
-  const fullScript = script.trim() + ' ... ' + AI_SIGNATURE_AUDIO;
+  const fullScript = script.trim() + ' . ' + AI_SIGNATURE_AUDIO;
   const audioPath = path.join(__dirname, 'public', 'news_voice.mp3');
 
   try {
@@ -343,9 +343,9 @@ async function generateVoice(script) {
           text: fullScript,
           model_id: 'eleven_multilingual_v2',
           voice_settings: {
-            stability: 0.45,
-            similarity_boost: 0.82,
-            style: 0.35,
+            stability: 0.65,
+            similarity_boost: 0.85,
+            style: 0.0,
             use_speaker_boost: true,
           },
         }),
