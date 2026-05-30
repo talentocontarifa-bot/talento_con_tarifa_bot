@@ -19,6 +19,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Update apt package database
+        run: sudo apt-get update
+
       - name: Install ffmpeg
         run: sudo apt-get install -y ffmpeg
 

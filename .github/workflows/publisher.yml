@@ -34,6 +34,9 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Update apt package database
+        run: sudo apt-get update
+
       - name: Install Scrapling
         run: |
           pip install "scrapling[fetchers]"
