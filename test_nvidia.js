@@ -43,38 +43,38 @@ async function testVariation(label, payload) {
 }
 
 async function runTests() {
-  // Test 1: Simple prompt, no steps, no seed, standard resolution
-  await testVariation("simple prompt no steps no seed 1024", {
-    prompt: "a cute cat sitting on a couch",
-    height: 1024,
-    width: 1024
-  });
+  const prompt = "neo-brutalist, 8k, vertical, a stylized human brain glowing, tech, neon";
 
-  // Test 2: Standard prompt, steps 4, seed 42, resolution 768x1344
-  await testVariation("city sunset steps 4 seed 42 768x1344", {
-    prompt: "A cinematic shot of a futuristic city at sunset, neo-brutalist style",
-    height: 1344,
-    width: 768,
+  // Test 1: 1024x1024, steps 4, seed 42
+  await testVariation("brain 1024 steps 4 seed 42", {
+    prompt: prompt,
+    height: 1024,
+    width: 1024,
     steps: 4,
     seed: 42
   });
 
-  // Test 3: Brain prompt, steps 4, seed 12345, resolution 768x1344
-  await testVariation("brain steps 4 seed 12345 768x1344", {
-    prompt: "neo-brutalist, 8k, vertical, a stylized human brain glowing, tech, neon",
-    height: 1344,
-    width: 768,
+  // Test 2: 1024x1024, steps 4, seed 0
+  await testVariation("brain 1024 steps 4 seed 0", {
+    prompt: prompt,
+    height: 1024,
+    width: 1024,
     steps: 4,
-    seed: 12345
+    seed: 0
   });
 
-  // Test 4: Same as Test 3, but with steps: 1
-  await testVariation("brain steps 1 seed 12345 768x1344", {
-    prompt: "neo-brutalist, 8k, vertical, a stylized human brain glowing, tech, neon",
+  // Test 3: 1024x1024, no steps, no seed
+  await testVariation("brain 1024 no steps no seed", {
+    prompt: prompt,
+    height: 1024,
+    width: 1024
+  });
+
+  // Test 4: 1344x768, no steps, no seed
+  await testVariation("brain 768x1344 no steps no seed", {
+    prompt: prompt,
     height: 1344,
-    width: 768,
-    steps: 1,
-    seed: 12345
+    width: 768
   });
 }
 
