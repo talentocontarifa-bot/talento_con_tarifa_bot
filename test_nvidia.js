@@ -1,5 +1,4 @@
 const axios = require('axios');
-const fs = require('fs');
 
 async function testVariation(label, prompt) {
   const nvapiKey = process.env.NVIDIA_API_KEY;
@@ -20,7 +19,7 @@ async function testVariation(label, prompt) {
           "accept": "application/json",
           "Content-Type": "application/json"
         },
-        timeout: 30000
+        timeout: 10000
       }
     );
 
@@ -38,23 +37,12 @@ async function testVariation(label, prompt) {
 }
 
 async function runTests() {
-  // Test 1: Full original prompt
-  await testVariation("Original Prompt", "neo-brutalist, 8k, vertical, a stylized human brain glowing, tech, neon");
-
-  // Test 2: Without "human"
-  await testVariation("Without human", "neo-brutalist, 8k, vertical, a stylized brain glowing, tech, neon");
-
-  // Test 3: Without "brain"
-  await testVariation("Without brain", "neo-brutalist, 8k, vertical, a stylized glowing structure, tech, neon");
-
-  // Test 4: With "cybernetic core" instead of "human brain"
-  await testVariation("With cybernetic core", "neo-brutalist, 8k, vertical, a stylized cybernetic core glowing, tech, neon");
-
-  // Test 5: Simple "brain"
-  await testVariation("Simple brain", "a brain");
-
-  // Test 6: Simple "human brain"
-  await testVariation("Simple human brain", "a human brain");
+  await testVariation("neo-brutalist", "neo-brutalist");
+  await testVariation("8k", "8k");
+  await testVariation("vertical", "vertical");
+  await testVariation("glowing", "glowing");
+  await testVariation("tech", "tech");
+  await testVariation("neon", "neon");
 }
 
 runTests();
