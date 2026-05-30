@@ -1,23 +1,18 @@
 const axios = require('axios');
 const fs = require('fs');
 
-async function testNvidia() {
+async function testResolution(width, height, filename) {
   const nvapiKey = process.env.NVIDIA_API_KEY;
-  if (!nvapiKey) {
-    console.error("❌ NVIDIA_API_KEY is not defined in environment variables.");
-    process.exit(1);
-  }
-
   const prompt = "neo-brutalist, 8k, vertical, a stylized human brain glowing, tech, neon";
-  console.log(`Sending request to NVIDIA FLUX API with prompt: "${prompt}"...`);
+  console.log(`\n--- Generating with resolution ${width}x${height} ---`);
 
   try {
     const response = await axios.post(
       "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell",
       {
         prompt: prompt,
-        height: 1344,
-        width: 768,
+        height: height,
+        width: width,
         steps: 4,
         seed: 0
       },
@@ -32,35 +27,32 @@ async function testNvidia() {
     );
 
     console.log(`Status Code: ${response.status}`);
-    console.log("Response headers:", response.headers);
-    console.log("Response data keys:", Object.keys(response.data));
-
     if (response.data && response.data.artifacts && response.data.artifacts[0]) {
-      const artifact = response.data.artifacts[0];
-      console.log("Artifact keys:", Object.keys(artifact));
-      const base64Str = artifact.base64;
-      console.log(`Base64 string length: ${base64Str.length}`);
-      console.log(`First 100 chars of base64: ${base64Str.substring(0, 100)}`);
-      
+      const base64Str = response.data.artifacts[0].base64;
       const buffer = Buffer.from(base64Str, 'base64');
-      console.log(`Decoded buffer byte length: ${buffer.length}`);
-      
-      // Let's write it to test_nvidia_output.png
-      fs.writeFileSync("test_nvidia_output.png", buffer);
-      console.log("Saved image to test_nvidia_output.png");
+      console.log(`Success! Base64 length: ${base64Str.length}, decoded buffer: ${buffer.length} bytes`);
+      fs.writeFileSync(filename, buffer);
+      console.log(`Saved to ${filename}`);
     } else {
-      console.error("❌ Unexpected response structure from Nvidia:", response.data);
+      console.error("Unexpected response data:", response.data);
     }
   } catch (error) {
-    console.error("❌ Error calling Nvidia API:");
+    console.error("Error:");
     if (error.response) {
       console.error(`Status: ${error.response.status}`);
       console.error("Response data:", error.response.data);
     } else {
       console.error(error.message);
     }
-    process.exit(1);
   }
 }
 
-testNvidia();
+async function runTests() {
+  // Test 1: Requested aspect ratio 768x1344
+  await testResolution(768, 1344, "output_768_1344.png");
+
+  // Test 2: Standard resolution 1024x1024
+  await testResolution(1024, 1024, "output_1024_1024.png");
+}
+
+runTests();
