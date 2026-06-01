@@ -519,11 +519,42 @@ async function generateImages(scenes) {
       }
     }
 
+    // 3. Fallback a Pollinations.ai (Flux)
+    if (!success) {
+      try {
+        console.log("    🌸 Generando con Pollinations.ai (Flux)...");
+        const response = await axios.get(
+          `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=768&height=1344&model=flux&nologo=true`,
+          { responseType: 'arraybuffer', timeout: 30000 }
+        );
+        buffer = Buffer.from(response.data);
+        success = true;
+        console.log(`    ✅ Generada con Pollinations.ai.`);
+      } catch (error) {
+        console.error("    ❌ Error con Pollinations.ai:", error.message);
+      }
+    }
+
     if (success && buffer) {
       fs.writeFileSync(path.join(__dirname, 'public', filename), buffer);
       console.log(`    💾 ${filename} guardada.`);
     } else {
       console.error(`    ❌ No se pudo generar la imagen para la escena ${i}`);
+      const filePath = path.join(__dirname, 'public', filename);
+      if (!fs.existsSync(filePath)) {
+        console.log(`    ⚠️ El archivo ${filename} no existe. Buscando fallback local...`);
+        const fallbackSrc = path.join(__dirname, 'public', 'agent_robot.png');
+        if (fs.existsSync(fallbackSrc)) {
+          fs.copyFileSync(fallbackSrc, filePath);
+          console.log(`    💾 Copiado fallback de agent_robot.png a ${filename}.`);
+        } else {
+          const emptyPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+          fs.writeFileSync(filePath, emptyPng);
+          console.log(`    💾 Escrito pixel de fallback en ${filename}.`);
+        }
+      } else {
+        console.log(`    ℹ️ El archivo anterior ${filename} ya existe, se conservará.`);
+      }
     }
   }
 }
