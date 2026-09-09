@@ -59,17 +59,74 @@ async function generarMemeContextual() {
         const data = JSON.parse(text);
         console.log(`\n💡 Idea de Gemini:\nPrompt FLUX: ${data.flux_prompt}\nCopy FB: ${data.facebook_copy}\n`);
 
-        console.log("🎨 3. Generando la imagen con FLUX.1...");
-        const blob = await hf.textToImage({
-            model: 'black-forest-labs/FLUX.1-schnell',
-            inputs: data.flux_prompt
-        });
+        console.log("🎨 3. Generando la imagen...");
+        const nvapiKey = process.env.NVIDIA_API_KEY;
+        const hfToken = process.env.HF_API_KEY;
+        let buffer;
+        let success = false;
 
-        const arrayBuffer = await blob.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const filename = `meme_del_dia_${Date.now()}.jpg`;
-        fs.writeFileSync(filename, buffer);
-        console.log(`✅ Imagen guardada como: ${filename}`);
+        // 1. Intentar con Nvidia API
+        if (nvapiKey) {
+            try {
+                console.log("🤖 Generando imagen con NVIDIA API (FLUX.1-schnell)...");
+                const response = await axios.post(
+                    "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell",
+                    {
+                        prompt: data.flux_prompt,
+                        height: 1024,
+                        width: 1024,
+                        steps: 4,
+                        seed: 0
+                    },
+                    {
+                        headers: {
+                            "Authorization": `Bearer ${nvapiKey}`,
+                            "accept": "application/json",
+                            "Content-Type": "application/json"
+                        },
+                        timeout: 30000
+                    }
+                );
+
+                if (response.data && response.data.artifacts && response.data.artifacts[0]) {
+                    buffer = Buffer.from(response.data.artifacts[0].base64, 'base64');
+                    success = true;
+                    console.log(`✅ Imagen generada con éxito usando NVIDIA API!`);
+                } else {
+                    throw new Error("Formato de respuesta de Nvidia inesperado.");
+                }
+            } catch (error) {
+                console.error("⚠️ Error con Nvidia API:", error.message);
+                if (hfToken) {
+                    console.log("🔄 Intentando fallback con Hugging Face...");
+                }
+            }
+        }
+
+        // 2. Fallback a Hugging Face
+        if (!success && hfToken) {
+            try {
+                console.log("🎨 Generando imagen con Hugging Face (FLUX.1-schnell)...");
+                const blob = await hf.textToImage({
+                    model: 'black-forest-labs/FLUX.1-schnell',
+                    inputs: data.flux_prompt
+                });
+                const arrayBuffer = await blob.arrayBuffer();
+                buffer = Buffer.from(arrayBuffer);
+                success = true;
+                console.log(`✅ Imagen generada con éxito usando Hugging Face!`);
+            } catch (error) {
+                console.error("❌ Error con Hugging Face:", error.message);
+            }
+        }
+
+        if (success && buffer) {
+            const filename = `meme_del_dia_${Date.now()}.jpg`;
+            fs.writeFileSync(filename, buffer);
+            console.log(`✅ Imagen guardada como: ${filename}`);
+        } else {
+            throw new Error("No se pudo generar la imagen con ningún servicio.");
+        }
 
         // Opcional: El paso 4 sería subirlo a Facebook Graph API usando META_PAGE_ACCESS_TOKEN
         console.log("\n🚀 ¡Meme listo para publicarse contextualmente!");

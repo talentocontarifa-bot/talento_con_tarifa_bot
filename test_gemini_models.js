@@ -8,22 +8,23 @@ async function test() {
   }
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   
-  console.log("--- PROBANDO gemini-1.5-flash (El que le puse al bot) ---");
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent("Hola, esto es una prueba. Responde 'Ok'");
-    console.log("✅ ÉXITO con 1.5-flash:", result.response.text());
-  } catch(e) {
-    console.log("❌ Error con 1.5-flash:", e.message);
-  }
+  const modelsToTest = [
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
+    "gemini-2.0-flash",
+    "gemini-1.5-pro",
+    "gemini-1.5-flash"
+  ];
 
-  console.log("\n--- PROBANDO gemini-2.5-flash (El que tenía antes) ---");
-  try {
-    const model2 = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result2 = await model2.generateContent("Hola, responde 'Ok'");
-    console.log("✅ ÉXITO con 2.5-flash:", result2.response.text());
-  } catch(e) {
-    console.log("❌ Error con 2.5-flash:", e.message);
+  for (const modelName of modelsToTest) {
+    console.log(`\n--- PROBANDO ${modelName} ---`);
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent("Hola, esto es una prueba. Responde 'Ok'");
+      console.log(`✅ ÉXITO con ${modelName}:`, result.response.text().trim());
+    } catch(e) {
+      console.log(`❌ Error con ${modelName}:`, e.message);
+    }
   }
 }
 test();

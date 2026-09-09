@@ -8,6 +8,8 @@ on:
 jobs:
   render-video:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -17,8 +19,21 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Update apt package database
+        run: sudo apt-get update
+
       - name: Install ffmpeg
         run: sudo apt-get install -y ffmpeg
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Scrapling
+        run: |
+          pip install "scrapling[fetchers]"
+          scrapling install
 
       - name: Install dependencies
         run: |
@@ -29,7 +44,10 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           HF_API_KEY: ${{ secrets.HF_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
         run: |
           cd video_tct
           node create_daily_news.js
@@ -46,6 +64,14 @@ jobs:
         run: |
           cd video_tct
           node publish_video.js
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "talentocontarifa-bot"
+          git config --global user.email "talentocontarifa.bot@gmail.com"
+          git add video_tct/used_video_news.json
+          git commit -m "chore: update processed news video history [skip ci]" || echo "No changes to commit"
+          git push origin main || echo "No changes to push"
 
       - name: Upload Artifact (backup)
         uses: actions/upload-artifact@v4

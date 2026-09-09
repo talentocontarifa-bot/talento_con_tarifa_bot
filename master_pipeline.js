@@ -39,9 +39,29 @@ async function getContentSource() {
 
     // Piloto Automático: Lector RSS
     console.log("🤖 [MODO PILOTO AUTOMÁTICO] Leyendo feeds de RSS...");
-    const feed = await parser.parseURL('https://www.xataka.com/inteligencia-artificial/feed');
-    const latestItem = feed.items[0];
-    console.log(`📰 Noticia seleccionada: ${latestItem.title}`);
+    const feeds = [
+        'https://www.xataka.com/categoria/inteligencia-artificial/rss',
+        'https://feeds.weblogssl.com/genbeta',
+        'https://feeds.weblogssl.com/xataka2',
+        'https://www.entrepreneur.com/es/feed'
+    ];
+    let latestItem = null;
+    for (const feedUrl of feeds) {
+        try {
+            console.log(`📡 Intentando leer feed: ${feedUrl}`);
+            const feed = await parser.parseURL(feedUrl);
+            if (feed.items && feed.items.length > 0) {
+                latestItem = feed.items[0];
+                console.log(`📰 Noticia seleccionada del feed ${feedUrl}: ${latestItem.title}`);
+                break;
+            }
+        } catch (err) {
+            console.error(`⚠️ Error al leer feed ${feedUrl}: ${err.message}`);
+        }
+    }
+    if (!latestItem) {
+        throw new Error("No se pudo obtener ninguna noticia de los feeds RSS de fallback.");
+    }
     
     return {
         type: 'rss',
@@ -54,23 +74,94 @@ async function getContentSource() {
 /**
  * 2. SCRAPER (Transforma URLs en texto legible para la IA usando Jina Reader)
  */
+async function resolveUrl(url) {
+    try {
+        const response = await fetch(url, { method: 'HEAD', redirect: 'follow' });
+        return response.url;
+    } catch (e) {
+        return url;
+    }
+}
+
+function extractWithScrapling(url) {
+    const { execSync } = require('child_process');
+    const path = require('path');
+    try {
+        console.log(`   [Scrapling] Ejecutando extracción local avanzada para: ${url}`);
+        const escapedUrl = url.replace(/"/g, '\\"');
+        const helperPath = path.join(__dirname, 'scrapling_helper.py');
+        const output = execSync(`python "${helperPath}" --url "${escapedUrl}"`, { encoding: 'utf-8' });
+        const parsed = JSON.parse(output);
+        if (parsed.success && parsed.text && parsed.text.length > 50) {
+            return parsed.text;
+        } else {
+            console.warn(`   [Scrapling] Texto insuficiente o error: ${parsed.error || 'Texto muy corto'}`);
+            return null;
+        }
+    } catch (e) {
+        console.error(`   [Scrapling] Error en ejecución: ${e.message}`);
+        return null;
+    }
+}
+
 async function extractText(url) {
     console.log(`📄 2. Extrayendo texto limpio de: ${url}`);
+    let resolvedUrl = url;
     try {
+        console.log(`   Scrapeando directamente con Jina Reader...`);
         const response = await axios.get(`https://r.jina.ai/${url}`);
         return response.data;
     } catch (e) {
-        throw new Error("El anti-bot de la página bloqueó la lectura, o el link es inválido.");
+        console.log(`⚠️ Error scrapeando directamente con Jina: ${e.message}. Intentando resolver URL primero...`);
+        try {
+            resolvedUrl = await resolveUrl(url);
+            if (resolvedUrl !== url) {
+                console.log(`   URL redireccionada: ${resolvedUrl}`);
+            }
+            const response = await axios.get(`https://r.jina.ai/${resolvedUrl}`);
+            return response.data;
+        } catch (err) {
+            console.log(`⚠️ Jina Reader falló definitivamente: ${err.message}. Intentando Scrapling local...`);
+        }
+    }
+    
+    // Fallback absoluto: Scrapling
+    const scraplingText = extractWithScrapling(resolvedUrl);
+    if (scraplingText) {
+        console.log(`✅ Scrapling extrajo exitosamente el contenido.`);
+        return scraplingText;
+    }
+    
+    throw new Error("Jina Reader y Scrapling fallaron al extraer el contenido. El anti-bot de la página bloqueó la lectura, o el link es inválido.");
+}
+
+async function callGeminiWithRetry(model, content, maxRetries = 5) {
+    let attempts = 0;
+    while (attempts < maxRetries) {
+        try {
+            return await model.generateContent(content);
+        } catch (error) {
+            attempts++;
+            console.warn(`⚠️ Intento ${attempts} fallido al llamar a Gemini: ${error.message}`);
+            if (attempts >= maxRetries) {
+                throw error;
+            }
+            let waitTime = Math.pow(2, attempts) * 1000 + 10000;
+            if (error.message.includes("429") || error.message.toLowerCase().includes("quota exceeded") || attempts > 2) {
+                waitTime = 65000; // Espera 65 segundos si es cuota o si ya van varios intentos
+                console.log(`Error persistente o rate limit detectado. Esperando 65s para enfriar la API...`);
+            } else {
+                console.log(`Espera de ${waitTime/1000}s antes del próximo intento...`);
+            }
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
     }
 }
 
 /**
- * 3. CEREBRO (Generación de Copy con Gemini + Instrucciones)
+ * 3. CEREBRO (Generación de Copy con Groq + Fallback a Gemini)
  */
 async function generateAIContent(markdown, customInstruction) {
-    console.log("🧠 3. Procesando con Gemini... Aplicando tono Neo-Brutalista.");
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    
     let systemPrompt = `Eres el Director Creativo de "Talento con Tarifa", una agencia de automatización de marketing y automatización con agentes autónomos para empresas.
 Vas a recibir el texto de una página web o noticia sobre IA o Negocios.
 Tu objetivo es redactar un post para Facebook (máximo 2 párrafos).
@@ -80,9 +171,54 @@ TONO BASE: Irreverente, al grano, Neo-Brutalista. Enfócate en cómo esto reduce
 Si la instrucción a continuación NO dice "Ninguna", debes OBEDECERLA por encima del estilo base y adoptarla como tu línea editorial para este post.
 INSTRUCCIÓN DEL JEFE: "${customInstruction}"`;
 
-    const result = await model.generateContent([
+    const userPrompt = `CONTENIDO DE LA WEB:\n${markdown}`;
+
+    // 1. Intentar con Groq si está disponible
+    if (process.env.GROQ_API_KEY) {
+        console.log("🧠 3. Procesando con Groq (Llama 3.3 70B)...");
+        const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+        for (const model of models) {
+            let attempts = 0;
+            while (attempts < 3) {
+                try {
+                    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [
+                                { role: "system", content: systemPrompt },
+                                { role: "user", content: userPrompt }
+                            ],
+                            temperature: 0.7
+                        })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        console.log(`✅ Copy generado exitosamente con Groq (${model})`);
+                        return data.choices[0].message.content;
+                    } else {
+                        throw new Error(data.error?.message || "Error de Groq");
+                    }
+                } catch (e) {
+                    attempts++;
+                    console.log(`⚠️ Intento ${attempts} con Groq (${model}) fallido: ${e.message}`);
+                    await new Promise(r => setTimeout(r, 2000));
+                }
+            }
+        }
+        console.log("❌ Todos los intentos con Groq fallaron. Pasando a Gemini como respaldo...");
+    }
+
+    console.log("🧠 3. Procesando con Gemini... Aplicando tono Neo-Brutalista.");
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    
+    const result = await callGeminiWithRetry(model, [
         { text: systemPrompt },
-        { text: `CONTENIDO DE LA WEB:\n${markdown}` }
+        { text: userPrompt }
     ]);
     return result.response.text();
 }
@@ -127,13 +263,18 @@ async function run() {
         // 5. Limpieza (Manejo de estado)
         if (source.type === 'issue') {
             console.log(`\n🔒 Cerrando el Issue #${source.issueNumber} para evitar reciclaje...`);
-            execSync(`gh issue close ${source.issueNumber} -m "✅ Post generado por Gemini y publicado. Post ID: ${postId}"`);
+            execSync(`gh issue close ${source.issueNumber} -c "✅ Post generado por IA y publicado. Post ID: ${postId}"`);
         } else {
             console.log(`\n✅ Flujo RSS terminado.`);
         }
         
     } catch (e) {
-        console.error("\n❌ Error Crítico en el Pipeline:", e.message);
+        console.error("\n❌ Error Crítico en el Pipeline:");
+        if (e.response && e.response.data) {
+            console.error("Detalles del Error (API):", JSON.stringify(e.response.data, null, 2));
+        } else {
+            console.error(e.stack || e);
+        }
         process.exit(1); // Forzar fallo en GitHub Actions
     }
 }
