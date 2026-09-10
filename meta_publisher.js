@@ -9,7 +9,7 @@ async function publishPost(message, link = null, scheduledTime = null) {
     return null;
   }
 
-  const url = `https://graph.facebook.com/v19.0/${PAGE_ID}/feed`;
+  const url = `https://graph.facebook.com/v21.0/${PAGE_ID}/feed`;
   
   const params = new URLSearchParams({
     message: message,

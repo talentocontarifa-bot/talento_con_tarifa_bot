@@ -11,18 +11,19 @@ const path = require('path');
 const FormData = require('form-data');
 const axios = require('axios');
 
+const { publishVideoToTikTok } = require('../tiktok_publisher');
+
 const PAGE_ID = process.env.META_PAGE_ID;
 const ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN;
-const VIDEO_PATH = path.join(__dirname, 'out', 'video_final_tct.mp4');
+
+let VIDEO_PATH = path.join(__dirname, 'out', 'video_final_tct.mp4');
+if (!fs.existsSync(VIDEO_PATH)) {
+  VIDEO_PATH = path.join(__dirname, 'public', 'video_final_tct.mp4');
+}
 const NEWS_DATA_PATH = path.join(__dirname, 'src', 'news_data.json');
 
-if (!PAGE_ID || !ACCESS_TOKEN) {
-  console.error('❌ Faltan META_PAGE_ID o META_PAGE_ACCESS_TOKEN');
-  process.exit(1);
-}
-
 if (!fs.existsSync(VIDEO_PATH)) {
-  console.error('❌ No se encontró el video en:', VIDEO_PATH);
+  console.error('❌ No se encontró el video en out/ ni en public/:', VIDEO_PATH);
   process.exit(1);
 }
 
@@ -68,40 +69,54 @@ function buildCaption() {
 async function publishVideo() {
   const caption = buildCaption();
   const videoSizeKB = Math.round(fs.statSync(VIDEO_PATH).size / 1024);
-  console.log(`\n📤 Publicando video en Facebook (${videoSizeKB} KB)...`);
-  console.log(`📝 Caption (primeros 120 chars): "${caption.substring(0, 120)}..."`);
 
-  const form = new FormData();
-  form.append('access_token', ACCESS_TOKEN);
-  form.append('description', caption);
-  form.append('title', 'IA para Emprendedores — Talento con Tarifa');
-  form.append('file', fs.createReadStream(VIDEO_PATH), {
-    filename: 'video_tct.mp4',
-    contentType: 'video/mp4',
-  });
+  // 1. Publicar en Facebook (si hay credenciales de Meta)
+  if (PAGE_ID && ACCESS_TOKEN) {
+    console.log(`\n📤 Publicando video en Facebook (${videoSizeKB} KB)...`);
+    console.log(`📝 Caption (primeros 120 chars): "${caption.substring(0, 120)}..."`);
 
-  const url = `https://graph.facebook.com/v19.0/${PAGE_ID}/videos`;
-
-  try {
-    const response = await axios.post(url, form, {
-      headers: form.getHeaders(),
-      validateStatus: () => true // Evita que axios lance un error con status 400 y nos deje leer el JSON del error
+    const form = new FormData();
+    form.append('access_token', ACCESS_TOKEN);
+    form.append('description', caption);
+    form.append('title', 'IA para Emprendedores — Talento con Tarifa');
+    form.append('file', fs.createReadStream(VIDEO_PATH), {
+      filename: 'video_tct.mp4',
+      contentType: 'video/mp4',
     });
 
-    const data = response.data;
+    const url = `https://graph.facebook.com/v21.0/${PAGE_ID}/videos`;
 
-    if (data.error) {
-      console.error('❌ Error de Meta API:', JSON.stringify(data.error, null, 2));
-      process.exit(1);
+    try {
+      const response = await axios.post(url, form, {
+        headers: form.getHeaders(),
+        validateStatus: () => true
+      });
+
+      const data = response.data;
+
+      if (data.error) {
+        console.error('❌ Error de Meta API:', JSON.stringify(data.error, null, 2));
+      } else {
+        console.log(`\n✅ ¡Video publicado con éxito en Facebook!`);
+        console.log(`   Post ID: ${data.id}`);
+        console.log(`   URL: https://www.facebook.com/${PAGE_ID}/videos/${data.id}`);
+      }
+    } catch (err) {
+      console.error('❌ Error de red al publicar en Facebook:', err.message);
     }
+  } else {
+    console.log('ℹ️ Omitiendo Facebook: No se configuró META_PAGE_ID o META_PAGE_ACCESS_TOKEN');
+  }
 
-    console.log(`\n✅ ¡Video publicado con éxito!`);
-    console.log(`   Post ID: ${data.id}`);
-    console.log(`   URL: https://www.facebook.com/${PAGE_ID}/videos/${data.id}`);
-
-  } catch (err) {
-    console.error('❌ Error de red al publicar:', err.message);
-    process.exit(1);
+  // 2. Publicar en TikTok
+  try {
+    console.log(`\n🎵 Publicando video en TikTok (${videoSizeKB} KB)...`);
+    const tiktokResult = await publishVideoToTikTok(VIDEO_PATH, {
+      title: `${caption.split('\n')[0].substring(0, 180)} #TalentoConTarifa #InteligenciaArtificial #Emprendedores`
+    });
+    console.log('✅ Resultado TikTok:', tiktokResult.status);
+  } catch (tiktokErr) {
+    console.error('❌ Error al publicar en TikTok:', tiktokErr.message);
   }
 }
 
