@@ -14,7 +14,16 @@
 
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
+let axios;
+try {
+  axios = require('axios');
+} catch (e) {
+  try {
+    axios = require(path.join(__dirname, 'video_tct', 'node_modules', 'axios'));
+  } catch (e2) {
+    throw e;
+  }
+}
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const TOKEN_FILE = path.join(__dirname, 'tiktok_tokens.json');
