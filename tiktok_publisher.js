@@ -119,13 +119,36 @@ async function refreshAccessToken() {
 }
 
 /**
- * Obtiene un access_token válido.
+ * Obtiene un access_token válido (lo renueva si está ausente o expirado).
  */
 async function getValidAccessToken() {
   let tokens = getTokens();
+  if (!tokens.access_token && tokens.refresh_token) {
+    return await refreshAccessToken();
+  }
   if (!tokens.access_token) {
     throw new Error('No se encontró TIKTOK_ACCESS_TOKEN en .env ni tiktok_tokens.json');
   }
+
+  // Comprobar validez contra TikTok API
+  try {
+    const res = await axios.post('https://open.tiktokapis.com/v2/post/publish/creator_info/query/', {}, {
+      headers: {
+        'Authorization': `Bearer ${tokens.access_token}`,
+        'Content-Type': 'application/json; charset=UTF-8'
+      }
+    });
+    if (res.data?.data) {
+      return tokens.access_token;
+    }
+  } catch (err) {
+    const errCode = err.response?.data?.error?.code;
+    if (err.response?.status === 401 || errCode === 'access_token_invalid') {
+      console.log('🔄 Token expirado detectado en comprobación inicial. Renovando...');
+      return await refreshAccessToken();
+    }
+  }
+
   return tokens.access_token;
 }
 
@@ -203,41 +226,52 @@ async function publishVideoToTikTok(videoFilePath, options = {}) {
       }
     });
   } catch (err) {
-    const errCode = err.response?.data?.error?.code;
+    let errCode = err.response?.data?.error?.code;
+    let status = err.response?.status;
 
-    // Si el token expiró, renovar
-    if (err.response?.status === 401 || errCode === 'access_token_invalid') {
+    // Si el token expiró, renovar y reintentar
+    if (status === 401 || errCode === 'access_token_invalid') {
       console.log('⚠️ Token inválido o expirado. Renovando token...');
       accessToken = await refreshAccessToken();
-      initRes = await axios.post(initUrl, initPayload, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json; charset=UTF-8'
-        }
-      });
-    } else if (errCode === 'unaudited_client_can_only_post_to_private_accounts') {
-      // Sandbox restricción para cuentas públicas: enviar a Creator Inbox / Borrador
-      console.log('ℹ️ La cuenta es pública en entorno Sandbox. Usando Creator Inbox (Upload directo a borrador de TikTok)...');
-      mode = 'INBOX_DRAFT';
-      initUrl = 'https://open.tiktokapis.com/v2/post/publish/inbox/video/init/';
-      initPayload = {
-        source_info: {
-          source: 'FILE_UPLOAD',
-          video_size: videoSize,
-          chunk_size: videoSize,
-          total_chunk_count: 1
-        }
-      };
+      try {
+        initRes = await axios.post(initUrl, initPayload, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json; charset=UTF-8'
+          }
+        });
+      } catch (retryErr) {
+        err = retryErr;
+        errCode = err.response?.data?.error?.code;
+        status = err.response?.status;
+      }
+    }
 
-      initRes = await axios.post(initUrl, initPayload, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json; charset=UTF-8'
-        }
-      });
-    } else {
-      console.error('❌ Error al inicializar publicación en TikTok:', err.response?.data || err.message);
-      throw err;
+    // Si la llamada directa falló por ser Sandbox / cuenta no auditada (403 o error_code)
+    if (!initRes) {
+      if (errCode === 'unaudited_client_can_only_post_to_private_accounts' || status === 403) {
+        console.log('ℹ️ Entorno Sandbox / cuenta pública: usando Creator Inbox (Upload directo a borrador de TikTok)...');
+        mode = 'INBOX_DRAFT';
+        initUrl = 'https://open.tiktokapis.com/v2/post/publish/inbox/video/init/';
+        initPayload = {
+          source_info: {
+            source: 'FILE_UPLOAD',
+            video_size: videoSize,
+            chunk_size: videoSize,
+            total_chunk_count: 1
+          }
+        };
+
+        initRes = await axios.post(initUrl, initPayload, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json; charset=UTF-8'
+          }
+        });
+      } else {
+        console.error('❌ Error al inicializar publicación en TikTok:', err.response?.data || err.message);
+        throw err;
+      }
     }
   }
 
