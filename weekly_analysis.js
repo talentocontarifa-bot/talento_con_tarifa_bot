@@ -77,13 +77,7 @@ async function getPageMetrics() {
   };
 }
 
-async function analyzeWithGroq(data) {
-  if (!GROQ_API_KEY) {
-    throw new Error('Missing GROQ_API_KEY environment variable.');
-  }
-
-  console.log('🧠 [4/5] Enviando datos a Groq (Llama 3.3 70B) para análisis...');
-  
+async function analyzeWithAI(data) {
   const prompt = `Actúa como un experto Analista de Growth Marketing y Estratega de Redes Sociales para la página de Facebook "${data.pageName}".
 Analiza los siguientes datos de rendimiento de la última semana (posts, videos, comentarios y reacciones).
 
@@ -116,47 +110,76 @@ Genera un reporte conciso y accionable formateado en Markdown para Telegram. El 
    - Dudas recurrentes, críticas o sugerencias detectadas en los comentarios.
 
 4. 🧠 *Lectura Estratégica e Insights*:
-   - Qué temas, layouts o formatos visuales (minimal_clean, neo_brutalist, glassmorphism) muestran mejor retención y engagement.
+   - Qué temas, layouts o formatos visuales muestran mejor retención y engagement.
 
 5. 🛠️ *Estrategia y Acciones a Aplicar*:
    - Tres acciones ultra-concretas que el bot aplicará en los guiones, imágenes y layouts para la próxima semana para optimizar resultados.
 
 Por favor, sé directo, estratégico y enfocado al crecimiento. No inventes datos. Usa emojis para facilitar la lectura rápida en móvil.`;
 
-  const response = await axios.post(
-    'https://api.groq.com/openai/v1/chat/completions',
-    {
-      model: 'llama-3.3-70b-versatile',
-      messages: [{ role: 'user', content: prompt }]
-    },
-    {
-      headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-        'Content-Type': 'application/json'
+  // 1. Intentar con Groq si está disponible
+  if (GROQ_API_KEY) {
+    try {
+      console.log('🧠 [4/5] Enviando datos a Groq (Llama 3.3 70B) para análisis...');
+      const response = await axios.post(
+        'https://api.groq.com/openai/v1/chat/completions',
+        {
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }]
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${GROQ_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      if (response.data.choices?.[0]?.message?.content) {
+        return response.data.choices[0].message.content;
       }
+    } catch (err) {
+      console.warn('⚠️ Groq falló, usando Gemini como respaldo:', err.message);
     }
-  );
+  }
 
-  return response.data.choices[0].message.content;
+  // 2. Fallback con Gemini
+  const GEMINI_KEY = process.env.GEMINI_API_KEY;
+  if (GEMINI_KEY) {
+    console.log('🧠 [4/5] Generando reporte con Google Gemini...');
+    const { GoogleGenerativeAI } = require('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI(GEMINI_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  }
+
+  throw new Error('No hay GROQ_API_KEY ni GEMINI_API_KEY disponible para el análisis.');
 }
 
 async function sendTelegramMessage(text) {
+  if (!TELEGRAM_TOKEN || !CHAT_ID) {
+    console.log('ℹ️ Omitiendo Telegram: No se configuró TELEGRAM_BOT_TOKEN o TELEGRAM_CHAT_ID.');
+    return null;
+  }
   console.log('📤 [5/5] Enviando reporte a Telegram...');
-  const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-  
-  const response = await axios.post(url, {
-    chat_id: CHAT_ID,
-    text: text,
-    parse_mode: 'Markdown'
-  });
-  
-  return response.data;
+  try {
+    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+    const response = await axios.post(url, {
+      chat_id: CHAT_ID,
+      text: text,
+      parse_mode: 'Markdown'
+    });
+    return response.data;
+  } catch (err) {
+    console.warn('⚠️ No se pudo enviar a Telegram:', err.response?.data?.description || err.message);
+    return null;
+  }
 }
 
 async function main() {
   try {
     const data = await getPageMetrics();
-    const analysisReport = await analyzeWithGroq(data);
+    const analysisReport = await analyzeWithAI(data);
     await sendTelegramMessage(analysisReport);
     console.log('✅ ¡Proceso de análisis semanal completado con éxito!');
   } catch (error) {
