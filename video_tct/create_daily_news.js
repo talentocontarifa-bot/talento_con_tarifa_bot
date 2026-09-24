@@ -359,8 +359,9 @@ Responde ÚNICAMENTE con JSON válido:
                   if (response.ok) {
                       const parsed = JSON.parse(data.choices[0].message.content.trim());
                       console.log(`✅ Guion generado exitosamente con Groq (${modelName})`);
-                      console.log(`✅ Guion: "${parsed.script.substring(0, 80)}..."`);
-                      console.log(`✅ Color del día: ${parsed.theme_color} | Escenas: ${parsed.scenes.length}`);
+                      const sampleText = parsed.script || parsed.scenes?.[0]?.voice_text || '';
+                      console.log(`✅ Guion: "${sampleText.substring(0, 80)}..."`);
+                      console.log(`✅ Color del día: ${parsed.theme_color} | Escenas: ${parsed.scenes?.length || 0}`);
                       return parsed;
                   } else {
                       throw new Error(data.error?.message || "Error de Groq");
@@ -391,8 +392,9 @@ Responde ÚNICAMENTE con JSON válido:
     try {
       const result = await model.generateContent(prompt);
       const data = JSON.parse(result.response.text());
-      console.log(`✅ Guion: "${data.script.substring(0, 80)}..."`);
-      console.log(`✅ Color del día: ${data.theme_color} | Escenas: ${data.scenes.length}`);
+      const sampleText = data.script || data.scenes?.[0]?.voice_text || '';
+      console.log(`✅ Guion: "${sampleText.substring(0, 80)}..."`);
+      console.log(`✅ Color del día: ${data.theme_color} | Escenas: ${data.scenes?.length || 0}`);
       return data;
     } catch (e) {
       attempts++;
