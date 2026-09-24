@@ -30,9 +30,9 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Scrapling
+      - name: Install Scrapling & edge-tts
         run: |
-          pip install "scrapling[fetchers]"
+          pip install "scrapling[fetchers]" edge-tts
           scrapling install
 
       - name: Install dependencies

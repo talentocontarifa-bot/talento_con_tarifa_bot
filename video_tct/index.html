@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1080, height=1920" />
-    <title>Talento con Tarifa - Video</title>
+    <title>Talento con Tarifa - Video Sincronizado</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=JetBrains+Mono:wght@700;800&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=JetBrains+Mono:wght@700;800;900&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <script src="./news_data.js"></script>
     <style>
@@ -112,6 +112,50 @@
         box-shadow: 0 0 15px var(--theme-color);
       }
 
+      /* DYNAMIC SUBTITLES / CAPTION OVERLAY */
+      .subtitles-container {
+        position: absolute;
+        bottom: 80px;
+        left: 50px;
+        right: 50px;
+        z-index: 700;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        pointer-events: none;
+      }
+      .subtitle-pill {
+        position: absolute;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.92);
+        border: 4px solid var(--theme-color);
+        box-shadow: 8px 8px 0 #FFF, 0 0 25px rgba(255, 51, 0, 0.3);
+        padding: 18px 36px;
+        width: 100%;
+        text-align: center;
+        border-radius: 6px;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      .subtitle-tag {
+        display: inline-block;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--theme-color);
+        letter-spacing: 3px;
+        margin-bottom: 8px;
+      }
+      .subtitle-text {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 32px;
+        font-weight: 900;
+        color: #FFF;
+        line-height: 1.25;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
       /* SCENE CONTAINERS */
       .scene {
         position: absolute;
@@ -166,8 +210,8 @@
 
       /* SCENE 2 & 4: IMAGE + TEXT */
       .image-card {
-        width: 90%;
-        height: 70%;
+        width: 92%;
+        height: 60%;
         background: #000;
         border: 8px solid #FFF;
         box-shadow: 14px 14px 0 var(--theme-color);
@@ -176,10 +220,11 @@
         align-items: center;
         overflow: hidden;
         position: relative;
+        margin-top: -100px;
       }
       .image-frame {
         width: 100%;
-        height: 78%;
+        height: 75%;
         overflow: hidden;
         display: flex;
         justify-content: center;
@@ -193,7 +238,7 @@
       }
       .image-caption-bar {
         width: 100%;
-        height: 22%;
+        height: 25%;
         background: #000;
         border-top: 6px solid #FFF;
         display: flex;
@@ -208,6 +253,35 @@
         color: #FFF;
         text-transform: uppercase;
         line-height: 1.2;
+      }
+
+      /* KEY POINTS OVERLAY (SCENE 2) */
+      .key-points-grid {
+        width: 92%;
+        margin-top: 35px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        z-index: 200;
+      }
+      .kp-card {
+        background: rgba(0, 0, 0, 0.95);
+        border: 4px solid #FFF;
+        box-shadow: 8px 8px 0 var(--theme-color);
+        padding: 16px 26px;
+        font-size: 28px;
+        font-weight: 900;
+        color: #FFF;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        opacity: 0;
+        transform: translateX(-40px);
+      }
+      .kp-icon {
+        color: var(--theme-color);
+        font-size: 30px;
+        font-weight: 900;
       }
 
       /* SCENE 3: PERCENTAGE */
@@ -256,7 +330,7 @@
       }
       .cta-sub {
         font-size: 32px;
-        color: #AAA;
+        color: #CCC;
         font-weight: 700;
         margin-bottom: 60px;
       }
@@ -281,7 +355,7 @@
       id="root"
       data-composition-id="main"
       data-start="0"
-      data-duration="15"
+      data-duration="36"
       data-width="1080"
       data-height="1920"
     >
@@ -307,27 +381,33 @@
       <!-- SCENE 1: TITLE -->
       <div id="scene-title" class="scene">
         <div class="title-box">
-          <div class="tag-pill" id="title-tag">✦ INTELIGENCIA ARTIFICIAL ✦</div>
-          <h1 class="title-hero-1" id="title-text-1">IA AGENTES</h1>
-          <h2 class="title-hero-2" id="title-text-2">REVOLUCIÓN</h2>
+          <div class="tag-pill" id="title-tag">✦ REVOLUCIÓN TECNOLÓGICA ✦</div>
+          <h1 class="title-hero-1" id="title-text-1">AGENTES IA</h1>
+          <h2 class="title-hero-2" id="title-text-2">NUEVA ERA</h2>
         </div>
       </div>
 
-      <!-- SCENE 2: IMAGE 1 -->
+      <!-- SCENE 2: IMAGE 1 + KEY POINTS -->
       <div id="scene-img1" class="scene">
         <div class="image-card">
           <div class="image-frame" data-layout-allow-overflow>
             <img id="img-scene-1" class="image-content" src="./public/scene_1.png" alt="Escena 1" data-layout-allow-overflow />
           </div>
           <div class="image-caption-bar">
-            <h3 class="caption-text" id="caption-scene-1">Automatización Extrema</h3>
+            <h3 class="caption-text" id="caption-scene-1">AUTOMATIZACIÓN EXTREMA</h3>
           </div>
+        </div>
+        <div class="key-points-grid" id="scene2-points">
+          <div class="kp-card" id="kp-1"><span class="kp-icon">✦</span> Multiplican tu alcance</div>
+          <div class="kp-card" id="kp-2"><span class="kp-icon">✦</span> Operan 24 horas continuas</div>
+          <div class="kp-card" id="kp-3"><span class="kp-icon">✦</span> Reducen costos operativos</div>
         </div>
       </div>
 
       <!-- SCENE 3: PERCENTAGE -->
       <div id="scene-percent" class="scene">
         <div class="percentage-box">
+          <div class="tag-pill" style="margin-bottom: 25px;">✦ DATO CLAVE DE MERCADO ✦</div>
           <div class="huge-percent" id="percent-number">85%</div>
           <div class="percent-label" id="percent-label-text">Empresas Adaptadas</div>
         </div>
@@ -340,7 +420,7 @@
             <img id="img-scene-3" class="image-content" src="./public/scene_3.png" alt="Escena 3" data-layout-allow-overflow />
           </div>
           <div class="image-caption-bar">
-            <h3 class="caption-text" id="caption-scene-3">¡No te quedes atrás!</h3>
+            <h3 class="caption-text" id="caption-scene-3">COBRA POR TU VALOR</h3>
           </div>
         </div>
       </div>
@@ -348,6 +428,7 @@
       <!-- SCENE 5: CTA -->
       <div id="scene-cta" class="scene">
         <div class="cta-box">
+          <div class="tag-pill" style="margin-bottom: 25px;">✦ EL MOMENTO ES AHORA ✦</div>
           <h1 class="cta-headline" id="cta-headline-text">¿LISTO PARA DOMINAR?</h1>
           <p class="cta-sub">Tu talento amplificado con agentes de IA.</p>
           <div class="cta-btn-brutal" id="cta-btn">
@@ -357,15 +438,40 @@
         </div>
       </div>
 
+      <!-- DYNAMIC SUBTITLES OVERLAY -->
+      <div class="subtitles-container">
+        <div class="subtitle-pill" id="sub-1">
+          <span class="subtitle-tag">VOZ EN DIRECTO</span>
+          <p class="subtitle-text" id="sub-text-1">¡Atención emprendedor! Los agentes de IA llegaron para cambiar las reglas.</p>
+        </div>
+        <div class="subtitle-pill" id="sub-2">
+          <span class="subtitle-tag">VOZ EN DIRECTO</span>
+          <p class="subtitle-text" id="sub-text-2">Automatización extrema: multiplican tu alcance y operan 24/7.</p>
+        </div>
+        <div class="subtitle-pill" id="sub-3">
+          <span class="subtitle-tag">VOZ EN DIRECTO</span>
+          <p class="subtitle-text" id="sub-text-3">El 85% de las empresas líderes ya integraron agentes autónomos.</p>
+        </div>
+        <div class="subtitle-pill" id="sub-4">
+          <span class="subtitle-tag">VOZ EN DIRECTO</span>
+          <p class="subtitle-text" id="sub-text-4">No compitas por precio: cobra por el valor de tu talento.</p>
+        </div>
+        <div class="subtitle-pill" id="sub-5">
+          <span class="subtitle-tag">VOZ EN DIRECTO</span>
+          <p class="subtitle-text" id="sub-text-5">Visita hoy talentocontarifa.lat y transforma tu futuro.</p>
+        </div>
+      </div>
+
       <!-- AUDIO TRACKS -->
-      <audio id="bgm" src="./public/tct_music.mp3" class="clip" data-start="0" data-duration="15" data-volume="0.12"></audio>
-      <audio id="vo" src="./public/news_voice.mp3" class="clip" data-start="0.2" data-duration="14.5" data-volume="1.0"></audio>
+      <audio id="bgm" src="./public/tct_music.mp3" class="clip" data-start="0" data-duration="36" data-volume="0.10"></audio>
+      <audio id="vo" src="./public/news_voice.mp3" class="clip" data-start="0" data-duration="34.90" data-volume="1.0"></audio>
     </div>
 
     <script>
       // 1. Población dinámica de datos
       const data = window.NEWS_DATA || {};
-      const totalDur = data.total_duration_sec || 15;
+      const totalDur = data.total_duration_sec || 36;
+      const scenes = data.scenes || [];
 
       if (data.theme_color) {
         document.documentElement.style.setProperty('--theme-color', data.theme_color);
@@ -377,68 +483,85 @@
       const bgmEl = document.getElementById('bgm');
       if (bgmEl) bgmEl.setAttribute('data-duration', String(totalDur));
       const voEl = document.getElementById('vo');
-      if (voEl) voEl.setAttribute('data-duration', String(Math.max(1, totalDur - 0.3)));
+      if (voEl) voEl.setAttribute('data-duration', String(Math.max(1, totalDur - 0.5)));
 
-      // Extraer escenas
-      const scenes = data.scenes || [];
-      const titleScene = scenes.find(s => s.type === 'title') || {};
-      const img1Scene = scenes[1] || {};
-      const pctScene = scenes.find(s => s.type === 'big_percentage') || {};
-      const img2Scene = scenes[3] || {};
-      const ctaScene = scenes.find(s => s.type === 'cta') || {};
+      // Extraer datos de escenas
+      const sc1 = scenes[0] || { start: 0, end: 7.37 };
+      const sc2 = scenes[1] || { start: 7.52, end: 14.84 };
+      const sc3 = scenes[2] || { start: 14.99, end: 21.85, number: 85 };
+      const sc4 = scenes[3] || { start: 22.00, end: 28.19 };
+      const sc5 = scenes[4] || { start: 28.34, end: 35.50 };
 
-      if (titleScene.text1) document.getElementById('title-text-1').innerText = titleScene.text1;
-      if (titleScene.text2) document.getElementById('title-text-2').innerText = titleScene.text2;
+      if (sc1.title1) document.getElementById('title-text-1').innerText = sc1.title1;
+      if (sc1.title2) document.getElementById('title-text-2').innerText = sc1.title2;
+      if (sc1.tag) document.getElementById('title-tag').innerText = sc1.tag;
+      if (sc1.subtitle) document.getElementById('sub-text-1').innerText = sc1.subtitle;
 
-      if (img1Scene.text) document.getElementById('caption-scene-1').innerText = img1Scene.text;
-      if (pctScene.number) document.getElementById('percent-number').innerText = `${pctScene.number}%`;
-      if (pctScene.text) document.getElementById('percent-label-text').innerText = pctScene.text;
-      if (img2Scene.text) document.getElementById('caption-scene-3').innerText = img2Scene.text;
-      if (ctaScene.text) document.getElementById('cta-headline-text').innerText = ctaScene.text;
+      if (sc2.title) document.getElementById('caption-scene-1').innerText = sc2.title;
+      if (sc2.subtitle) document.getElementById('sub-text-2').innerText = sc2.subtitle;
 
-      // 2. Timeline GSAP sincronizada
+      if (sc3.number) document.getElementById('percent-number').innerText = `${sc3.number}%`;
+      if (sc3.label) document.getElementById('percent-label-text').innerText = sc3.label;
+      if (sc3.subtitle) document.getElementById('sub-text-3').innerText = sc3.subtitle;
+
+      if (sc4.title) document.getElementById('caption-scene-3').innerText = sc4.title;
+      if (sc4.subtitle) document.getElementById('sub-text-4').innerText = sc4.subtitle;
+
+      if (sc5.headline) document.getElementById('cta-headline-text').innerText = sc5.headline;
+      if (sc5.sub) document.querySelector('.cta-sub').innerText = sc5.sub;
+      if (sc5.btn) document.querySelector('#cta-btn span:first-child').innerText = sc5.btn;
+      if (sc5.subtitle) document.getElementById('sub-text-5').innerText = sc5.subtitle;
+
+      // 2. Timeline GSAP sincronizada exactamente a las marcas de tiempo de la voz
       const tl = gsap.timeline({ paused: true });
 
       // Barra de progreso continua
       tl.to("#progress-fill", { width: "100%", duration: totalDur, ease: "none" }, 0);
 
-      // Duraciones proporcionales (5 escenas)
-      const d1 = totalDur * 0.20; // Intro / Title
-      const d2 = totalDur * 0.24; // Image 1
-      const d3 = totalDur * 0.20; // Percentage
-      const d4 = totalDur * 0.20; // Image 2
-      const d5 = totalDur * 0.16; // CTA
+      // --- ESCENA 1: TITLE (0.0s -> sc1.end) ---
+      tl.fromTo("#scene-title", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }, sc1.start);
+      tl.fromTo("#title-tag", { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, sc1.start + 0.15);
+      tl.fromTo("#title-text-1", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, sc1.start + 0.4);
+      tl.fromTo("#title-text-2", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, sc1.start + 0.7);
+      // Subtitle 1
+      tl.fromTo("#sub-1", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc1.start + 0.2);
+      tl.to("#sub-1", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, sc1.end - 0.25);
+      tl.to("#scene-title", { opacity: 0, scale: 1.05, duration: 0.3, ease: "power2.in" }, sc1.end - 0.3);
 
-      const t1 = 0;
-      const t2 = t1 + d1;
-      const t3 = t2 + d2;
-      const t4 = t3 + d3;
-      const t5 = t4 + d4;
+      // --- ESCENA 2: IMAGE 1 + KEY POINTS (sc2.start -> sc2.end) ---
+      tl.fromTo("#scene-img1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, sc2.start);
+      tl.fromTo("#img-scene-1", { scale: 1.0 }, { scale: 1.12, duration: (sc2.end - sc2.start), ease: "sine.inOut" }, sc2.start);
+      // Subtitle 2
+      tl.fromTo("#sub-2", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc2.start + 0.15);
+      tl.to("#sub-2", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, sc2.end - 0.25);
+      // Key points sincronizados con las frases de la locución
+      tl.fromTo("#kp-1", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(1.5)" }, sc2.start + 1.2);
+      tl.fromTo("#kp-2", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(1.5)" }, sc2.start + 3.0);
+      tl.fromTo("#kp-3", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(1.5)" }, sc2.start + 4.8);
+      tl.to("#scene-img1", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, sc2.end - 0.3);
 
-      // Escena 1: Title
-      tl.fromTo("#scene-title", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }, t1);
-      tl.fromTo("#title-text-1", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, t1 + 0.1);
-      tl.fromTo("#title-text-2", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, t1 + 0.2);
-      tl.to("#scene-title", { opacity: 0, scale: 1.05, duration: 0.3, ease: "power2.in" }, t2 - 0.3);
+      // --- ESCENA 3: PERCENTAGE (sc3.start -> sc3.end) ---
+      tl.fromTo("#scene-percent", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.5)" }, sc3.start);
+      tl.fromTo("#percent-number", { scale: 0.7 }, { scale: 1.08, duration: 0.6, ease: "elastic.out(1, 0.5)" }, sc3.start + 0.2);
+      // Subtitle 3
+      tl.fromTo("#sub-3", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc3.start + 0.15);
+      tl.to("#sub-3", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, sc3.end - 0.25);
+      tl.to("#scene-percent", { opacity: 0, scale: 1.05, duration: 0.3, ease: "power2.in" }, sc3.end - 0.3);
 
-      // Escena 2: Image 1
-      tl.fromTo("#scene-img1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, t2);
-      tl.fromTo("#img-scene-1", { scale: 1.0 }, { scale: 1.12, duration: d2, ease: "sine.inOut" }, t2);
-      tl.to("#scene-img1", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, t3 - 0.3);
+      // --- ESCENA 4: IMAGE 2 (sc4.start -> sc4.end) ---
+      tl.fromTo("#scene-img2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, sc4.start);
+      tl.fromTo("#img-scene-3", { scale: 1.0 }, { scale: 1.12, duration: (sc4.end - sc4.start), ease: "sine.inOut" }, sc4.start);
+      // Subtitle 4
+      tl.fromTo("#sub-4", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc4.start + 0.15);
+      tl.to("#sub-4", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, sc4.end - 0.25);
+      tl.to("#scene-img2", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, sc4.end - 0.3);
 
-      // Escena 3: Percentage
-      tl.fromTo("#scene-percent", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.5)" }, t3);
-      tl.fromTo("#percent-number", { scale: 0.7 }, { scale: 1.05, duration: 0.5, ease: "elastic.out(1, 0.6)" }, t3 + 0.1);
-      tl.to("#scene-percent", { opacity: 0, scale: 1.05, duration: 0.3, ease: "power2.in" }, t4 - 0.3);
-
-      // Escena 4: Image 2
-      tl.fromTo("#scene-img2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, t4);
-      tl.fromTo("#img-scene-3", { scale: 1.0 }, { scale: 1.12, duration: d4, ease: "sine.inOut" }, t4);
-      tl.to("#scene-img2", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, t5 - 0.3);
-
-      // Escena 5: CTA
-      tl.fromTo("#scene-cta", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, t5);
-      tl.fromTo("#cta-btn", { scale: 0.95 }, { scale: 1.04, repeat: 5, yoyo: true, duration: 0.4, ease: "power1.inOut" }, t5 + 0.1);
+      // --- ESCENA 5: CTA (sc5.start -> totalDur) ---
+      tl.fromTo("#scene-cta", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, sc5.start);
+      tl.fromTo("#cta-btn", { scale: 0.95 }, { scale: 1.04, repeat: 7, yoyo: true, duration: 0.4, ease: "power1.inOut" }, sc5.start + 0.2);
+      // Subtitle 5
+      tl.fromTo("#sub-5", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc5.start + 0.15);
+      tl.to("#sub-5", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, totalDur - 0.4);
 
       // Registrar timeline para HyperFrames
       window.__timelines = window.__timelines || {};

@@ -5,3 +5,4 @@ tiktok_tokens.json
 video_tct/out/
 *.mp4
 trending_top10.json
+video_tct/temp_voice/

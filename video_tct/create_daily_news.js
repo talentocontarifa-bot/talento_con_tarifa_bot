@@ -288,39 +288,47 @@ Fuente: ${queueContext.link}
   const prompt = `Actúa como director de arte y curador de "Talento con Tarifa".
 Tu misión: convertir el contexto del día en un video narrativo de impacto para emprendedores latinoamericanos.
 ${contextSection}
-Tienes 4 tipos de escena:
-- "title": Inicio impactante. Requiere 'text1' y 'text2' (máximo 10 letras cada uno, solo mayúsculas).
-- "image_text": Imagen de IA con IDEAS CLAVE superpuestas. Requiere:
-    'text': título de la escena (max 20 letras)
-    'image_prompt': prompt detallado en inglés (neo-brutalist, 8k, vertical). IMPORTANTE: NO uses la palabra "brain" ni "human" en el prompt, usa conceptos como "mind", "neural network", "computational connections", "digital grid" o "cybernetic network" para evitar que el filtro de seguridad de Nvidia/Stable Diffusion bloquee la imagen.
-    'key_points': array de EXACTAMENTE 3 frases cortas e impactantes en español (max 6 palabras cada una).
-      DEBEN ser datos concretos del tema del día, no frases genéricas.
-- "big_percentage": Estadística gigante. Requiere 'number' (1-99 REAL del tema) y 'text' (max 20 letras).
-- "cta": Cierre. Solo requiere 'text' (frase de 3-5 palabras).
+Tienes 4 tipos de escena (debes crear exactamente 5 escenas en este orden):
+1. "title": Inicio impactante. Requiere:
+   - 'text1' y 'text2' (máximo 12 letras cada uno, mayúsculas).
+   - 'tag': frase corta de contexto (ej: "✦ INTELIGENCIA ARTIFICIAL ✦").
+   - 'voice_text': frase hablada exacta (12-16 palabras en español neutro de locutor profesional).
+   - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
+2. "image_text": Imagen del artículo con IDEAS CLAVE superpuestas. Requiere:
+   - 'title': titular de la escena (máx 22 letras, mayúsculas).
+   - 'key_points': array de EXACTAMENTE 3 frases de impacto (máx 5 palabras cada una).
+   - 'voice_text': frase hablada exacta que menciona los 3 puntos (15-20 palabras).
+   - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
+3. "big_percentage": Estadística gigante del mercado. Requiere:
+   - 'number': porcentaje numérico real (1-99).
+   - 'label': texto descriptivo de la cifra (máx 20 letras).
+   - 'voice_text': frase hablada exacta explicando la estadística (12-16 palabras).
+   - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
+4. "image_text": Segunda imagen / revelación estratégica. Requiere:
+   - 'title': titular de impacto (máx 22 letras, mayúsculas).
+   - 'voice_text': frase hablada exacta de reflexión o estrategia (12-16 palabras).
+   - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
+5. "cta": Cierre y llamado a la acción. Requiere:
+   - 'headline': titular de cierre (ej: "¿LISTO PARA DOMINAR?").
+   - 'sub': bajada explicativa (ej: "Tu talento amplificado con agentes de IA.").
+   - 'btn': "TALENTOCONTARIFA.LAT".
+   - 'voice_text': frase de cierre invitando a visitar talentocontarifa.lat (12-16 palabras).
+   - 'subtitle': subtítulo corto (ej: "Visita hoy talentocontarifa.lat y transforma tu futuro.").
 
-Reglas de Storytelling Obligatorias:
-1. Las escenas DEBEN seguir un hilo lógico (Gancho -> Problema/Dato -> Solución/IA -> Cierre). NO las mezcles al azar.
-2. "script": guion hablado en español, 55-65 palabras. Debe ser contundente, contando una historia o revelando una verdad basada en el contexto. Las visuales deben coincidir con la narrativa del guion.
-3. Los datos (porcentajes, key_points) deben estar directamente conectados al mensaje principal.
-4. "theme_color": elige aleatoriamente entre: #CCFF00, #FF00FF, #00FFFF, #FF3300, #00FF66
-5. "layout_type": elige entre: "neo_brutalist" (estilo CRT, glitch y cajas gruesas), "minimal_clean" (diseño moderno, elegante, sin glitches, bordes redondeados) o "glassmorphism" (efecto cristal con fondo desenfocado y brillos premium de neón).
-6. NO definas 'durationInFrames'.
+Reglas Obligatorias:
+1. "theme_color": elige entre: #FF3300, #CCFF00, #00FFFF, #FF00FF, #00FF66
+2. Cada escena DEBE tener su propio 'voice_text' sincronizado con el contenido visual mostrado.
 
 Responde ÚNICAMENTE con JSON válido:
 {
   "theme_color": "#FF3300",
   "layout_type": "neo_brutalist",
-  "script": "El guion coherente de 55-65 palabras con un mensaje fuerte...",
   "scenes": [
-    { "type": "title", "text1": "EL FIN", "text2": "DEL SEO" },
-    { "type": "big_percentage", "number": 80, "text": "Caída de tráfico" },
-    {
-      "type": "image_text",
-      "text": "LA SOLUCIÓN",
-      "image_prompt": "Neon brutalist robot working fast in a cyberpunk office...",
-      "key_points": ["IA Generativa domina", "Agentes autónomos", "Eficiencia total"]
-    },
-    { "type": "cta", "text": "Adáptate hoy" }
+    { "type": "title", "text1": "AGENTES IA", "text2": "NUEVA ERA", "tag": "✦ REVOLUCIÓN TECNOLÓGICA ✦", "voice_text": "¡Atención emprendedor! Los agentes de inteligencia artificial llegaron para cambiar todas las reglas del juego.", "subtitle": "¡Atención emprendedor! Los agentes de IA cambiaron las reglas." },
+    { "type": "image_text", "title": "AUTOMATIZACIÓN EXTREMA", "key_points": ["Multiplican tu alcance", "Operan 24 horas continuas", "Reducen costos operativos"], "voice_text": "Automatización extrema: multiplican tu alcance, operan veinticuatro siete y reducen tus costos operativos.", "subtitle": "Automatización extrema: multiplican tu alcance y operan 24/7." },
+    { "type": "big_percentage", "number": 85, "label": "Empresas Adaptadas", "voice_text": "El ochenta y cinco por ciento de las empresas líderes en el mercado ya integraron agentes autónomos a sus equipos.", "subtitle": "El 85% de las empresas líderes ya integraron agentes autónomos." },
+    { "type": "image_text", "title": "COBRA POR TU VALOR", "voice_text": "Quienes dominan esta tecnología no compiten por precio: cobran por el verdadero valor de su talento.", "subtitle": "No compitas por precio: cobra por el valor de tu talento." },
+    { "type": "cta", "headline": "¿LISTO PARA DOMINAR?", "sub": "Tu talento amplificado con agentes de IA.", "btn": "TALENTOCONTARIFA.LAT", "voice_text": "¿Listo para escalar tu negocio? Visita hoy mismo talento con tarifa punto lat y transforma tu futuro.", "subtitle": "Visita hoy talentocontarifa.lat y transforma tu futuro." }
   ]
 }`;
 
@@ -429,94 +437,103 @@ function sanitizeTtsText(text) {
     .trim();
 }
 
-async function generateVoice(script) {
-  // El audio completo = guion de Gemini + firma de IA siempre fija
-  const combined = script.trim() + '. ' + AI_SIGNATURE_AUDIO;
-  const fullScript = sanitizeTtsText(combined);
-  const audioPath = path.join(__dirname, 'public', 'news_voice.mp3');
+async function synthesizeSnippet(text, targetPath) {
+  const clean = sanitizeTtsText(text);
 
-  try {
-    console.log(`\n🎙️ [2/4] Generando voz con ElevenLabs (voz: ${ELEVENLABS_VOICE_ID})...`);
-    console.log(`   Script optimizado para lectura (${fullScript.split(' ').length} palabras)`);
-
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`,
-      {
-        method: 'POST',
-        headers: {
-          'xi-api-key': ELEVENLABS_API_KEY,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: fullScript,
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: {
-            stability: 0.65,
-            similarity_boost: 0.85,
-            style: 0.0,
-            use_speaker_boost: true,
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`ElevenLabs error: ${response.status} — ${err}`);
-    }
-
-    const audioBuffer = await response.arrayBuffer();
-    fs.writeFileSync(audioPath, Buffer.from(audioBuffer));
-    console.log(`✅ Audio ElevenLabs guardado.`);
-  } catch (error) {
-    console.warn(`\n⚠️ ADVERTENCIA: Error en ElevenLabs: ${error.message}`);
-    console.warn(`📢 Iniciando fallback a Google TTS (Gratuito)...`);
-
+  // 1. ElevenLabs si hay API key
+  if (ELEVENLABS_API_KEY) {
     try {
-      const base64s = await googleTTS.getAllAudioBase64(fullScript, {
-        lang: 'es',
-        slow: false,
-        host: 'https://translate.google.com',
-        timeout: 10000,
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`, {
+        method: 'POST',
+        headers: { 'xi-api-key': ELEVENLABS_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: clean,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: { stability: 0.65, similarity_boost: 0.85 }
+        })
       });
-
-      const buffer = Buffer.concat(base64s.map(chunk => Buffer.from(chunk.base64, 'base64')));
-      fs.writeFileSync(audioPath, buffer);
-      console.log(`✅ Audio de Fallback (Google TTS) guardado exitosamente.`);
-    } catch (ttsError) {
-      console.error(`❌ Error crítico en fallback de Google TTS:`, ttsError.message);
-      throw error; // Re-lanzamos el error de ElevenLabs original si el fallback también falla
+      if (response.ok) {
+        const buffer = await response.arrayBuffer();
+        fs.writeFileSync(targetPath, Buffer.from(buffer));
+        return;
+      }
+    } catch (e) {
+      console.warn(`⚠️ ElevenLabs error en snippet: ${e.message}`);
     }
   }
 
-  // Medir duración REAL del MP3 generado
-  const durationSeconds = await getAudioDurationInSeconds(audioPath);
-  const totalFrames = Math.ceil(durationSeconds * FPS) + 30; // +30 frames (1 seg) de cola al final
+  // 2. edge-tts (voz neuronal es-MX-JorgeNeural, gratuita y de alta fidelidad)
+  try {
+    const { execSync } = require('child_process');
+    const escaped = clean.replace(/"/g, '\\"');
+    execSync(`python -m edge_tts --voice "es-MX-JorgeNeural" --rate "+6%" --text "${escaped}" --write-media "${targetPath}"`, { stdio: 'pipe' });
+    if (fs.existsSync(targetPath) && fs.statSync(targetPath).size > 1000) {
+      return;
+    }
+  } catch (edgeErr) {
+    // Si falla edge-tts, continuar al fallback
+  }
 
-  console.log(`⏱️ Duración detectada: ${durationSeconds.toFixed(2)}s → ${totalFrames} frames`);
-  return { audioPath, durationSeconds, totalFrames };
+  // 3. Fallback a Google TTS
+  const base64s = await googleTTS.getAllAudioBase64(clean, { lang: 'es', slow: false });
+  const buffer = Buffer.concat(base64s.map(chunk => Buffer.from(chunk.base64, 'base64')));
+  fs.writeFileSync(targetPath, buffer);
 }
 
-// ─────────────────────────────────────────
-// 3. Distribuir frames entre escenas según peso relativo
-// ─────────────────────────────────────────
-function distributeFrames(scenes, totalFrames) {
-  // Pesos base por tipo de escena
-  const weights = { title: 1, image_text: 2, big_percentage: 1.5, cta: 1.5 };
-  const totalWeight = scenes.reduce((acc, s) => acc + (weights[s.type] || 1), 0);
+async function generateVoice(scenes) {
+  const tempDir = path.join(__dirname, 'temp_voice');
+  if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
-  let framesLeft = totalFrames;
-  const distributed = scenes.map((scene, i) => {
-    const isLast = i === scenes.length - 1;
-    const frames = isLast
-      ? framesLeft
-      : Math.round((weights[scene.type] || 1) / totalWeight * totalFrames);
-    framesLeft -= frames;
-    return { ...scene, durationInFrames: Math.max(frames, 60) }; // mínimo 60 frames = 2 seg
-  });
+  const sceneFiles = [];
+  let currentTime = 0;
+  const timelineScenes = [];
 
-  console.log(`✅ Frames distribuidos:`, distributed.map(s => `${s.type}:${s.durationInFrames}`).join(' | '));
-  return distributed;
+  console.log(`\n🎙️ [2/4] Generando locución sincronizada escena por escena...`);
+
+  for (let idx = 0; idx < scenes.length; idx++) {
+    const sc = scenes[idx];
+    const textToSpeak = sc.voice_text || sc.text || `${sc.text1 || ''} ${sc.text2 || ''}`;
+    const snipPath = path.join(tempDir, `scene_${idx + 1}.mp3`);
+    await synthesizeSnippet(textToSpeak, snipPath);
+    const dur = await getAudioDurationInSeconds(snipPath);
+    sceneFiles.push(snipPath);
+
+    const timing = {
+      ...sc,
+      start: Number(currentTime.toFixed(3)),
+      audio_duration: Number(dur.toFixed(3)),
+      end: Number((currentTime + dur).toFixed(3))
+    };
+    timelineScenes.push(timing);
+    console.log(`  ✓ Escena ${idx + 1}: [${timing.start}s -> ${timing.end}s] (${dur.toFixed(2)}s) - "${sc.subtitle || textToSpeak.substring(0, 40)}"`);
+    currentTime += dur + 0.15; // 150ms pausa natural entre escenas
+  }
+
+  const totalDurationSec = Math.ceil(currentTime + 0.5);
+  const totalFrames = totalDurationSec * FPS;
+
+  // Concatenar snippets de audio en news_voice.mp3
+  const listFile = path.join(tempDir, 'concat_list.txt');
+  fs.writeFileSync(listFile, sceneFiles.map(f => `file '${path.resolve(f).replace(/\\/g, '/')}'`).join('\n'));
+  const finalAudioPath = path.join(__dirname, 'public', 'news_voice.mp3');
+  const { execSync } = require('child_process');
+  execSync(`ffmpeg -y -f concat -safe 0 -i "${listFile}" -c copy "${finalAudioPath}"`, { stdio: 'pipe' });
+
+  // Actualizar hyperframes.json con la duración real
+  const hfConfigPath = path.join(__dirname, 'hyperframes.json');
+  if (fs.existsSync(hfConfigPath)) {
+    try {
+      const hfConfig = JSON.parse(fs.readFileSync(hfConfigPath, 'utf-8'));
+      hfConfig.compositions[0].duration = totalDurationSec;
+      fs.writeFileSync(hfConfigPath, JSON.stringify(hfConfig, null, 2));
+      console.log(`✅ hyperframes.json actualizado con duración: ${totalDurationSec}s`);
+    } catch (e) {
+      console.warn(`⚠️ Error actualizando hyperframes.json:`, e.message);
+    }
+  }
+
+  console.log(`⏱️ Audio maestro ensamblado: ${currentTime.toFixed(2)}s -> ${totalFrames} frames`);
+  return { finalAudioPath, totalDurationSec, totalFrames, timelineScenes };
 }
 
 // ─────────────────────────────────────────
@@ -589,26 +606,22 @@ async function main() {
     // PASO 1: Gemini genera el contenido
     const data = await generateScriptAndScenes();
 
-    // PASO 2: ElevenLabs genera la voz y medimos duración real
-    const { totalFrames } = await generateVoice(data.script);
+    // PASO 2: Generar voz sincronizada por escenas y medir timestamps exactos
+    const { totalFrames, timelineScenes, totalDurationSec } = await generateVoice(data.scenes);
 
-    // PASO 3: Distribuir frames reales entre las escenas
-    const scenesWithFrames = distributeFrames(data.scenes, totalFrames);
-
-    // PASO 4: Guardar el JSON final (con frames reales) para Remotion y news_data.js para HyperFrames
-    const totalDurationSec = Math.ceil(totalFrames / FPS);
+    // PASO 3: Guardar el JSON final para Remotion y news_data.js para HyperFrames
     const newsData = {
       theme_color: data.theme_color,
       layout_type: data.layout_type || 'neo_brutalist',
-      script: data.script,
-      scenes: scenesWithFrames,
+      scenes: timelineScenes,
       total_duration_sec: totalDurationSec,
+      total_frames: totalFrames
     };
     const jsonPath = path.join(__dirname, 'src', 'news_data.json');
     fs.writeFileSync(jsonPath, JSON.stringify(newsData, null, 2));
     const jsPath = path.join(__dirname, 'news_data.js');
     fs.writeFileSync(jsPath, `window.NEWS_DATA = ${JSON.stringify(newsData, null, 2)};\n`);
-    console.log(`\n✅ [4/4] news_data.json y news_data.js actualizados (${totalFrames} frames totales)`);
+    console.log(`\n✅ [3/4] news_data.json y news_data.js actualizados (${totalFrames} frames totales, ${totalDurationSec}s)`);
 
     // Guardar el link procesado en el historial de noticias utilizadas para video
     if (processedNewsLink) {

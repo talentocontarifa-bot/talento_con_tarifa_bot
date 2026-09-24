@@ -1,35 +1,63 @@
 {
   "theme_color": "#FF3300",
-  "script": "Emprendedor, el juego ha cambiado. Los agentes de IA no son el futuro, son hoy. Automatizan tareas, analizan mercados, incluso cierran ventas. ¿Tu negocio está listo? La competencia ya lo está usando. No te quedes atrás. Es tiempo de evolucionar, de dominar las nuevas reglas. Tu tarifa, tu talento, amplificado por IA. Conéctate con el poder de la inteligencia artificial. Talento con Tarifa: ¡Revoluciona tu negocio!",
+  "layout_type": "neo_brutalist",
+  "total_duration_sec": 36,
+  "total_frames": 1080,
   "scenes": [
     {
-      "type": "title",
-      "text1": "IA AGENTES",
-      "text2": "REVOLUCIÓN",
-      "durationInFrames": 150
+      "id": "scene_1",
+      "title1": "AGENTES IA",
+      "title2": "NUEVA ERA",
+      "tag": "✦ REVOLUCIÓN TECNOLÓGICA ✦",
+      "voice_text": "¡Atención emprendedor! Los agentes de inteligencia artificial llegaron para cambiar todas las reglas del juego.",
+      "subtitle": "¡Atención emprendedor! Los agentes de IA llegaron para cambiar las reglas.",
+      "start": 0.0,
+      "audio_duration": 7.368,
+      "end": 7.368
     },
     {
-      "type": "image_text",
-      "text": "Automatización Extrema",
-      "image_prompt": "A futuristic glowing neon orange abstract neural network forming into a digital assistant or agent figure, ultra-realistic, deep focus, cybernetic, neo-brutalist aesthetic, 8k, highly detailed, sharp edges, dark background, dynamic lighting.",
-      "durationInFrames": 200
+      "id": "scene_2",
+      "title": "AUTOMATIZACIÓN EXTREMA",
+      "key_points": [
+        "Multiplican tu alcance",
+        "Operan 24 horas continuas",
+        "Reducen costos operativos"
+      ],
+      "voice_text": "Automatización extrema: multiplican tu alcance, operan veinticuatro siete y reducen tus costos operativos.",
+      "subtitle": "Automatización extrema: multiplican tu alcance y operan 24/7.",
+      "start": 7.518,
+      "audio_duration": 7.32,
+      "end": 14.838
     },
     {
-      "type": "big_percentage",
+      "id": "scene_3",
       "number": 85,
-      "text": "Empresas Adaptadas",
-      "durationInFrames": 200
+      "label": "Empresas Adaptadas",
+      "voice_text": "El ochenta y cinco por ciento de las empresas líderes en el mercado ya integraron agentes autónomos a sus equipos.",
+      "subtitle": "El 85% de las empresas líderes ya integraron agentes autónomos.",
+      "start": 14.988,
+      "audio_duration": 6.864,
+      "end": 21.852
     },
     {
-      "type": "image_text",
-      "text": "¡No te quedes atrás!",
-      "image_prompt": "A lone entrepreneur silhouette standing at a digital crossroads, one path glowing vibrant neon orange towards a sprawling futuristic city, the other dark and fading into obsolescence. Neo-brutalist architecture elements, dramatic volumetric lighting, 8k, ultra-detailed, cinematic composition.",
-      "durationInFrames": 200
+      "id": "scene_4",
+      "title": "COBRA POR TU VALOR",
+      "voice_text": "Quienes dominan esta tecnología no compiten por precio: cobran por el verdadero valor de su talento.",
+      "subtitle": "No compitas por precio: cobra por el valor de tu talento.",
+      "start": 22.002,
+      "audio_duration": 6.192,
+      "end": 28.194
     },
     {
-      "type": "cta",
-      "text": "¿Listo para dominar?",
-      "durationInFrames": 150
+      "id": "scene_5",
+      "headline": "¿LISTO PARA DOMINAR?",
+      "sub": "Tu talento amplificado con agentes de IA.",
+      "btn": "TALENTOCONTARIFA.LAT",
+      "voice_text": "¿Listo para escalar tu negocio? Visita hoy mismo talento con tarifa punto lat y transforma tu futuro.",
+      "subtitle": "Visita hoy talentocontarifa.lat y transforma tu futuro.",
+      "start": 28.344,
+      "audio_duration": 7.152,
+      "end": 35.496
     }
   ]
 }
