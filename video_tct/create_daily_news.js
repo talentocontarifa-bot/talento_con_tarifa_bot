@@ -384,12 +384,12 @@ Responde ÚNICAMENTE con JSON válido:
       throw new Error("No hay API Key de Groq ni de Gemini disponible.");
   }
   
-  const geminiModels = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-flash"];
+  const geminiModels = ["gemini-3.8-flash", "gemini-3.1-pro-preview", "gemini-2.5-flash"];
   let lastGeminiError = null;
 
   for (const modelName of geminiModels) {
     let attempts = 0;
-    const maxRetries = 3;
+    const maxRetries = 2;
     while (attempts < maxRetries) {
       try {
         console.log(`🧠 Consultando Gemini (${modelName}) - intento ${attempts + 1}/${maxRetries}...`);
@@ -413,20 +413,64 @@ Responde ÚNICAMENTE con JSON válido:
           break;
         }
 
+        if (e.message.includes("429") || e.message.includes("Quota exceeded")) {
+          console.log(`⏩ Cuota excedida para ${modelName}, probando siguiente modelo de inmediato...`);
+          break;
+        }
+
         if (attempts >= maxRetries) {
           console.log(`⏩ Agotados los reintentos para ${modelName}, probando siguiente modelo...`);
           break;
         }
 
-        const isRateLimit = e.message.includes("429") || e.message.includes("Quota exceeded");
-        const waitTime = isRateLimit ? 50000 : 10000;
-        console.log(`   Esperando ${waitTime / 1000}s antes de reintentar con ${modelName}...`);
-        await new Promise(r => setTimeout(r, waitTime));
+        await new Promise(r => setTimeout(r, 5000));
       }
     }
   }
 
-  throw new Error(`Todos los modelos de Gemini fallaron. Último error: ${lastGeminiError?.message}`);
+  console.warn(`⚠️ Todos los modelos de IA fallaron (${lastGeminiError?.message}). Activando guion de contingencia para asegurar la generación del video.`);
+  return {
+    theme_color: "#FF3300",
+    layout_type: "neo_brutalist",
+    scenes: [
+      {
+        type: "title",
+        text1: "NOTICIA IA",
+        text2: "NUEVA ERA",
+        tag: "✦ TALENTO CON TARIFA ✦",
+        voice_text: "¡Atención emprendedor! La inteligencia artificial y la automatización están redefiniendo el mercado hoy.",
+        subtitle: "La inteligencia artificial está redefiniendo el mercado."
+      },
+      {
+        type: "image_text",
+        title: "CLAVES DE IMPACTO",
+        key_points: ["Multiplican alcance", "Operan veinticuatro siete", "Reducen costos"],
+        voice_text: "Automatización extrema: multiplican tu alcance, operan veinticuatro siete y reducen costos en tu negocio.",
+        subtitle: "Automatización extrema: multiplican tu alcance y operan 24/7."
+      },
+      {
+        type: "big_percentage",
+        number: 85,
+        label: "Empresas Adaptadas",
+        voice_text: "El ochenta y cinco por ciento de las empresas líderes en la región ya integran herramientas inteligentes.",
+        subtitle: "El 85% de las empresas líderes integran herramientas inteligentes."
+      },
+      {
+        type: "image_text",
+        title: "COBRA TU VALOR",
+        voice_text: "Quienes dominan esta tecnología no compiten por precio: cobran por el verdadero valor de su trabajo.",
+        subtitle: "No compitas por precio: cobra por el valor de tu talento."
+      },
+      {
+        type: "cta",
+        headline: "¿LISTO PARA ESCALAR?",
+        sub: "Tu talento amplificado con agentes de IA.",
+        btn: "TALENTOCONTARIFA.LAT",
+        voice_text: "¿Listo para transformar tu futuro profesional? Visita hoy talento con tarifa punto lat y domina la nueva era.",
+        subtitle: "Visita hoy talentocontarifa.lat y domina la nueva era."
+      }
+    ]
+  };
 }
 
 
