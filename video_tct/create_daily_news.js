@@ -334,11 +334,11 @@ Responde ÚNICAMENTE con JSON válido:
 
   // 1. Intentar con Groq si está disponible
   if (process.env.GROQ_API_KEY) {
-      console.log("🧠 Intentando generar guion con Groq (Llama 3.3 70B)...");
-      const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+      console.log("🧠 Intentando generar guion con Groq...");
+      const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"];
       for (const modelName of models) {
           let attempts = 0;
-          while (attempts < 3) {
+          while (attempts < 2) {
               try {
                   const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                       method: "POST",
@@ -369,6 +369,9 @@ Responde ÚNICAMENTE con JSON válido:
               } catch (e) {
                   attempts++;
                   console.log(`⚠️ Intento ${attempts} con Groq (${modelName}) fallido: ${e.message}`);
+                  if (e.message.includes("does not exist") || e.message.includes("do not have access")) {
+                      break;
+                  }
                   await new Promise(r => setTimeout(r, 2000));
               }
           }
@@ -376,37 +379,54 @@ Responde ÚNICAMENTE con JSON válido:
       console.log("❌ Todos los intentos con Groq fallaron. Pasando a Gemini como respaldo...");
   }
 
-  // 2. Respaldo a Gemini
+  // 2. Respaldo a Gemini con múltiples modelos y reintentos robustos
   if (!genAI) {
       throw new Error("No hay API Key de Groq ni de Gemini disponible.");
   }
-  console.log("🧠 Usando Gemini (gemini-2.5-flash) para generar guion...");
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
-    generationConfig: { responseMimeType: "application/json" }
-  });
+  
+  const geminiModels = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-flash"];
+  let lastGeminiError = null;
 
-  let attempts = 0;
-  const maxRetries = 4;
-  while (attempts < maxRetries) {
-    try {
-      const result = await model.generateContent(prompt);
-      const data = JSON.parse(result.response.text());
-      const sampleText = data.script || data.scenes?.[0]?.voice_text || '';
-      console.log(`✅ Guion: "${sampleText.substring(0, 80)}..."`);
-      console.log(`✅ Color del día: ${data.theme_color} | Escenas: ${data.scenes?.length || 0}`);
-      return data;
-    } catch (e) {
-      attempts++;
-      console.warn(`⚠️ Intento ${attempts} con Gemini fallido: ${e.message}`);
-      if (attempts >= maxRetries) {
-        throw e;
+  for (const modelName of geminiModels) {
+    let attempts = 0;
+    const maxRetries = 3;
+    while (attempts < maxRetries) {
+      try {
+        console.log(`🧠 Consultando Gemini (${modelName}) - intento ${attempts + 1}/${maxRetries}...`);
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: { responseMimeType: "application/json" }
+        });
+        const result = await model.generateContent(prompt);
+        const data = JSON.parse(result.response.text());
+        const sampleText = data.script || data.scenes?.[0]?.voice_text || '';
+        console.log(`✅ Guion generado exitosamente con Gemini (${modelName}): "${sampleText.substring(0, 80)}..."`);
+        console.log(`✅ Color del día: ${data.theme_color} | Escenas: ${data.scenes?.length || 0}`);
+        return data;
+      } catch (e) {
+        attempts++;
+        lastGeminiError = e;
+        console.warn(`⚠️ Intento ${attempts} con ${modelName} fallido: ${e.message}`);
+        
+        if (e.message.includes("404") || e.message.includes("not found")) {
+          console.log(`⏩ Modelo ${modelName} no disponible, pasando al siguiente...`);
+          break;
+        }
+
+        if (attempts >= maxRetries) {
+          console.log(`⏩ Agotados los reintentos para ${modelName}, probando siguiente modelo...`);
+          break;
+        }
+
+        const isRateLimit = e.message.includes("429") || e.message.includes("Quota exceeded");
+        const waitTime = isRateLimit ? 50000 : 10000;
+        console.log(`   Esperando ${waitTime / 1000}s antes de reintentar con ${modelName}...`);
+        await new Promise(r => setTimeout(r, waitTime));
       }
-      const waitTime = e.message.includes("429") || attempts > 2 ? 25000 : (attempts * 5000 + 5000);
-      console.log(`   Esperando ${waitTime / 1000}s antes de reintentar con Gemini...`);
-      await new Promise(r => setTimeout(r, waitTime));
     }
   }
+
+  throw new Error(`Todos los modelos de Gemini fallaron. Último error: ${lastGeminiError?.message}`);
 }
 
 
