@@ -23,18 +23,84 @@ const FEEDS = [
   'https://wwwhatsnew.com/feed/'
 ];
 
-// Variable global para guardar el link de la noticia procesada en esta corrida
+// Variables globales para la noticia procesada y sus imágenes reales
 let processedNewsLink = null;
+let extractedArticleImages = [];
 
-const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
-
-if ((!GEMINI_API_KEY && !GROQ_API_KEY) || (!HF_API_KEY && !NVIDIA_API_KEY) || !ELEVENLABS_API_KEY) {
-  console.error("❌ Faltan variables de entorno: (GEMINI_API_KEY o GROQ_API_KEY), (HF_API_KEY o NVIDIA_API_KEY), ELEVENLABS_API_KEY");
+if (!GEMINI_API_KEY && !GROQ_API_KEY) {
+  console.error("❌ Faltan variables de entorno: necesitas GEMINI_API_KEY o GROQ_API_KEY");
   process.exit(1);
+}
+if (!ELEVENLABS_API_KEY) {
+  console.warn("⚠️ ELEVENLABS_API_KEY no encontrado. Se usará Google TTS como fallback.");
 }
 
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 const hf = HF_API_KEY ? new HfInference(HF_API_KEY) : null;
+
+// ─────────────────────────────────────────
+// EXTRAER IMÁGENES REALES DEL ARTÍCULO
+// ─────────────────────────────────────────
+async function extractArticleImages(articleUrl, feedItem, jinaText) {
+  const images = [];
+
+  // 1. De enclosure / media:content en el feed RSS
+  if (feedItem?.enclosure?.url && feedItem.enclosure.url.startsWith('http')) {
+    images.push(feedItem.enclosure.url);
+  }
+  if (feedItem?.['media:content']?.['$']?.url && feedItem['media:content']['$'].url.startsWith('http')) {
+    images.push(feedItem['media:content']['$'].url);
+  }
+
+  // 2. Extraer de las imágenes markdown de Jina Reader (![alt](url))
+  if (jinaText) {
+    const markdownImgRegex = /!\[.*?\]\((https?:\/\/[^\s\)]+)\)/g;
+    let match;
+    while ((match = markdownImgRegex.exec(jinaText)) !== null) {
+      const imgUrl = match[1];
+      if (!images.includes(imgUrl) && !imgUrl.includes('.svg') && !imgUrl.includes('avatar') && !imgUrl.includes('pixel') && !imgUrl.includes('icon')) {
+        images.push(imgUrl);
+      }
+    }
+  }
+
+  // 3. Consultar la página web directamente para extraer og:image y twitter:image
+  if (articleUrl) {
+    try {
+      const res = await axios.get(articleUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36' },
+        timeout: 8000
+      });
+      const html = res.data;
+      if (typeof html === 'string') {
+        const ogMatch = html.match(/<meta[^>]+property=["']og:image(?::secure_url)?["'][^>]+content=["']([^"']+)["']/i) ||
+                        html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image(?::secure_url)?["']/i) ||
+                        html.match(/<meta[^>]+name=["']twitter:image(?::src)?["'][^>]+content=["']([^"']+)["']/i);
+        if (ogMatch && ogMatch[1] && ogMatch[1].startsWith('http')) {
+          const ogUrl = ogMatch[1];
+          if (!images.includes(ogUrl)) {
+            images.unshift(ogUrl);
+          }
+        }
+
+        // Buscar imágenes de contenido dentro de <img>
+        const imgTags = [...html.matchAll(/<img[^>]+src=["'](https?:\/\/[^"']+\.(?:jpg|jpeg|png|webp)[^"']*)["']/gi)];
+        for (const t of imgTags) {
+          const u = t[1];
+          if (!images.includes(u) && !u.includes('logo') && !u.includes('icon') && !u.includes('avatar') && !u.includes('pixel') && !u.includes('advert')) {
+            images.push(u);
+          }
+        }
+      }
+    } catch (e) {
+      console.log(`⚠️ No se pudo obtener HTML directo para og:image: ${e.message}`);
+    }
+  }
+
+  console.log(`📸 Imágenes reales encontradas para el artículo: ${images.length}`);
+  images.slice(0, 3).forEach((img, idx) => console.log(`   [${idx + 1}] ${img.substring(0, 80)}...`));
+  return images;
+}
 
 // ─────────────────────────────────────────
 // 0. QUEUE/RSS — Lee el contexto del post programado del día o feeds RSS
@@ -95,6 +161,9 @@ async function getTodaysContext() {
           const contextText = (chosen.message || '').substring(0, 600); // máx 600 chars
           console.log(`📋 Contexto reciente encontrado en queue.json (ID: ${chosen.id}): "${contextText.substring(0, 100)}..."`);
           processedNewsLink = chosen.link || '';
+          if (chosen.link) {
+            extractedArticleImages = await extractArticleImages(chosen.link, null, chosen.message);
+          }
           return { message: contextText, link: chosen.link || '' };
         }
       }
@@ -165,6 +234,7 @@ async function getTodaysContext() {
     const response = await axios.get(`https://r.jina.ai/${articleUrl}`, { timeout: 15000 });
     const scrapedText = response.data || '';
     processedNewsLink = articleUrl;
+    extractedArticleImages = await extractArticleImages(articleUrl, selectedItem, scrapedText);
     return {
       message: scrapedText.substring(0, 10000),
       link: articleUrl
@@ -180,6 +250,7 @@ async function getTodaysContext() {
       if (parsed.success && parsed.text && parsed.text.length > 50) {
         console.log(`✅ Scrapling extrajo exitosamente el contenido.`);
         processedNewsLink = articleUrl;
+        extractedArticleImages = await extractArticleImages(articleUrl, selectedItem, null);
         return {
           message: parsed.text.substring(0, 10000),
           link: articleUrl
@@ -190,6 +261,7 @@ async function getTodaysContext() {
     }
     
     processedNewsLink = articleUrl;
+    extractedArticleImages = await extractArticleImages(articleUrl, selectedItem, null);
     return {
       message: `${selectedItem.title}\n\n${selectedItem.contentSnippet || selectedItem.content || ''}`,
       link: articleUrl
@@ -448,127 +520,62 @@ function distributeFrames(scenes, totalFrames) {
 }
 
 // ─────────────────────────────────────────
-// 4. GENERAR IMÁGENES (NVIDIA FLUX / Hugging Face Fallback)
+// 4. DESCARGAR IMÁGENES REALES DEL ARTÍCULO
 // ─────────────────────────────────────────
 async function generateImages(scenes) {
-  console.log(`\n🎨 [3/4] Generando imágenes para el video...`);
+  console.log(`\n📸 [3/4] Procesando imágenes reales de la nota para el video...`);
 
-  const nvapiKey = process.env.NVIDIA_API_KEY;
-  const hfToken = process.env.HF_API_KEY;
+  const imageScenes = scenes
+    .map((scene, index) => ({ scene, index }))
+    .filter(item => item.scene.type === 'image_text');
 
-  for (let i = 0; i < scenes.length; i++) {
-    const scene = scenes[i];
-    if (scene.type !== 'image_text' || !scene.image_prompt) continue;
+  console.log(`   Se requieren ${imageScenes.length} imágenes para las escenas del video.`);
+  console.log(`   Imágenes reales extraídas disponibles: ${extractedArticleImages.length}`);
 
-    const filename = `scene_${i}.png`;
-    const fullPrompt = scene.image_prompt + ', neo-brutalist, high contrast, dramatic lighting, 9:16 vertical';
-    console.log(`  → Imagen ${filename}: "${fullPrompt.substring(0, 60)}..."`);
+  for (let k = 0; k < imageScenes.length; k++) {
+    const { index } = imageScenes[k];
+    const filename = `scene_${index}.png`;
+    const targetPath = path.join(__dirname, 'public', filename);
+    const candidateUrl = extractedArticleImages[k] || extractedArticleImages[0];
 
-    let buffer;
-    let success = false;
-
-    // 1. Intentar con Nvidia API (FLUX.1-schnell)
-    if (nvapiKey) {
+    let downloaded = false;
+    if (candidateUrl) {
       try {
-        console.log("    🤖 Generando con NVIDIA API...");
-        
-        // Limpiar el prompt de palabras prohibidas por el filtro de seguridad (ej. brain, human)
-        const nvidiaPrompt = fullPrompt
-          .replace(/\bbrain\b/gi, 'mind')
-          .replace(/\bhuman\b/gi, 'digital');
-
-        const response = await axios.post(
-          "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell",
-          {
-            prompt: nvidiaPrompt,
-            height: 1024,
-            width: 1024,
-            steps: 4,
-            seed: 0
-          },
-          {
-            headers: {
-              "Authorization": `Bearer ${nvapiKey}`,
-              "accept": "application/json",
-              "Content-Type": "application/json"
-            },
-            timeout: 30000
+        console.log(`  → Descargando imagen real para ${filename}: ${candidateUrl.substring(0, 80)}...`);
+        const response = await axios.get(candidateUrl, {
+          responseType: 'arraybuffer',
+          timeout: 20000,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
           }
-        );
-
-        if (response.data && response.data.artifacts && response.data.artifacts[0]) {
-          const tempBuffer = Buffer.from(response.data.artifacts[0].base64, 'base64');
-          // Verificar si es una imagen negra/vacía debido a filtros de seguridad o error (tamaño menor a 30KB)
-          if (tempBuffer.length < 30000) {
-            throw new Error(`La API de Nvidia devolvió una imagen vacía o negra (tamaño: ${tempBuffer.length} bytes). Posible filtro de seguridad.`);
-          }
-          buffer = tempBuffer;
-          success = true;
-          console.log(`    ✅ Generada con Nvidia API.`);
-        } else {
-          throw new Error("Formato de respuesta de Nvidia inesperado.");
-        }
-      } catch (error) {
-        console.error("    ⚠️ Error con Nvidia API:", error.message);
-        if (hfToken) {
-          console.log("    🔄 Intentando fallback con Hugging Face...");
-        }
-      }
-    }
-
-    // 2. Fallback a Hugging Face Stable Diffusion XL
-    if (!success && hfToken && hf) {
-      try {
-        console.log("    🎨 Generando con Hugging Face (Stable Diffusion)...");
-        const blob = await hf.textToImage({
-          model: 'stabilityai/stable-diffusion-xl-base-1.0',
-          inputs: fullPrompt,
-          parameters: { width: 768, height: 1344 }
         });
-        const arrayBuffer = await blob.arrayBuffer();
-        buffer = Buffer.from(arrayBuffer);
-        success = true;
-        console.log(`    ✅ Generada con Hugging Face.`);
-      } catch (error) {
-        console.error("    ❌ Error con Hugging Face:", error.message);
+        const buffer = Buffer.from(response.data);
+        if (buffer.length > 5000) {
+          fs.writeFileSync(targetPath, buffer);
+          downloaded = true;
+          console.log(`    ✅ ${filename} descargada y guardada con éxito (${(buffer.length / 1024).toFixed(1)} KB).`);
+        } else {
+          console.warn(`    ⚠️ Imagen descartada por ser demasiado pequeña o vacía (${buffer.length} bytes).`);
+        }
+      } catch (err) {
+        console.warn(`    ⚠️ Error descargando imagen real (${candidateUrl}): ${err.message}`);
       }
     }
 
-    // 3. Fallback a Pollinations.ai (Flux)
-    if (!success) {
-      try {
-        console.log("    🌸 Generando con Pollinations.ai (Flux)...");
-        const response = await axios.get(
-          `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=768&height=1344&model=flux&nologo=true`,
-          { responseType: 'arraybuffer', timeout: 30000 }
-        );
-        buffer = Buffer.from(response.data);
-        success = true;
-        console.log(`    ✅ Generada con Pollinations.ai.`);
-      } catch (error) {
-        console.error("    ❌ Error con Pollinations.ai:", error.message);
-      }
-    }
-
-    if (success && buffer) {
-      fs.writeFileSync(path.join(__dirname, 'public', filename), buffer);
-      console.log(`    💾 ${filename} guardada.`);
-    } else {
-      console.error(`    ❌ No se pudo generar la imagen para la escena ${i}`);
-      const filePath = path.join(__dirname, 'public', filename);
-      if (!fs.existsSync(filePath)) {
-        console.log(`    ⚠️ El archivo ${filename} no existe. Buscando fallback local...`);
-        const fallbackSrc = path.join(__dirname, 'public', 'agent_robot.png');
+    if (!downloaded) {
+      console.log(`    ℹ️ Usando imagen de respaldo local para ${filename}...`);
+      if (!fs.existsSync(targetPath)) {
+        const fallbackSrc = path.join(__dirname, 'public', k === 0 ? 'agent_robot.png' : 'cerebro.webp');
         if (fs.existsSync(fallbackSrc)) {
-          fs.copyFileSync(fallbackSrc, filePath);
-          console.log(`    💾 Copiado fallback de agent_robot.png a ${filename}.`);
+          fs.copyFileSync(fallbackSrc, targetPath);
+          console.log(`    💾 Copiado fallback local a ${filename}.`);
         } else {
           const emptyPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
-          fs.writeFileSync(filePath, emptyPng);
+          fs.writeFileSync(targetPath, emptyPng);
           console.log(`    💾 Escrito pixel de fallback en ${filename}.`);
         }
       } else {
-        console.log(`    ℹ️ El archivo anterior ${filename} ya existe, se conservará.`);
+        console.log(`    ℹ️ Imagen previa existente conservada en ${filename}.`);
       }
     }
   }

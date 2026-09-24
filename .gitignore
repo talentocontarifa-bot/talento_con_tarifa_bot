@@ -4,4 +4,4 @@ tiktok_tokens.json
 *.token.json
 video_tct/out/
 *.mp4
-
+trending_top10.json
