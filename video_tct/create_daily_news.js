@@ -663,7 +663,7 @@ async function main() {
     }
 
     // PASO 5: Generar imágenes
-    await generateImages(scenesWithFrames);
+    await generateImages(timelineScenes);
 
     console.log('\n🚀 Todo listo. Remotion puede renderizar ahora.');
   } catch (error) {
