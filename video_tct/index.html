@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Talento con Tarifa - Video</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=JetBrains+Mono:wght@700;800&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="./news_data.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --theme-color: #FF3300;
+      }
+      html, body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #000;
+        font-family: 'Montserrat', sans-serif;
+        color: #fff;
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: radial-gradient(circle at 50% 50%, #15151A 0%, #000000 100%);
+      }
+
+      /* SCANLINES CRT EFFECT */
+      .scanlines {
+        position: absolute;
+        inset: 0;
+        z-index: 500;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(0, 0, 0, 0.25) 3px,
+          rgba(0, 0, 0, 0.25) 4px
+        );
+      }
+
+      /* HEADER UI */
+      .header-ui {
+        position: absolute;
+        top: 80px;
+        left: 50px;
+        right: 50px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 600;
+      }
+      .live-badge {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #000;
+        padding: 12px 26px;
+        border: 4px solid var(--theme-color);
+        box-shadow: 6px 6px 0 var(--theme-color);
+      }
+      .live-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: var(--theme-color);
+        box-shadow: 0 0 14px var(--theme-color);
+      }
+      .live-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 22px;
+        font-weight: 800;
+        color: #FFF;
+        letter-spacing: 2px;
+      }
+      .watermark-badge {
+        background: #FFF;
+        padding: 12px 28px;
+        border: 4px solid #000;
+        box-shadow: 6px 6px 0 var(--theme-color);
+        font-size: 24px;
+        font-weight: 900;
+        color: #000;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      /* PROGRESS BAR */
+      .progress-container {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 16px;
+        background: rgba(255, 255, 255, 0.1);
+        z-index: 600;
+      }
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--theme-color);
+        box-shadow: 0 0 15px var(--theme-color);
+      }
+
+      /* SCENE CONTAINERS */
+      .scene {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        pointer-events: none;
+        padding: 60px;
+        z-index: 100;
+      }
+
+      /* SCENE 1: TITLE */
+      #scene-title .title-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: 90%;
+      }
+      .tag-pill {
+        background: var(--theme-color);
+        color: #000;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 26px;
+        font-weight: 800;
+        padding: 12px 30px;
+        letter-spacing: 3px;
+        margin-bottom: 30px;
+        border: 4px solid #FFF;
+        box-shadow: 8px 8px 0 #FFF;
+      }
+      .title-hero-1 {
+        font-size: 80px;
+        font-weight: 900;
+        line-height: 1.05;
+        text-transform: uppercase;
+        color: #FFF;
+        text-shadow: 0 0 30px rgba(255,255,255,0.2);
+      }
+      .title-hero-2 {
+        font-size: 86px;
+        font-weight: 900;
+        line-height: 1.05;
+        text-transform: uppercase;
+        color: var(--theme-color);
+        text-shadow: 0 0 40px rgba(255, 51, 0, 0.6);
+        margin-top: 15px;
+      }
+
+      /* SCENE 2 & 4: IMAGE + TEXT */
+      .image-card {
+        width: 90%;
+        height: 70%;
+        background: #000;
+        border: 8px solid #FFF;
+        box-shadow: 14px 14px 0 var(--theme-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow: hidden;
+        position: relative;
+      }
+      .image-frame {
+        width: 100%;
+        height: 78%;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #111;
+      }
+      .image-content {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .image-caption-bar {
+        width: 100%;
+        height: 22%;
+        background: #000;
+        border-top: 6px solid #FFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 30px;
+        text-align: center;
+      }
+      .caption-text {
+        font-size: 38px;
+        font-weight: 900;
+        color: #FFF;
+        text-transform: uppercase;
+        line-height: 1.2;
+      }
+
+      /* SCENE 3: PERCENTAGE */
+      .percentage-box {
+        width: 90%;
+        background: #000;
+        border: 8px solid var(--theme-color);
+        box-shadow: 16px 16px 0 #FFF;
+        padding: 60px 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .huge-percent {
+        font-size: 160px;
+        font-weight: 900;
+        color: var(--theme-color);
+        text-shadow: 0 0 50px rgba(255, 51, 0, 0.5);
+        line-height: 1;
+        margin-bottom: 20px;
+      }
+      .percent-label {
+        font-size: 44px;
+        font-weight: 900;
+        color: #FFF;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+
+      /* SCENE 5: CTA */
+      .cta-box {
+        width: 90%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .cta-headline {
+        font-size: 74px;
+        font-weight: 900;
+        color: #FFF;
+        text-transform: uppercase;
+        margin-bottom: 25px;
+        line-height: 1.1;
+      }
+      .cta-sub {
+        font-size: 32px;
+        color: #AAA;
+        font-weight: 700;
+        margin-bottom: 60px;
+      }
+      .cta-btn-brutal {
+        background: var(--theme-color);
+        color: #000;
+        border: 8px solid #FFF;
+        box-shadow: 14px 14px 0 #FFF;
+        padding: 24px 50px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 42px;
+        font-weight: 900;
+        letter-spacing: 2px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="15"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- CRT SCANLINES -->
+      <div class="scanlines"></div>
+
+      <!-- HEADER UI -->
+      <div class="header-ui">
+        <div class="live-badge">
+          <div class="live-dot"></div>
+          <span class="live-text">NOTICIAS IA</span>
+        </div>
+        <div class="watermark-badge">
+          Talento con Tarifa
+        </div>
+      </div>
+
+      <!-- PROGRESS BAR -->
+      <div class="progress-container">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+
+      <!-- SCENE 1: TITLE -->
+      <div id="scene-title" class="scene">
+        <div class="title-box">
+          <div class="tag-pill" id="title-tag">✦ INTELIGENCIA ARTIFICIAL ✦</div>
+          <h1 class="title-hero-1" id="title-text-1">IA AGENTES</h1>
+          <h2 class="title-hero-2" id="title-text-2">REVOLUCIÓN</h2>
+        </div>
+      </div>
+
+      <!-- SCENE 2: IMAGE 1 -->
+      <div id="scene-img1" class="scene">
+        <div class="image-card">
+          <div class="image-frame" data-layout-allow-overflow>
+            <img id="img-scene-1" class="image-content" src="./public/scene_1.png" alt="Escena 1" data-layout-allow-overflow />
+          </div>
+          <div class="image-caption-bar">
+            <h3 class="caption-text" id="caption-scene-1">Automatización Extrema</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 3: PERCENTAGE -->
+      <div id="scene-percent" class="scene">
+        <div class="percentage-box">
+          <div class="huge-percent" id="percent-number">85%</div>
+          <div class="percent-label" id="percent-label-text">Empresas Adaptadas</div>
+        </div>
+      </div>
+
+      <!-- SCENE 4: IMAGE 2 -->
+      <div id="scene-img2" class="scene">
+        <div class="image-card">
+          <div class="image-frame" data-layout-allow-overflow>
+            <img id="img-scene-3" class="image-content" src="./public/scene_3.png" alt="Escena 3" data-layout-allow-overflow />
+          </div>
+          <div class="image-caption-bar">
+            <h3 class="caption-text" id="caption-scene-3">¡No te quedes atrás!</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 5: CTA -->
+      <div id="scene-cta" class="scene">
+        <div class="cta-box">
+          <h1 class="cta-headline" id="cta-headline-text">¿LISTO PARA DOMINAR?</h1>
+          <p class="cta-sub">Tu talento amplificado con agentes de IA.</p>
+          <div class="cta-btn-brutal" id="cta-btn">
+            <span>TALENTOCONTARIFA.LAT</span>
+            <span>➔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUDIO TRACKS -->
+      <audio id="bgm" src="./public/tct_music.mp3" class="clip" data-start="0" data-duration="15" data-volume="0.12"></audio>
+      <audio id="vo" src="./public/news_voice.mp3" class="clip" data-start="0.2" data-duration="14.5" data-volume="1.0"></audio>
+    </div>
+
+    <script>
+      // 1. Población dinámica de datos
+      const data = window.NEWS_DATA || {};
+      const totalDur = data.total_duration_sec || 15;
+
+      if (data.theme_color) {
+        document.documentElement.style.setProperty('--theme-color', data.theme_color);
+      }
+
+      // Actualizar atributos de duración en root y audio
+      const rootEl = document.getElementById('root');
+      rootEl.setAttribute('data-duration', String(totalDur));
+      const bgmEl = document.getElementById('bgm');
+      if (bgmEl) bgmEl.setAttribute('data-duration', String(totalDur));
+      const voEl = document.getElementById('vo');
+      if (voEl) voEl.setAttribute('data-duration', String(Math.max(1, totalDur - 0.3)));
+
+      // Extraer escenas
+      const scenes = data.scenes || [];
+      const titleScene = scenes.find(s => s.type === 'title') || {};
+      const img1Scene = scenes[1] || {};
+      const pctScene = scenes.find(s => s.type === 'big_percentage') || {};
+      const img2Scene = scenes[3] || {};
+      const ctaScene = scenes.find(s => s.type === 'cta') || {};
+
+      if (titleScene.text1) document.getElementById('title-text-1').innerText = titleScene.text1;
+      if (titleScene.text2) document.getElementById('title-text-2').innerText = titleScene.text2;
+
+      if (img1Scene.text) document.getElementById('caption-scene-1').innerText = img1Scene.text;
+      if (pctScene.number) document.getElementById('percent-number').innerText = `${pctScene.number}%`;
+      if (pctScene.text) document.getElementById('percent-label-text').innerText = pctScene.text;
+      if (img2Scene.text) document.getElementById('caption-scene-3').innerText = img2Scene.text;
+      if (ctaScene.text) document.getElementById('cta-headline-text').innerText = ctaScene.text;
+
+      // 2. Timeline GSAP sincronizada
+      const tl = gsap.timeline({ paused: true });
+
+      // Barra de progreso continua
+      tl.to("#progress-fill", { width: "100%", duration: totalDur, ease: "none" }, 0);
+
+      // Duraciones proporcionales (5 escenas)
+      const d1 = totalDur * 0.20; // Intro / Title
+      const d2 = totalDur * 0.24; // Image 1
+      const d3 = totalDur * 0.20; // Percentage
+      const d4 = totalDur * 0.20; // Image 2
+      const d5 = totalDur * 0.16; // CTA
+
+      const t1 = 0;
+      const t2 = t1 + d1;
+      const t3 = t2 + d2;
+      const t4 = t3 + d3;
+      const t5 = t4 + d4;
+
+      // Escena 1: Title
+      tl.fromTo("#scene-title", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }, t1);
+      tl.fromTo("#title-text-1", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, t1 + 0.1);
+      tl.fromTo("#title-text-2", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, t1 + 0.2);
+      tl.to("#scene-title", { opacity: 0, scale: 1.05, duration: 0.3, ease: "power2.in" }, t2 - 0.3);
+
+      // Escena 2: Image 1
+      tl.fromTo("#scene-img1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, t2);
+      tl.fromTo("#img-scene-1", { scale: 1.0 }, { scale: 1.12, duration: d2, ease: "sine.inOut" }, t2);
+      tl.to("#scene-img1", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, t3 - 0.3);
+
+      // Escena 3: Percentage
+      tl.fromTo("#scene-percent", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.5)" }, t3);
+      tl.fromTo("#percent-number", { scale: 0.7 }, { scale: 1.05, duration: 0.5, ease: "elastic.out(1, 0.6)" }, t3 + 0.1);
+      tl.to("#scene-percent", { opacity: 0, scale: 1.05, duration: 0.3, ease: "power2.in" }, t4 - 0.3);
+
+      // Escena 4: Image 2
+      tl.fromTo("#scene-img2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, t4);
+      tl.fromTo("#img-scene-3", { scale: 1.0 }, { scale: 1.12, duration: d4, ease: "sine.inOut" }, t4);
+      tl.to("#scene-img2", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, t5 - 0.3);
+
+      // Escena 5: CTA
+      tl.fromTo("#scene-cta", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, t5);
+      tl.fromTo("#cta-btn", { scale: 0.95 }, { scale: 1.04, repeat: 5, yoyo: true, duration: 0.4, ease: "power1.inOut" }, t5 + 0.1);
+
+      // Registrar timeline para HyperFrames
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

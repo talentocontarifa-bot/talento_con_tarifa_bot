@@ -588,16 +588,20 @@ async function main() {
     // PASO 3: Distribuir frames reales entre las escenas
     const scenesWithFrames = distributeFrames(data.scenes, totalFrames);
 
-    // PASO 4: Guardar el JSON final (con frames reales) para Remotion
+    // PASO 4: Guardar el JSON final (con frames reales) para Remotion y news_data.js para HyperFrames
+    const totalDurationSec = Math.ceil(totalFrames / FPS);
     const newsData = {
       theme_color: data.theme_color,
       layout_type: data.layout_type || 'neo_brutalist',
       script: data.script,
       scenes: scenesWithFrames,
+      total_duration_sec: totalDurationSec,
     };
     const jsonPath = path.join(__dirname, 'src', 'news_data.json');
     fs.writeFileSync(jsonPath, JSON.stringify(newsData, null, 2));
-    console.log(`\n✅ [4/4] news_data.json actualizado (${totalFrames} frames totales)`);
+    const jsPath = path.join(__dirname, 'news_data.js');
+    fs.writeFileSync(jsPath, `window.NEWS_DATA = ${JSON.stringify(newsData, null, 2)};\n`);
+    console.log(`\n✅ [4/4] news_data.json y news_data.js actualizados (${totalFrames} frames totales)`);
 
     // Guardar el link procesado en el historial de noticias utilizadas para video
     if (processedNewsLink) {
