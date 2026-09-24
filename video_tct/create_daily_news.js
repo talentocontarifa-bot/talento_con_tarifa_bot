@@ -516,7 +516,7 @@ async function generateVoice(scenes) {
     currentTime += dur + 0.15; // 150ms pausa natural entre escenas
   }
 
-  const totalDurationSec = Math.ceil(currentTime + 0.5);
+  const totalDurationSec = Math.ceil(currentTime + 1.5);
   const totalFrames = totalDurationSec * FPS;
 
   // Concatenar snippets de audio en news_voice.mp3
@@ -540,7 +540,7 @@ async function generateVoice(scenes) {
     }
   }
 
-  // Actualizar hyperframes.json con la duración real
+  // Actualizar hyperframes.json e index.html con la duración real exacta
   const hfConfigPath = path.join(__dirname, 'hyperframes.json');
   if (fs.existsSync(hfConfigPath)) {
     try {
@@ -550,6 +550,18 @@ async function generateVoice(scenes) {
       console.log(`✅ hyperframes.json actualizado con duración: ${totalDurationSec}s`);
     } catch (e) {
       console.warn(`⚠️ Error actualizando hyperframes.json:`, e.message);
+    }
+  }
+
+  const indexPath = path.join(__dirname, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    try {
+      let indexHtml = fs.readFileSync(indexPath, 'utf-8');
+      indexHtml = indexHtml.replace(/data-duration="[\d.]+"/g, `data-duration="${totalDurationSec}"`);
+      fs.writeFileSync(indexPath, indexHtml);
+      console.log(`✅ index.html sincronizado con data-duration="${totalDurationSec}"`);
+    } catch (e) {
+      console.warn(`⚠️ Error actualizando index.html:`, e.message);
     }
   }
 
