@@ -54,9 +54,13 @@ jobs:
           cd video_tct
           node create_daily_news.js
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
       - name: Render Video (HyperFrames)
         run: |
           cd video_tct
+          mkdir -p out
           npx hyperframes render -o out/video_final_tct.mp4
 
       - name: Publish to Facebook and TikTok
