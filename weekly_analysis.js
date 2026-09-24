@@ -145,12 +145,29 @@ Por favor, sé directo, estratégico y enfocado al crecimiento. No inventes dato
   // 2. Fallback con Gemini
   const GEMINI_KEY = process.env.GEMINI_API_KEY;
   if (GEMINI_KEY) {
-    console.log('🧠 [4/5] Generando reporte con Google Gemini...');
+    console.log('🧠 [4/5] Generando reporte con Google Gemini (gemini-2.5-flash)...');
     const { GoogleGenerativeAI } = require('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(GEMINI_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+    let attempts = 0;
+    const maxRetries = 4;
+    while (attempts < maxRetries) {
+      try {
+        const result = await model.generateContent(prompt);
+        console.log('✅ Análisis generado exitosamente con Gemini (gemini-2.5-flash)');
+        return result.response.text();
+      } catch (err) {
+        attempts++;
+        console.warn(`⚠️ Intento ${attempts} fallido con Gemini: ${err.message}`);
+        if (attempts >= maxRetries) {
+          throw err;
+        }
+        const waitTime = attempts * 6000 + 4000;
+        console.log(`Esperando ${waitTime / 1000}s antes de reintentar con Gemini...`);
+        await new Promise(r => setTimeout(r, waitTime));
+      }
+    }
   }
 
   throw new Error('No hay GROQ_API_KEY ni GEMINI_API_KEY disponible para el análisis.');

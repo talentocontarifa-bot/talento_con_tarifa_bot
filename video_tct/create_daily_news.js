@@ -299,17 +299,32 @@ Responde ÚNICAMENTE con JSON válido:
   if (!genAI) {
       throw new Error("No hay API Key de Groq ni de Gemini disponible.");
   }
-  console.log("🧠 Usando Gemini para generar guion...");
+  console.log("🧠 Usando Gemini (gemini-2.5-flash) para generar guion...");
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash",
     generationConfig: { responseMimeType: "application/json" }
   });
 
-  const result = await model.generateContent(prompt);
-  const data = JSON.parse(result.response.text());
-  console.log(`✅ Guion: "${data.script.substring(0, 80)}..."`);
-  console.log(`✅ Color del día: ${data.theme_color} | Escenas: ${data.scenes.length}`);
-  return data;
+  let attempts = 0;
+  const maxRetries = 4;
+  while (attempts < maxRetries) {
+    try {
+      const result = await model.generateContent(prompt);
+      const data = JSON.parse(result.response.text());
+      console.log(`✅ Guion: "${data.script.substring(0, 80)}..."`);
+      console.log(`✅ Color del día: ${data.theme_color} | Escenas: ${data.scenes.length}`);
+      return data;
+    } catch (e) {
+      attempts++;
+      console.warn(`⚠️ Intento ${attempts} con Gemini fallido: ${e.message}`);
+      if (attempts >= maxRetries) {
+        throw e;
+      }
+      const waitTime = e.message.includes("429") || attempts > 2 ? 25000 : (attempts * 5000 + 5000);
+      console.log(`   Esperando ${waitTime / 1000}s antes de reintentar con Gemini...`);
+      await new Promise(r => setTimeout(r, waitTime));
+    }
+  }
 }
 
 
