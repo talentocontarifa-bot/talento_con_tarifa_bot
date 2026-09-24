@@ -186,10 +186,22 @@ async function sendTelegramMessage(text) {
       text: text,
       parse_mode: 'Markdown'
     });
+    console.log('✅ Mensaje entregado a Telegram');
     return response.data;
   } catch (err) {
-    console.warn('⚠️ No se pudo enviar a Telegram:', err.response?.data?.description || err.message);
-    return null;
+    console.warn('⚠️ Telegram rechazó Markdown, reintentando como texto plano...');
+    try {
+      const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+      const fallbackResponse = await axios.post(url, {
+        chat_id: CHAT_ID,
+        text: text
+      });
+      console.log('✅ Mensaje entregado a Telegram en texto plano');
+      return fallbackResponse.data;
+    } catch (e) {
+      console.warn('⚠️ No se pudo enviar a Telegram:', e.response?.data?.description || e.message);
+      return null;
+    }
   }
 }
 
