@@ -466,8 +466,13 @@ async function synthesizeSnippet(text, targetPath) {
   try {
     const { execSync } = require('child_process');
     const escaped = clean.replace(/"/g, '\\"');
-    execSync(`python -m edge_tts --voice "es-MX-JorgeNeural" --rate "+6%" --text "${escaped}" --write-media "${targetPath}"`, { stdio: 'pipe' });
-    if (fs.existsSync(targetPath) && fs.statSync(targetPath).size > 1000) {
+    const rawSnippet = targetPath.replace(/\.mp3$/, '_raw.mp3');
+    execSync(`python -m edge_tts --voice "es-MX-JorgeNeural" --rate "+10%" --text "${escaped}" --write-media "${rawSnippet}"`, { stdio: 'pipe' });
+    if (fs.existsSync(rawSnippet) && fs.statSync(rawSnippet).size > 1000) {
+      // Cadena de Masterización Vocal Broadcast (Highpass, Warmth, Presence, Compresor y Loudnorm a -14 LUFS)
+      const filterChain = "highpass=f=80,equalizer=f=140:width_type=h:width=60:g=3.5,equalizer=f=3600:width_type=h:width=1200:g=4.0,acompressor=threshold=-16dB:ratio=4:attack=10:release=120:makeup=2.5dB,loudnorm=I=-14:TP=-1.0:LRA=7";
+      execSync(`ffmpeg -y -i "${rawSnippet}" -af "${filterChain}" -c:a libmp3lame -b:a 192k "${targetPath}"`, { stdio: 'pipe' });
+      try { fs.unlinkSync(rawSnippet); } catch (e) {}
       return;
     }
   } catch (edgeErr) {
@@ -517,7 +522,21 @@ async function generateVoice(scenes) {
   fs.writeFileSync(listFile, sceneFiles.map(f => `file '${path.resolve(f).replace(/\\/g, '/')}'`).join('\n'));
   const finalAudioPath = path.join(__dirname, 'public', 'news_voice.mp3');
   const { execSync } = require('child_process');
-  execSync(`ffmpeg -y -f concat -safe 0 -i "${listFile}" -c copy "${finalAudioPath}"`, { stdio: 'pipe' });
+  execSync(`ffmpeg -y -f concat -safe 0 -i "${listFile}" -c:a libmp3lame -b:a 192k "${finalAudioPath}"`, { stdio: 'pipe' });
+
+  // Procesar música temática con Sidechain Ducking automático
+  const musicSrc = path.join(__dirname, 'public', 'music_shiny_tech.mp3');
+  const duckedMusic = path.join(__dirname, 'public', 'tct_music.mp3');
+  if (fs.existsSync(musicSrc)) {
+    try {
+      console.log('🎵 Aplicando Sidechain Audio Ducking a la música temática...');
+      const duckingFilter = `[1:a]aformat=channel_layouts=stereo:sample_rates=48000[sc];[0:a]atrim=0:${totalDurationSec},aformat=channel_layouts=stereo:sample_rates=48000[music];[music][sc]sidechaincompress=threshold=0.03:ratio=6:attack=40:release=350,volume=0.36[final_music]`;
+      execSync(`ffmpeg -y -i "${musicSrc}" -i "${finalAudioPath}" -filter_complex "${duckingFilter}" -map "[final_music]" -c:a libmp3lame -b:a 192k "${duckedMusic}"`, { stdio: 'pipe' });
+      console.log('✅ Música con Sidechain Ducking generada exitosamente.');
+    } catch (duckErr) {
+      console.warn('⚠️ Error en sidechain ducking, manteniendo música previa:', duckErr.message);
+    }
+  }
 
   // Actualizar hyperframes.json con la duración real
   const hfConfigPath = path.join(__dirname, 'hyperframes.json');

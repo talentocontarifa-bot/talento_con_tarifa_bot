@@ -1,8 +1,8 @@
 window.NEWS_DATA = {
   "theme_color": "#FF3300",
   "layout_type": "neo_brutalist",
-  "total_duration_sec": 36,
-  "total_frames": 1080,
+  "total_duration_sec": 35,
+  "total_frames": 1050,
   "scenes": [
     {
       "id": "scene_1",
@@ -12,8 +12,8 @@ window.NEWS_DATA = {
       "voice_text": "¡Atención emprendedor! Los agentes de inteligencia artificial llegaron para cambiar todas las reglas del juego.",
       "subtitle": "¡Atención emprendedor! Los agentes de IA llegaron para cambiar las reglas.",
       "start": 0.0,
-      "audio_duration": 7.368,
-      "end": 7.368
+      "audio_duration": 7.104,
+      "end": 7.104
     },
     {
       "id": "scene_2",
@@ -25,9 +25,9 @@ window.NEWS_DATA = {
       ],
       "voice_text": "Automatización extrema: multiplican tu alcance, operan veinticuatro siete y reducen tus costos operativos.",
       "subtitle": "Automatización extrema: multiplican tu alcance y operan 24/7.",
-      "start": 7.518,
-      "audio_duration": 7.32,
-      "end": 14.838
+      "start": 7.264,
+      "audio_duration": 7.056,
+      "end": 14.32
     },
     {
       "id": "scene_3",
@@ -35,18 +35,18 @@ window.NEWS_DATA = {
       "label": "Empresas Adaptadas",
       "voice_text": "El ochenta y cinco por ciento de las empresas líderes en el mercado ya integraron agentes autónomos a sus equipos.",
       "subtitle": "El 85% de las empresas líderes ya integraron agentes autónomos.",
-      "start": 14.988,
-      "audio_duration": 6.864,
-      "end": 21.852
+      "start": 14.48,
+      "audio_duration": 6.624,
+      "end": 21.104
     },
     {
       "id": "scene_4",
       "title": "COBRA POR TU VALOR",
       "voice_text": "Quienes dominan esta tecnología no compiten por precio: cobran por el verdadero valor de su talento.",
       "subtitle": "No compitas por precio: cobra por el valor de tu talento.",
-      "start": 22.002,
-      "audio_duration": 6.192,
-      "end": 28.194
+      "start": 21.264,
+      "audio_duration": 5.976,
+      "end": 27.24
     },
     {
       "id": "scene_5",
@@ -55,9 +55,9 @@ window.NEWS_DATA = {
       "btn": "TALENTOCONTARIFA.LAT",
       "voice_text": "¿Listo para escalar tu negocio? Visita hoy mismo talento con tarifa punto lat y transforma tu futuro.",
       "subtitle": "Visita hoy talentocontarifa.lat y transforma tu futuro.",
-      "start": 28.344,
-      "audio_duration": 7.152,
-      "end": 35.496
+      "start": 27.4,
+      "audio_duration": 6.912,
+      "end": 34.312
     }
   ]
 };

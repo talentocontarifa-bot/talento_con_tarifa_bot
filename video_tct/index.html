@@ -355,7 +355,7 @@
       id="root"
       data-composition-id="main"
       data-start="0"
-      data-duration="36"
+      data-duration="34"
       data-width="1080"
       data-height="1920"
     >
@@ -462,15 +462,22 @@
         </div>
       </div>
 
-      <!-- AUDIO TRACKS -->
-      <audio id="bgm" src="./public/tct_music.mp3" class="clip" data-start="0" data-duration="36" data-volume="0.10"></audio>
-      <audio id="vo" src="./public/news_voice.mp3" class="clip" data-start="0" data-duration="34.90" data-volume="1.0"></audio>
+      <!-- AUDIO TRACKS (Master Ducked Tech BGM + Mastered Broadcast Voice) -->
+      <audio id="bgm" src="./public/tct_music.mp3" class="clip" data-start="0" data-duration="33.67" data-volume="0.85"></audio>
+      <audio id="vo" src="./public/news_voice.mp3" class="clip" data-start="0" data-duration="33.67" data-volume="1.0"></audio>
+
+      <!-- MICRO-SFX TRACKS -->
+      <audio id="sfx-whoosh1" src="./public/sfx/whoosh.mp3" class="clip" data-start="0.05" data-duration="0.35" data-volume="0.35"></audio>
+      <audio id="sfx-pop1" src="./public/sfx/pop.mp3" class="clip" data-start="7.2" data-duration="0.1" data-volume="0.45"></audio>
+      <audio id="sfx-cash" src="./public/sfx/cash.mp3" class="clip" data-start="14.4" data-duration="0.8" data-volume="0.55"></audio>
+      <audio id="sfx-whoosh2" src="./public/sfx/whoosh.mp3" class="clip" data-start="21.2" data-duration="0.35" data-volume="0.35"></audio>
+      <audio id="sfx-ding" src="./public/sfx/ding.mp3" class="clip" data-start="27.4" data-duration="0.6" data-volume="0.45"></audio>
     </div>
 
     <script>
       // 1. Población dinámica de datos
       const data = window.NEWS_DATA || {};
-      const totalDur = data.total_duration_sec || 36;
+      const totalDur = data.total_duration_sec || 35;
       const scenes = data.scenes || [];
 
       if (data.theme_color) {
@@ -486,11 +493,18 @@
       if (voEl) voEl.setAttribute('data-duration', String(Math.max(1, totalDur - 0.5)));
 
       // Extraer datos de escenas
-      const sc1 = scenes[0] || { start: 0, end: 7.37 };
-      const sc2 = scenes[1] || { start: 7.52, end: 14.84 };
-      const sc3 = scenes[2] || { start: 14.99, end: 21.85, number: 85 };
-      const sc4 = scenes[3] || { start: 22.00, end: 28.19 };
-      const sc5 = scenes[4] || { start: 28.34, end: 35.50 };
+      const sc1 = scenes[0] || { start: 0, end: 7.10 };
+      const sc2 = scenes[1] || { start: 7.26, end: 14.32 };
+      const sc3 = scenes[2] || { start: 14.48, end: 21.10, number: 85 };
+      const sc4 = scenes[3] || { start: 21.26, end: 27.24 };
+      const sc5 = scenes[4] || { start: 27.40, end: 34.31 };
+
+      // Sincronizar SFX con marcas de tiempo de las escenas
+      const w1 = document.getElementById('sfx-whoosh1'); if (w1) w1.setAttribute('data-start', String(sc1.start || 0.05));
+      const p1 = document.getElementById('sfx-pop1'); if (p1) p1.setAttribute('data-start', String(sc2.start));
+      const cash = document.getElementById('sfx-cash'); if (cash) cash.setAttribute('data-start', String(sc3.start));
+      const w2 = document.getElementById('sfx-whoosh2'); if (w2) w2.setAttribute('data-start', String(sc4.start));
+      const ding = document.getElementById('sfx-ding'); if (ding) ding.setAttribute('data-start', String(sc5.start + 0.5));
 
       if (sc1.title1) document.getElementById('title-text-1').innerText = sc1.title1;
       if (sc1.title2) document.getElementById('title-text-2').innerText = sc1.title2;
