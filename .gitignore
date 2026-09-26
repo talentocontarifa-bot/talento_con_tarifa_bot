@@ -6,3 +6,7 @@ video_tct/out/
 *.mp4
 trending_top10.json
 video_tct/temp_voice/
+video_editorial/out/
+video_editorial/temp_editorial_audio/
+video_editorial/node_modules/
+video_editorial/current_issue.txt

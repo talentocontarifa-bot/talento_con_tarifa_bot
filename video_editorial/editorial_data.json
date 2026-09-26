@@ -1,0 +1,37 @@
+{
+  "title": "El d\u00eda que vendieron el perd\u00f3n por kilo",
+  "duration": 45.36,
+  "scenes_count": 2,
+  "timeline": [
+    {
+      "id": 1,
+      "chapter": "CAP\u00cdTULO I: EL COFRE DE HIERRO",
+      "voice_text": "Un fraile llega a un pueblo alem\u00e1n con un cofre reforzado con hierro y una promesa: en cuanto tu moneda suene ah\u00ed dentro, el alma de tu madre sale del purgatorio. Eso no es leyenda. Eso predicaba Johann Tetzel en 1517, con tarifas seg\u00fan cu\u00e1nto pod\u00edas pagar.",
+      "visual_prompt": "cinematic dark dramatic painting of a medieval German square in 1517, a preacher with an iron bound chest with coins, Rembrandt lighting",
+      "captions": [
+        "Un fraile llega a un pueblo alem\u00e1n con un cofre reforzado co...",
+        "n hierro y una promesa: en cuanto tu moneda suene ah\u00ed dentro"
+      ],
+      "highlight_word": "PURGATORIO",
+      "image_file": "public/editorial_scene_1.jpg",
+      "start": 0.5,
+      "duration": 18.216,
+      "end": 18.716
+    },
+    {
+      "id": 2,
+      "chapter": "CAP\u00cdTULO II: LA TARIFA DEL ALMA",
+      "voice_text": "La palabra detr\u00e1s de todo esto, indulgentia, no naci\u00f3 cristiana: era lat\u00edn romano para la clemencia que un emperador conced\u00eda por gracia propia. La Iglesia le hered\u00f3 la palabra y tambi\u00e9n la l\u00f3gica de fondo. Y esa l\u00f3gica sigue viva cada vez que una instituci\u00f3n convierte el perd\u00f3n en tr\u00e1mite y el tr\u00e1mite en tarifa: la pregunta no es si eso pas\u00f3 hace cinco siglos, es si de verdad dej\u00f3 de pasar.",
+      "visual_prompt": "cinematic painting of medieval people giving coins to a Dominican friar, ledger of debts and souls, atmospheric gothic church interior",
+      "captions": [
+        "La palabra detr\u00e1s de todo esto, indulgentia, no naci\u00f3 cristi...",
+        "ana: era lat\u00edn romano para la clemencia que un emperador con"
+      ],
+      "highlight_word": "1517",
+      "image_file": "public/editorial_scene_2.jpg",
+      "start": 19.116,
+      "duration": 24.648,
+      "end": 43.764
+    }
+  ]
+}

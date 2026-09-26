@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>El día que vendieron el perdón por kilo</title>
+<script src="assets/gsap.min.js"></script>
+<style>
+@font-face { font-family: 'PlayfairBold'; src: url('assets/arialbd.ttf'); font-weight: 700; }
+@font-face { font-family: 'PlayfairRegular'; src: url('assets/arial.ttf'); font-weight: 400; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #06080d;
+  font-family: 'PlayfairRegular', Georgia, serif;
+  color: #f1f5f9;
+}
+
+#root {
+  width: 1080px; height: 1920px;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 35%, #111827 0%, #030712 100%);
+}
+
+/* Barra superior de lectura */
+.header-top {
+  position: absolute; top: 70px; left: 60px; right: 60px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  padding-bottom: 20px;
+  z-index: 50;
+}
+.brand-title {
+  font-family: 'PlayfairBold', Georgia, serif;
+  font-size: 26px; letter-spacing: 4px; color: #d4af37;
+  text-transform: uppercase;
+}
+.tag-badge {
+  font-size: 22px; color: #94a3b8; font-family: monospace;
+  background: rgba(255, 255, 255, 0.05); padding: 6px 16px; border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Barra de progreso continua */
+.progress-container {
+  position: absolute; top: 0; left: 0; width: 100%; height: 8px;
+  background: rgba(255, 255, 255, 0.08); z-index: 100;
+}
+#progress_bar {
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, #d4af37, #fef08a);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
+  transform-origin: left;
+}
+
+/* Escena y Contenedores */
+.editorial-scene {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center;
+  opacity: 0;
+  z-index: 20;
+}
+
+/* Marco de la Ilustración Central */
+.frame-container {
+  position: absolute; top: 160px; left: 60px; width: 960px; height: 1160px;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(212, 175, 55, 0.15);
+  border: 2px solid rgba(212, 175, 55, 0.4);
+}
+.scene-illustration {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.frame-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(6, 8, 13, 0.3) 0%, rgba(6, 8, 13, 0.1) 40%, rgba(6, 8, 13, 0.8) 100%);
+}
+
+/* Insignias de Capítulo y Destacado */
+.chapter-badge {
+  position: absolute; top: 35px; left: 35px;
+  background: rgba(6, 8, 13, 0.85); backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  padding: 10px 24px; border-radius: 30px;
+}
+.chapter-label {
+  font-family: 'PlayfairBold', Georgia, serif;
+  font-size: 26px; color: #fef08a; letter-spacing: 2px;
+}
+.gold-accent-tag {
+  position: absolute; bottom: 35px; right: 35px;
+  background: #d4af37; color: #06080d;
+  font-family: 'PlayfairBold', Georgia, serif;
+  font-size: 24px; font-weight: 700; letter-spacing: 3px;
+  padding: 8px 24px; border-radius: 8px;
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+}
+
+/* Contenedor de Subtítulos y Reflexión Narrativa */
+.caption-container {
+  position: absolute; top: 1370px; left: 70px; right: 70px;
+  height: 380px;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center;
+  background: rgba(17, 24, 39, 0.65);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  padding: 30px 45px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+}
+.caption-line {
+  font-family: 'PlayfairBold', Georgia, serif;
+  font-size: 44px; line-height: 1.35;
+  color: #ffffff;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.9);
+  margin-bottom: 12px;
+}
+.caption-line:last-child {
+  margin-bottom: 0;
+}
+
+/* Footer / Handle de Autoridad */
+.footer-bottom {
+  position: absolute; bottom: 50px; left: 60px; right: 60px;
+  display: flex; justify-content: space-between; align-items: center;
+  z-index: 50;
+}
+.handle-author {
+  font-size: 26px; color: #d4af37; font-weight: 700; letter-spacing: 1px;
+}
+.site-badge {
+  font-size: 24px; color: #94a3b8; font-family: monospace;
+}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="45" data-width="1080" data-height="1920">
+  <!-- BARRA DE PROGRESO -->
+  <div class="progress-container">
+    <div id="progress_bar"></div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header-top">
+    <div class="brand-title">TALENTO CON TARIFA</div>
+    <div class="tag-badge">ENSAYOS & HISTORIAS</div>
+  </div>
+
+  <!-- ESCENAS DINÁMICAS -->
+  
+        <div id="scene_box_1" class="editorial-scene">
+          <div class="frame-container">
+            <img id="img_1" class="scene-illustration" src="public/editorial_scene_1.jpg" alt="Capítulo 1">
+            <div class="frame-overlay"></div>
+            <div class="chapter-badge">
+              <span class="chapter-label">CAPÍTULO I: EL COFRE DE HIERRO</span>
+            </div>
+            <div class="gold-accent-tag">PURGATORIO</div>
+          </div>
+          <div id="caption_1" class="caption-container">
+            <p class='caption-line'>Un fraile llega a un pueblo alemán con un cofre reforzado co...</p><p class='caption-line'>n hierro y una promesa: en cuanto tu moneda suene ahí dentro</p>
+          </div>
+        </div>
+        
+
+        <div id="scene_box_2" class="editorial-scene">
+          <div class="frame-container">
+            <img id="img_2" class="scene-illustration" src="public/editorial_scene_2.jpg" alt="Capítulo 2">
+            <div class="frame-overlay"></div>
+            <div class="chapter-badge">
+              <span class="chapter-label">CAPÍTULO II: LA TARIFA DEL ALMA</span>
+            </div>
+            <div class="gold-accent-tag">1517</div>
+          </div>
+          <div id="caption_2" class="caption-container">
+            <p class='caption-line'>La palabra detrás de todo esto, indulgentia, no nació cristi...</p><p class='caption-line'>ana: era latín romano para la clemencia que un emperador con</p>
+          </div>
+        </div>
+        
+
+  <!-- FOOTER -->
+  <div class="footer-bottom">
+    <div class="handle-author">@talentocontarifa</div>
+    <div class="site-badge">talentocontarifa.com</div>
+  </div>
+
+  <!-- AUDIO -->
+  <audio id="voice" class="clip" src="public/editorial_audio.mp3" data-start="0" data-duration="45.36" data-volume="1"></audio>
+</div>
+
+<script>
+  const tl = gsap.timeline({ paused: true });
+  tl.fromTo('#progress_bar', {scaleX: 0}, {scaleX: 1, duration: 45.36, ease: 'none'}, 0);
+  tl.fromTo('#scene_box_1', {opacity: 0, scale: 0.96}, {opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out'}, 0.5);
+  tl.fromTo('#img_1', {scale: 1.0}, {scale: 1.08, duration: 18.716, ease: 'none'}, 0.5);
+  tl.fromTo('#caption_1', {opacity: 0, y: 20}, {opacity: 1, y: 0, duration: 0.4}, 0.7);
+  tl.to('#scene_box_1', {opacity: 0, scale: 1.03, duration: 0.45}, 18.716);
+  tl.to('#caption_1', {opacity: 0, y: -10, duration: 0.35}, 18.716);
+  tl.fromTo('#scene_box_2', {opacity: 0, scale: 0.96}, {opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out'}, 19.116);
+  tl.fromTo('#img_2', {scale: 1.0}, {scale: 1.08, duration: 25.148, ease: 'none'}, 19.116);
+  tl.fromTo('#caption_2', {opacity: 0, y: 20}, {opacity: 1, y: 0, duration: 0.4}, 19.316);
+  window.__timelines = window.__timelines || {};
+  window.__timelines['main'] = tl;
+</script>
+</body>
+</html>

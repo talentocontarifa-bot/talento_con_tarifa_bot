@@ -1,0 +1,107 @@
+name: Crear Video Editorial (Talento con Tarifa)
+
+on:
+  issues:
+    types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'Título del video / ensayo'
+        required: false
+        default: 'El día que vendieron el perdón por kilo'
+      script:
+        description: 'Guion narrativo completo (1 a 1.5 minutos)'
+        required: false
+        default: ''
+      issue_number:
+        description: 'Número de issue a procesar (opcional)'
+        required: false
+
+jobs:
+  render-and-publish:
+    # Solo ejecutar si es workflow_dispatch O si el issue tiene la etiqueta 'editorial', 'video' o el título/cuerpo coincide
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.issue.labels.*.name, 'editorial') ||
+      contains(github.event.issue.labels.*.name, 'video') ||
+      contains(github.event.issue.title, '[EDITORIAL]') ||
+      contains(github.event.issue.body, 'GUION:')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies (ffmpeg)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies
+        run: |
+          pip install edge-tts requests google-generativeai python-dotenv
+
+      - name: Install Node.js dependencies
+        run: |
+          npm install
+          cd video_editorial
+          npm install
+
+      - name: Generate Editorial Video Composition
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          HF_API_KEY: ${{ secrets.HF_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd video_editorial
+          python generate_editorial_video.py \
+            --title "${{ inputs.title }}" \
+            --script "${{ inputs.script }}" \
+            --issue "${{ inputs.issue_number || github.event.issue.number }}"
+
+      - name: Render Video with Hyperframes
+        run: |
+          cd video_editorial
+          npx hyperframes render -o out/video_editorial.mp4
+
+      - name: Publish to Instagram, TikTok & YouTube Shorts
+        env:
+          INSTAGRAM_ACCOUNT_ID: ${{ secrets.INSTAGRAM_ACCOUNT_ID }}
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+          TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
+          TIKTOK_OPEN_ID: ${{ secrets.TIKTOK_OPEN_ID }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          YOUTUBE_PRIVACY_STATUS: ${{ secrets.YOUTUBE_PRIVACY_STATUS }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd video_editorial
+          node publish_editorial.js
+
+      - name: Upload Video Artifact (Backup)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: video-editorial-${{ github.run_number }}
+          path: video_editorial/out/video_editorial.mp4
+          retention-days: 2
