@@ -5,8 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "publish:all": "node video_tct/publish_video.js",
     "publish:tiktok": "node tiktok_publisher.js",
-    "publish:video": "node video_tct/publish_video.js"
+    "publish:instagram": "node instagram_publisher.js",
+    "publish:youtube": "node youtube_publisher.js",
+    "auth:youtube": "node get_youtube_token.js",
+    "get:instagram-id": "node get_instagram_id.js"
   },
   "keywords": [],
   "author": "",
