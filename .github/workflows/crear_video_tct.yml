@@ -3,7 +3,9 @@ name: Crear Video TCT
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 15 * * *'  # 10am Ciudad de México (UTC-5)
+    - cron: '0 15 * * *'  # 9:00 AM CDMX (UTC-6) / 10:00 AM Colombia (UTC-5)
+    - cron: '0 20 * * *'  # 2:00 PM CDMX (UTC-6) / 3:00 PM Colombia (UTC-5)
+    - cron: '0 1 * * *'   # 7:00 PM CDMX (UTC-6) / 8:00 PM Colombia (UTC-5)
 
 jobs:
   render-video:

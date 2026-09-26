@@ -125,6 +125,17 @@ async function getTodaysContext() {
     }
   }
 
+  // Leer historial de links ya procesados en videos
+  const historyPath = path.join(__dirname, 'used_video_news.json');
+  let usedLinks = [];
+  if (fs.existsSync(historyPath)) {
+    try {
+      usedLinks = JSON.parse(fs.readFileSync(historyPath, 'utf-8'));
+    } catch (e) {
+      console.log('⚠️ Error al leer used_video_news.json:', e.message);
+    }
+  }
+
   const queuePath = path.join(__dirname, '..', 'talento_queue.json');
   if (fs.existsSync(queuePath)) {
     try {
@@ -142,21 +153,29 @@ async function getTodaysContext() {
       });
 
       if (recentPosts.length > 0) {
-        const chosen = recentPosts[recentPosts.length - 1];
+        // Buscar de más reciente a más antiguo uno que no haya sido usado en video
+        let chosen = null;
+        for (let i = recentPosts.length - 1; i >= 0; i--) {
+          const candidate = recentPosts[i];
+          const isUsedInHistory = candidate.link && usedLinks.includes(candidate.link);
+          const isUsedInFb = recentVideoTexts.some(text => {
+            if (candidate.link && text.includes(candidate.link)) return true;
+            const cleanMsg = (candidate.message || '').trim().toLowerCase();
+            const keywords = cleanMsg.split(/\s+/).filter(w => w.length > 4).slice(0, 3);
+            if (keywords.length > 0) {
+              return keywords.every(kw => text.toLowerCase().includes(kw));
+            }
+            return false;
+          });
 
-        // Verificar si el post seleccionado ya tiene un video publicado en Facebook
-        const isUsedInFb = recentVideoTexts.some(text => {
-          if (chosen.link && text.includes(chosen.link)) return true;
-          const cleanMsg = (chosen.message || '').trim().toLowerCase();
-          const keywords = cleanMsg.split(/\s+/).filter(w => w.length > 4).slice(0, 3);
-          if (keywords.length > 0) {
-            return keywords.every(kw => text.toLowerCase().includes(kw));
+          if (!isUsedInHistory && !isUsedInFb) {
+            chosen = candidate;
+            break;
           }
-          return false;
-        });
+        }
 
-        if (isUsedInFb) {
-          console.log(`⏭️ El post de hoy ya tiene un video publicado en Facebook. Saltando al flujo RSS.`);
+        if (!chosen) {
+          console.log(`⏭️ Todos los posts recientes de queue ya tienen video. Saltando al flujo RSS.`);
         } else {
           const contextText = (chosen.message || '').substring(0, 600); // máx 600 chars
           console.log(`📋 Contexto reciente encontrado en queue.json (ID: ${chosen.id}): "${contextText.substring(0, 100)}..."`);
@@ -174,16 +193,6 @@ async function getTodaysContext() {
 
   // Fallback / Piloto automático: Buscar en feeds RSS una noticia no utilizada
   console.log('🤖 Buscando noticia fresca en feeds RSS...');
-
-  const historyPath = path.join(__dirname, 'used_video_news.json');
-  let usedLinks = [];
-  if (fs.existsSync(historyPath)) {
-    try {
-      usedLinks = JSON.parse(fs.readFileSync(historyPath, 'utf-8'));
-    } catch (e) {
-      console.log('⚠️ Error al leer used_video_news.json:', e.message);
-    }
-  }
 
   let selectedItem = null;
   for (const feedUrl of FEEDS) {
