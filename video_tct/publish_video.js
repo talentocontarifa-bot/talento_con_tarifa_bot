@@ -143,11 +143,29 @@ async function publishAll() {
     facebook: null
   };
 
-  // 1. PUBLICAR EN TIKTOK
+  // 1. PUBLICAR EN TIKTOK (VERSIÓN SOLO VOZ PARA AÑADIR MÚSICA EN TIKTOK STUDIO)
   try {
     console.log('\n--- 1/4: TIKTOK ---');
+    let tiktokVideoPath = VIDEO_PATH;
+    const voicePath = path.join(__dirname, 'public', 'news_voice.mp3');
+
+    if (fs.existsSync(voicePath)) {
+      try {
+        const voiceOnlyVideo = path.join(path.dirname(VIDEO_PATH), 'video_tiktok_voiceonly.mp4');
+        const { execSync } = require('child_process');
+        console.log('🎙️ Generando versión con SOLO VOZ (sin música) para TikTok...');
+        execSync(`ffmpeg -y -i "${VIDEO_PATH}" -i "${voicePath}" -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 192k -shortest "${voiceOnlyVideo}"`, { stdio: 'pipe' });
+        if (fs.existsSync(voiceOnlyVideo) && fs.statSync(voiceOnlyVideo).size > 1000) {
+          tiktokVideoPath = voiceOnlyVideo;
+          console.log(`✅ Video limpio (Solo Locución) generado para TikTok: ${Math.round(fs.statSync(tiktokVideoPath).size / 1024)} KB`);
+        }
+      } catch (ffmpegErr) {
+        console.warn('⚠️ No se pudo aislar la voz para TikTok, usando video estándar:', ffmpegErr.message);
+      }
+    }
+
     const tiktokTitle = `${content.title.substring(0, 150)} #TalentoConTarifa #InteligenciaArtificial #Emprendedores`;
-    results.tiktok = await publishVideoToTikTok(VIDEO_PATH, {
+    results.tiktok = await publishVideoToTikTok(tiktokVideoPath, {
       title: tiktokTitle
     });
   } catch (err) {
