@@ -148,21 +148,13 @@ Devuelve ÚNICAMENTE un JSON con esta estructura exacta:
                 pass
         print(f"⚠️ Gemini falló en todos los modelos, usando segmentación inteligente de respaldo.")
 
-    # Fallback inteligente sin IA
+    # Fallback inteligente sin IA (dinámico para cualquier temática o artículo)
     paragraphs = [p.strip() for p in script.split("\n\n") if p.strip()]
     if len(paragraphs) < 2:
         paragraphs = [p.strip() for p in script.split(". ") if p.strip()]
 
     scenes = []
-    default_prompts = [
-        "cinematic dark dramatic painting of a medieval German square in 1517, a preacher with an iron bound chest with coins, Rembrandt lighting",
-        "cinematic painting of medieval people giving coins to a Dominican friar, ledger of debts and souls, atmospheric gothic church interior",
-        "ancient Roman marble bust of an emperor granting mercy, classical imperial aesthetic, dramatic chiaroscuro, cinematic",
-        "modern imposing bureaucratic stone institution, shadows, philosophical reflection on ethics and transactions, dark atmospheric"
-    ]
-    
-    chapter_names = ["EL COFRE DE HIERRO", "LA TARIFA DEL ALMA", "INDULGENTIA: LA RAÍZ", "LA PREGUNTA INCÓMODA"]
-    highlights = ["PURGATORIO", "1517", "INDULGENTIA", "¿DE VERDAD?"]
+    roman_numerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 
     def chunk_words(text, words_per_line=7):
         words = text.split()
@@ -171,14 +163,27 @@ Devuelve ÚNICAMENTE un JSON con esta estructura exacta:
             lines.append(" ".join(words[j:j+words_per_line]))
         return lines[:3]
 
-    for i, p in enumerate(paragraphs[:4]):
+    for i, p in enumerate(paragraphs[:5]):
+        # Extraer título del capítulo de las primeras palabras del párrafo
+        first_clause = p.split('.')[0].split(',')[0].strip()
+        meaningful_words = [w for w in first_clause.split() if len(w) > 3][:4]
+        chapter_title = " ".join(meaningful_words).upper() if meaningful_words else f"ACTO {i+1}"
+
+        # Palabra destacada en oro
+        long_words = [w.strip('.,:;()!?"') for w in p.split() if len(w) > 5]
+        highlight = long_words[0].upper() if long_words else "REFLEXIÓN"
+
+        # Prompt visual dinámico basado en las primeras 12 palabras
+        concept_snippet = " ".join(p.split()[:12]).replace('"', '')
+        visual_prompt = f"cinematic dark dramatic conceptual illustration representing: {concept_snippet}, atmospheric chiaroscuro lighting, masterpiece"
+
         scenes.append({
             "id": i + 1,
-            "chapter": f"CAPÍTULO {['I', 'II', 'III', 'IV'][i]}: {chapter_names[min(i, len(chapter_names)-1)]}",
+            "chapter": f"CAPÍTULO {roman_numerals[i]}: {chapter_title}",
             "voice_text": p,
-            "visual_prompt": default_prompts[min(i, len(default_prompts)-1)],
+            "visual_prompt": visual_prompt,
             "captions": chunk_words(p, words_per_line=7),
-            "highlight_word": highlights[min(i, len(highlights)-1)]
+            "highlight_word": highlight
         })
 
     return {
@@ -195,24 +200,31 @@ def prepare_scene_illustrations(scenes):
         img_filename = f"editorial_scene_{sc['id']}.jpg"
         img_path = os.path.join(PUBLIC_DIR, img_filename)
         sc['image_file'] = f"public/{img_filename}"
-        
+
+        # Si ya existe una imagen generada para este build específico, continuar
         if os.path.exists(img_path) and os.path.getsize(img_path) > 10000:
             print(f"  ✓ Imagen existente para Escena {sc['id']}")
             continue
 
-        prompt = sc.get('visual_prompt', 'dark cinematic oil painting, dramatic lighting')
-        encoded = urllib.parse.quote(f"{prompt}, vertical composition, 8k, cinematic masterpiece, dark background")
-        pollinations_url = f"https://image.pollinations.ai/prompt/{encoded}?width=960&height=1200&nologo=true&seed={sc['id']*137 + 42}"
-        
+        raw_prompt = sc.get('visual_prompt', 'dark cinematic oil painting, dramatic lighting')
+        concise_prompt = " ".join(raw_prompt.split()[:14])
+        encoded = urllib.parse.quote(concise_prompt)
+        pollinations_url = f"https://image.pollinations.ai/prompt/{encoded}?width=768&height=960&nologo=true&seed={sc['id']*137 + 42}"
+
+        downloaded = False
         try:
             print(f"  ⬇️ Descargando arte para Escena {sc['id']} ({sc['chapter']})...")
             req = urllib.request.Request(pollinations_url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=30) as resp, open(img_path, 'wb') as out_f:
+            with urllib.request.urlopen(req, timeout=18) as resp, open(img_path, 'wb') as out_f:
                 out_f.write(resp.read())
-            print(f"  ✓ Arte guardado: {img_filename} ({os.path.getsize(img_path)//1024} KB)")
+            if os.path.getsize(img_path) > 5000:
+                downloaded = True
+                print(f"  ✓ Arte guardado: {img_filename} ({os.path.getsize(img_path)//1024} KB)")
         except Exception as e:
-            print(f"  ⚠️ Error descargando ilustración {sc['id']} ({e}), generando respaldo...")
-            # Respaldo con ffmpeg (gradiente elegante oscuro con viñeta)
+            print(f"  ⚠️ Error descargando ilustración {sc['id']} ({e})")
+
+        if not downloaded:
+            print(f"  🖼️ Generando respaldo gráfico para Escena {sc['id']}...")
             cmd_fallback = f'ffmpeg -y -f lavfi -i "color=c=0x0a0d14:s=960x1200:d=1" -vf "drawtext=text=\'{sc.get("highlight_word", "TCT")}\':fontcolor=0xd4af37:fontsize=90:x=(w-text_w)/2:y=(h-text_h)/2" -frames:v 1 "{img_path}"'
             subprocess.run(cmd_fallback, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
