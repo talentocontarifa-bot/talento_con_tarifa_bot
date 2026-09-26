@@ -7,8 +7,9 @@ on:
         type: boolean
         default: false
   schedule:
-    # 15:00 UTC = 09:00 Ciudad de México; 10:00 Cancún/Colombia.
-    - cron: '0 15 * * *'
+    - cron: '0 15 * * *'  # 09:00 CDMX
+    - cron: '0 20 * * *'  # 14:00 CDMX
+    - cron: '0 1 * * *'   # 19:00 CDMX
 concurrency:
   group: tct-video-publication
   cancel-in-progress: false
