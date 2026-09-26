@@ -112,13 +112,16 @@ async function publishReelToInstagram(videoFilePath, options = {}) {
 
   // PASO 2: Subir el archivo de video binario a Meta CDN
   console.log('📤 Subiendo video a los servidores de Instagram...');
-  const fileStream = fs.createReadStream(videoFilePath);
+  const videoBuffer = fs.readFileSync(videoFilePath);
 
-  await axios.post(uploadUri, fileStream, {
+  await axios.post(uploadUri, videoBuffer, {
     headers: {
       'Authorization': `OAuth ${accessToken}`,
-      'file_offset': '0',
-      'Content-Type': 'application/octet-stream'
+      'Offset': '0',
+      'offset': '0',
+      'file_size': videoSize.toString(),
+      'Content-Type': 'application/octet-stream',
+      'Content-Length': videoSize.toString()
     },
     maxBodyLength: Infinity,
     maxContentLength: Infinity
