@@ -1,0 +1,16 @@
+/* Screen treatment adapted from HyperFrames yt-screen-warp + grain-overlay.
+   Static seeded grain replaces the registry's infinite CSS animation. */
+@font-face{font-family:Inter;src:url('public/vendor/inter-900.woff2') format('woff2');font-weight:900}
+.motion-scene h1{font-weight:900;letter-spacing:-4px;text-shadow:2px 0 #ff008044,-2px 0 #00ffff33}
+.cctv-screen{position:absolute;inset:0;z-index:18;pointer-events:none;background:linear-gradient(115deg,#ffffff09,transparent 30%),repeating-linear-gradient(0deg,#00000022 0 1px,transparent 1px 4px),repeating-linear-gradient(90deg,#00000009 0 1px,transparent 1px 5px);box-shadow:inset 0 0 90px #00000066,inset 0 0 8px #00000088}
+.cctv-grain{position:absolute;inset:0;z-index:17;pointer-events:none;opacity:.095;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");background-size:256px 256px}
+.cctv-hud{position:absolute;top:110px;left:84px;right:164px;display:flex;justify-content:space-between;z-index:19;font:700 22px monospace;color:#dbff00;letter-spacing:2px}.rec-dot{display:inline-block;background:#ff326b;border-radius:50%;width:15px;height:15px;margin-right:12px}
+.cctv-corners{position:absolute;left:52px;top:95px;width:44px;height:44px;border-left:3px solid #dbff00;border-top:3px solid #dbff00;z-index:16;pointer-events:none;opacity:.7}.cctv-corner-end{left:auto;top:auto;right:132px;bottom:180px;border:0;border-right:3px solid #dbff00;border-bottom:3px solid #dbff00}
+.motion-art:after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(173deg,transparent 0 41px,#12101499 42px 44px,transparent 45px 87px);opacity:.4}
+.scene-cta .ending-mark{position:absolute;left:84px;right:164px;top:330px;display:flex;flex-direction:column;align-items:center;gap:28px;font-size:26px;letter-spacing:5px;color:var(--accent)}
+.ending-mark img{width:220px;height:220px;filter:invert(1)}
+.scene-cta .editorial{text-align:center;top:790px}
+.scene-cta .eyebrow{justify-content:center;gap:35px}
+.scene-cta .action{background:var(--accent);border:6px solid #fff7e6;color:#121014;font-weight:900;font-size:39px;letter-spacing:-1px;padding:28px 18px;box-shadow:10px 10px 0 #ff4e9b;margin-top:45px}
+.scene-cta .action span{font-size:35px}
+.scene-cta .body-copy{font-size:35px}

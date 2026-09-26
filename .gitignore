@@ -10,3 +10,15 @@ video_editorial/out/
 video_editorial/temp_editorial_audio/
 video_editorial/node_modules/
 video_editorial/current_issue.txt
+# Generated media and local caches
+video_tct/public/voice_scene_*.mp3
+video_tct/public/voice_scene_*_raw.mp3
+video_tct/.hyperframes/
+video_editorial/.hyperframes/
+video_editorial/public/editorial_voice.mp3
+video_editorial/public/editorial_scene_*_*.jpg
+__pycache__/
+video_editorial/public/preview_voice_*.mp3
+video_editorial/public/editorial_preview_audio.mp3
+video_editorial/public/demo_data_structure.png
+video_editorial/public/sfx_code/

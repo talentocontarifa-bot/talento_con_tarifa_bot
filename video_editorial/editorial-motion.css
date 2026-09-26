@@ -1,0 +1,17 @@
+.motion-scene{background:linear-gradient(135deg,#142b3d,#090e16 55%);color:#f5f8ff}
+.motion-art{position:absolute;left:84px;top:285px;width:800px;height:420px}
+.motion-art svg{width:100%;height:100%;overflow:visible}
+.motion-art .shape{stroke:#8ee9ff;stroke-width:3;fill:#102431}
+.motion-art .shape:nth-child(2){stroke:#6d89a0;fill:#0d1c28}
+.motion-art .shape:nth-child(3){stroke:#e4f8ff;fill:#193547}
+.motion-art .shape.arrow,.motion-art .shape.arrow-ring{fill:none}
+.motion-art .connector{stroke:#53768e;stroke-width:2;fill:none}
+.motion-word{display:inline-block;max-width:100%;overflow-wrap:anywhere}
+.motion-word:last-child{color:#8ee9ff}
+.motion-scene .editorial-copy{top:760px;left:84px;right:164px}
+.motion-scene h1{font-size:100px;line-height:1.07;letter-spacing:-4px}
+.motion-scene.long-title h1{font-size:76px;letter-spacing:-2px}
+.motion-scene .chapter{background:transparent;padding:0;margin-bottom:28px}
+.motion-scene .highlight{font-size:30px;letter-spacing:3px}
+.motion-rule{position:absolute;left:84px;top:715px;width:110px;height:5px;background:#8ee9ff}
+.motion-scene .editorial-picture{left:84px;top:285px;width:800px;height:390px;overflow:hidden}

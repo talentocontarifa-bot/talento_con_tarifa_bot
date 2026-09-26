@@ -1,160 +1,55 @@
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
-
-let axios;
-try {
-  axios = require('axios');
-} catch (e) {
-  try {
-    axios = require(path.join(__dirname, 'node_modules', 'axios'));
-  } catch (e2) {
-    try {
-      axios = require(path.join(__dirname, '..', 'node_modules', 'axios'));
-    } catch (e3) {
-      throw e;
-    }
-  }
+'use strict';
+const fs=require('node:fs');
+const path=require('node:path');
+const crypto=require('node:crypto');
+const {execFileSync}=require('node:child_process');
+require('dotenv').config({path:path.join(__dirname,'../.env')});
+const {settings,createMetaClient}=require('../video_tct/lib/meta');
+const {publishTargets}=require('../video_tct/lib/publication');
+function buildMetadata(data){
+ if(!data?.title||!Array.isArray(data.timeline)||!data.timeline.length)throw new Error('Faltan los metadatos editoriales.');
+ const fullSpeech=data.timeline.map(scene=>scene.voice_text).join(' ');
+ return {title:data.title,shortTitle:data.title.slice(0,90),caption:`${data.title}\n\n${fullSpeech.slice(0,1600)}\n\nTalento con Tarifa · Ideas y contexto.\n#TalentoConTarifa #Reflexion #Reels`};
 }
-
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
-require('dotenv').config();
-
-const { publishReelToInstagram } = require('../instagram_publisher');
-const { publishVideoToTikTok } = require('../tiktok_publisher');
-const { publishVideoToYouTube } = require('../youtube_publisher');
-
-const VIDEO_PATH = path.join(__dirname, 'out', 'video_editorial.mp4');
-const DATA_PATH = path.join(__dirname, 'editorial_data.json');
-const ISSUE_PATH = path.join(__dirname, 'current_issue.txt');
-
-if (!fs.existsSync(VIDEO_PATH)) {
-  console.error('❌ No se encontró el video en:', VIDEO_PATH);
-  process.exit(1);
+async function publishAll(){
+ const {publishReelToInstagram,getInstagramAccountId}=require('../instagram_publisher');
+ if(!process.env.INSTAGRAM_ACCOUNT_ID){const id=await getInstagramAccountId(process.env.META_PAGE_ID,process.env.META_PAGE_ACCESS_TOKEN);if(id)process.env.INSTAGRAM_ACCOUNT_ID=id;}
+ const config=settings(process.env);
+ if(process.argv.includes('--check-config')){console.log('Redes configuradas:',config.targets.map(t=>t.platform).join(', '));return;}
+ const data=JSON.parse(fs.readFileSync(path.join(__dirname,'editorial_data.json'),'utf8'));
+ if(data.preview_only)throw new Error('La muestra editorial no se puede publicar. Genera primero el video.');
+ const metadata=buildMetadata(data);
+ const file=path.join(__dirname,'out/video_editorial.mp4');
+ const manifest=JSON.parse(fs.readFileSync(path.join(__dirname,'out/render-manifest.json'),'utf8'));
+ const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+ if(manifest.video_sha256!==hash(file)||manifest.data_sha256!==hash(path.join(__dirname,'editorial_data.json')))throw new Error('El render editorial no corresponde al guion sellado.');
+ const issueFile=path.join(__dirname,'current_issue.txt');
+ const issue=fs.existsSync(issueFile)?fs.readFileSync(issueFile,'utf8').trim():null;
+ if(issue&&!/^\d+$/.test(issue))throw new Error('Número de issue inválido.');
+ const source=issue?`https://github.com/talentocontarifa-bot/talento_con_tarifa_bot/issues/${issue}`:`editorial:${crypto.createHash('sha256').update(data.title+data.timeline.map(s=>s.voice_text).join(' ')).digest('hex')}`;
+ const client=createMetaClient({axios:require('axios'),version:config.version});
+ const dryRun=process.argv.includes('--dry-run');
+ const report=await publishTargets({data:{source_url:source},targets:config.targets,stateFile:path.join(__dirname,'publication-state.json'),historyFile:path.join(__dirname,'published-editorials.json'),dryRun,publish:async(target,checkpoint)=>{
+  if(target.platform==='facebook')return client.publish(target,{file,caption:metadata.caption,checkpoint});
+  if(target.platform==='instagram'){const r=await publishReelToInstagram(file,{caption:metadata.caption,share_to_feed:true,checkpoint});return {id:r.mediaId};}
+  if(target.platform==='youtube'){const r=await require('../youtube_publisher').publishVideoToYouTube(file,{title:metadata.shortTitle,description:metadata.caption,tags:['TalentoConTarifa','Ensayo','Shorts']});if(!r.success)throw new Error('YouTube no confirmó la carga.');return {id:r.videoId};}
+  const voice=path.join(__dirname,'public/editorial_voice.mp3');
+  const clean=path.join(__dirname,'out/editorial_tiktok_voiceonly.mp4');
+  execFileSync('ffmpeg',['-y','-i',file,'-i',voice,'-map','0:v:0','-map','1:a:0','-c:v','copy','-c:a','aac','-t',String(data.duration),clean],{stdio:'pipe',timeout:120000});
+  const r=await require('../tiktok_publisher').publishVideoToTikTok(clean,{title:metadata.shortTitle});checkpoint({id:r.publishId});
+  if(!r.success||r.status==='PROCESSING')throw new Error('TikTok sigue pendiente de confirmación.');
+  return {id:r.publishId,status:r.status==='SEND_TO_USER_INBOX'?'submitted':'published'};
+ }});
+ fs.writeFileSync(path.join(__dirname,'out/publication-report.json'),JSON.stringify(report,null,2));
+ console.log(JSON.stringify(report,null,2));
+ if(!dryRun&&issue&&report.complete&&Object.values(report.results).every(r=>r.status==='published')){
+  const bodyFile=path.join(__dirname,'out/issue-result.md');
+  fs.writeFileSync(bodyFile,`Video editorial: ${metadata.title}\n\n`+Object.entries(report.results).map(([p,r])=>`- ${p}: confirmado (${r.id})`).join('\n'));
+  execFileSync('gh',['issue','comment',issue,'--body-file',bodyFile],{stdio:'inherit',timeout:30000});
+  execFileSync('gh',['issue','close',issue],{stdio:'inherit',timeout:30000});
+ }
+ if(!report.complete&&!dryRun)process.exitCode=1;
+ return report;
 }
-
-function buildMetadata() {
-  try {
-    const data = JSON.parse(fs.readFileSync(DATA_PATH, 'utf-8'));
-    const title = data.title || "El día que vendieron el perdón por kilo";
-    const fullSpeech = (data.timeline || []).map(sc => sc.voice_text).join('\n\n');
-
-    const cleanTitle = title.replace(/[^\w\s#áéíóúÁÉÍÓÚñÑ.,:!-]/g, '').trim();
-    const shortTitle = cleanTitle.substring(0, 90);
-
-    const caption = 
-      `📖 ${title.toUpperCase()}\n\n` +
-      `${fullSpeech.substring(0, 1000)}\n\n` +
-      `💡 Una reflexión sobre instituciones, trámites y tarifas a lo largo de la historia.\n\n` +
-      `🔗 Más reflexiones y ensayos en talentocontarifa.com\n\n` +
-      `#TalentoConTarifa #Historia #Filosofia #Economia #Sociedad #Shorts #Reels #TikTok`;
-
-    return {
-      title,
-      cleanTitle,
-      shortTitle,
-      caption,
-      duration: data.duration || 60
-    };
-  } catch (e) {
-    return {
-      title: "El día que vendieron el perdón por kilo",
-      cleanTitle: "El día que vendieron el perdón por kilo",
-      shortTitle: "El día que vendieron el perdón por kilo",
-      caption: "📖 Reflexión sobre instituciones y tarifas a lo largo de la historia.\n\n#TalentoConTarifa #Shorts",
-      duration: 60
-    };
-  }
-}
-
-async function publishAll() {
-  const meta = buildMetadata();
-  const videoSizeKB = Math.round(fs.statSync(VIDEO_PATH).size / 1024);
-
-  console.log('====================================================');
-  console.log('🚀 PUBLICADOR MULTI-PLATAFORMA — TALENTO CON TARIFA EDITORIAL');
-  console.log(`📁 Video: ${VIDEO_PATH} (${videoSizeKB} KB)`);
-  console.log(`📌 Título: "${meta.title}"`);
-  console.log('====================================================');
-
-  const results = {
-    tiktok: null,
-    instagram: null,
-    youtube: null
-  };
-
-  // 1. TIKTOK
-  try {
-    console.log('\n--- 1/3: TIKTOK ---');
-    results.tiktok = await publishVideoToTikTok(VIDEO_PATH, {
-      title: `${meta.shortTitle} #TalentoConTarifa #Historia`
-    });
-  } catch (err) {
-    console.error('❌ Error en TikTok:', err.message);
-    results.tiktok = { success: false, error: err.message };
-  }
-
-  // 2. INSTAGRAM REELS
-  try {
-    console.log('\n--- 2/3: INSTAGRAM REELS ---');
-    results.instagram = await publishReelToInstagram(VIDEO_PATH, {
-      caption: meta.caption,
-      share_to_feed: true
-    });
-  } catch (err) {
-    const errDetail = err.response?.data ? JSON.stringify(err.response.data) : err.message;
-    console.error('❌ Error en Instagram Reels:', errDetail);
-    results.instagram = { success: false, error: errDetail };
-  }
-
-  // 3. YOUTUBE SHORTS
-  try {
-    console.log('\n--- 3/3: YOUTUBE SHORTS ---');
-    results.youtube = await publishVideoToYouTube(VIDEO_PATH, {
-      title: `${meta.shortTitle} #Shorts`,
-      description: meta.caption,
-      tags: ['TalentoConTarifa', 'Historia', 'Filosofia', 'Economia', 'Ensayos', 'Documental', 'Shorts']
-    });
-  } catch (err) {
-    console.error('❌ Error en YouTube Shorts:', err.message);
-    results.youtube = { success: false, error: err.message };
-  }
-
-  console.log('\n====================================================');
-  console.log('📊 REPORTE DE PUBLICACIÓN FINAL — EDITORIAL');
-  console.log('====================================================');
-  console.log(`🎵 TikTok:          ${results.tiktok?.success ? '✅ PUBLICADO' : (results.tiktok?.error ? `❌ ERROR (${results.tiktok.error})` : '⚠️ OMITIDO')}`);
-  console.log(`📸 Instagram Reels:  ${results.instagram?.success ? '✅ PUBLICADO' : (results.instagram?.error ? `❌ ERROR (${results.instagram.error})` : '⚠️ OMITIDO')}`);
-  console.log(`▶️  YouTube Shorts:   ${results.youtube?.success ? '✅ PUBLICADO' : (results.youtube?.error ? `❌ ERROR (${results.youtube.error})` : '⚠️ OMITIDO')}`);
-  console.log('====================================================\n');
-
-  // Si vino de un Issue, comentar y cerrar
-  if (fs.existsSync(ISSUE_PATH)) {
-    try {
-      const issueNum = fs.readFileSync(ISSUE_PATH, 'utf-8').trim();
-      if (issueNum) {
-        console.log(`💬 Actualizando y cerrando Issue #${issueNum}...`);
-        const ytLink = results.youtube?.url ? `[Ver en YouTube Shorts](${results.youtube.url})` : (results.youtube?.success ? 'Publicado en canal oficial' : 'Pendiente / error');
-        const igStatus = results.instagram?.success ? 'Publicado en [@talentocontarifa](https://instagram.com/talentocontarifa)' : 'Error / omitido';
-        const ttStatus = results.tiktok?.success ? 'Enviado a bandeja de entrada de TikTok' : 'Error / omitido';
-
-        const commentBody = 
-          `### 🎬 Video Editorial Generado y Publicado\n\n` +
-          `**Título:** ${meta.title}\n\n` +
-          `- ▶️ **YouTube Shorts:** ${ytLink}\n` +
-          `- 📸 **Instagram Reels:** ${igStatus}\n` +
-          `- 🎵 **TikTok:** ${ttStatus}\n\n` +
-          `*Procesado automáticamente con el motor Hyperframes de Talento con Tarifa.*`;
-
-        const safeComment = commentBody.replace(/"/g, '\\"');
-        execSync(`gh issue comment ${issueNum} --body "${safeComment}"`, { stdio: 'inherit' });
-        execSync(`gh issue close ${issueNum}`, { stdio: 'inherit' });
-        console.log(`✅ Issue #${issueNum} comentado y cerrado exitosamente.`);
-      }
-    } catch (e) {
-      console.warn(`⚠️ No se pudo actualizar el issue:`, e.message);
-    }
-  }
-}
-
-publishAll();
+if(require.main===module)publishAll().catch(error=>{console.error(error.message);process.exitCode=1;});
+module.exports={buildMetadata,publishAll};

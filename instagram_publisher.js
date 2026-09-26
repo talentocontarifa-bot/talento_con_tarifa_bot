@@ -25,7 +25,7 @@ try {
 }
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
-const GRAPH_API_VERSION = 'v21.0';
+const GRAPH_API_VERSION = process.env.META_GRAPH_VERSION || 'v21.0';
 
 /**
  * Obtiene el ID de la cuenta de Instagram Business conectada a la página de Facebook si no está en .env
@@ -94,6 +94,7 @@ async function publishReelToInstagram(videoFilePath, options = {}) {
   let initRes;
   try {
     initRes = await axios.post(initUrl, postData, {
+      timeout: 60000,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
   } catch (err) {
@@ -108,6 +109,9 @@ async function publishReelToInstagram(videoFilePath, options = {}) {
 
   const containerId = initRes.data.id;
   const uploadUri = initRes.data.uri;
+  const uploadTarget = new URL(uploadUri);
+  if (uploadTarget.protocol !== 'https:' || uploadTarget.hostname !== 'rupload.facebook.com') throw new Error('Destino de carga de Instagram inválido.');
+  options.checkpoint?.({container_id:containerId,phase:'upload'});
   console.log(`✅ Contenedor de Reel creado con éxito. ID: ${containerId}`);
 
   // PASO 2: Subir el archivo de video binario a Meta CDN
@@ -123,6 +127,8 @@ async function publishReelToInstagram(videoFilePath, options = {}) {
       'Content-Type': 'application/octet-stream',
       'Content-Length': videoSize.toString()
     },
+    timeout: 300000,
+    maxRedirects: 0,
     maxBodyLength: Infinity,
     maxContentLength: Infinity
   });
@@ -130,7 +136,9 @@ async function publishReelToInstagram(videoFilePath, options = {}) {
   console.log('✅ Video cargado con éxito en Meta CDN. Esperando codificación...');
 
   // PASO 3: Sondear hasta que el estado sea FINISHED
+  options.checkpoint?.({phase:"processing"});
   await pollInstagramContainerStatus(containerId, accessToken);
+  options.checkpoint?.({phase:"publishing"});
 
   // PASO 4: Publicar el Reel
   console.log('🚀 Publicando Reel en Instagram...');
@@ -179,6 +187,7 @@ async function pollInstagramContainerStatus(containerId, accessToken, maxAttempt
 
     try {
       const res = await axios.get(statusUrl, {
+        timeout: 30000,
         params: {
           fields: 'status_code,status',
           access_token: accessToken

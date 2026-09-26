@@ -1,0 +1,74 @@
+{
+  "schema_version": 2,
+  "preview_only": true,
+  "source_url": null,
+  "layout_type": "cinematic",
+  "scenes": [
+    {
+      "type": "title",
+      "text1": "La IA no es",
+      "text2": "tu estrategia.",
+      "voice_text": "Antes de sumar otra herramienta de inteligencia artificial, define qué problema quieres resolver.",
+      "image": "public/agent_robot.png",
+      "image_kind": "illustration",
+      "start": 0,
+      "end": 6.2,
+      "audio_duration": 6,
+      "durationInFrames": 186
+    },
+    {
+      "type": "image_text",
+      "title": "Empieza por una tarea.",
+      "key_points": [
+        "Repetitiva",
+        "Medible",
+        "Con revisión humana"
+      ],
+      "voice_text": "Elige una tarea repetitiva que puedas medir y revisar. Ese puede ser un buen punto de partida.",
+      "image": "public/agent_robot.png",
+      "image_kind": "illustration",
+      "start": 6.2,
+      "end": 13.4,
+      "audio_duration": 7,
+      "durationInFrames": 216
+    },
+    {
+      "type": "insight",
+      "title": "Automatiza con criterio.",
+      "body": "Una herramienta tiene sentido cuando resuelve un problema concreto.",
+      "voice_text": "La pregunta no es cuánta inteligencia artificial usas, sino para qué la estás usando.",
+      "image": "public/agent_robot.png",
+      "image_kind": "illustration",
+      "start": 13.4,
+      "end": 19.6,
+      "audio_duration": 6,
+      "durationInFrames": 186
+    },
+    {
+      "type": "image_text",
+      "title": "Prueba. Mide. Ajusta.",
+      "voice_text": "Prueba con un proceso pequeño, revisa la calidad y decide si vale la pena ampliarlo.",
+      "image": "public/agent_robot.png",
+      "image_kind": "illustration",
+      "start": 19.6,
+      "end": 26.8,
+      "audio_duration": 7,
+      "durationInFrames": 216
+    },
+    {
+      "type": "cta",
+      "headline": "Tu siguiente paso empieza aquí.",
+      "sub": "¿Qué tarea te gustaría dejar de repetir?",
+      "btn": "GUARDA ESTA IDEA",
+      "voice_text": "Guarda esta idea y cuéntanos qué tarea te gustaría automatizar primero en tu negocio.",
+      "image": "public/agent_robot.png",
+      "image_kind": "illustration",
+      "start": 26.8,
+      "end": 34.8,
+      "audio_duration": 7,
+      "durationInFrames": 240
+    }
+  ],
+  "total_frames": 1044,
+  "total_duration_sec": 34.8
+}

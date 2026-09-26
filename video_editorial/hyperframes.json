@@ -1,14 +1,11 @@
 {
-  "$schema": "https://hyperframes.dev/schema.json",
-  "name": "video_editorial",
-  "resolution": "portrait",
   "compositions": [
     {
       "id": "main",
       "source": "index.html",
       "width": 1080,
       "height": 1920,
-      "duration": 45,
+      "duration": 40.292,
       "fps": 30
     }
   ]
