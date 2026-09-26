@@ -140,9 +140,9 @@ async function publishVideoToYouTube(videoFilePath, metadata = {}) {
   console.log('✅ Sesión de subida iniciada en Google. Enviando archivo de video...');
 
   // PASO 2: Subir archivo de video a la URL obtenida
-  const fileStream = fs.createReadStream(videoFilePath);
+  const fileBuffer = fs.readFileSync(videoFilePath);
 
-  const uploadRes = await axios.put(uploadUrl, fileStream, {
+  const uploadRes = await axios.put(uploadUrl, fileBuffer, {
     headers: {
       'Content-Type': 'video/mp4',
       'Content-Length': videoSize.toString()
