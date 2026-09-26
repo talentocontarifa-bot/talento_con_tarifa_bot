@@ -163,8 +163,9 @@ async function publishAll() {
       share_to_feed: true
     });
   } catch (err) {
-    console.error('❌ Error en Instagram Reels:', err.message);
-    results.instagram = { success: false, error: err.message };
+    const errorDetails = err.response?.data ? JSON.stringify(err.response.data) : err.message;
+    console.error('❌ Error en Instagram Reels:', errorDetails);
+    results.instagram = { success: false, error: errorDetails };
   }
 
   // 3. PUBLICAR EN YOUTUBE SHORTS

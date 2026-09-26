@@ -84,15 +84,23 @@ async function publishReelToInstagram(videoFilePath, options = {}) {
   console.log('📡 Creando contenedor de Reel (Resumable Upload)...');
   const initUrl = `https://graph.facebook.com/${GRAPH_API_VERSION}/${igAccountId}/media`;
   
-  const initRes = await axios.post(initUrl, null, {
-    params: {
-      media_type: 'REELS',
-      upload_type: 'resumable',
-      caption: caption,
-      share_to_feed: shareToFeed,
-      access_token: accessToken
-    }
-  });
+  const postData = new URLSearchParams();
+  postData.append('media_type', 'REELS');
+  postData.append('upload_type', 'resumable');
+  postData.append('caption', caption);
+  postData.append('share_to_feed', shareToFeed.toString());
+  postData.append('access_token', accessToken);
+
+  let initRes;
+  try {
+    initRes = await axios.post(initUrl, postData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+  } catch (err) {
+    const errorDetails = err.response?.data ? JSON.stringify(err.response.data) : err.message;
+    console.error('❌ Error detallado de Meta al crear contenedor de IG:', errorDetails);
+    throw new Error(`Error de Meta al crear contenedor de IG: ${errorDetails}`);
+  }
 
   if (!initRes.data?.id || !initRes.data?.uri) {
     throw new Error(`Respuesta inválida al crear contenedor de IG: ${JSON.stringify(initRes.data)}`);
@@ -125,12 +133,20 @@ async function publishReelToInstagram(videoFilePath, options = {}) {
   console.log('🚀 Publicando Reel en Instagram...');
   const publishUrl = `https://graph.facebook.com/${GRAPH_API_VERSION}/${igAccountId}/media_publish`;
   
-  const pubRes = await axios.post(publishUrl, null, {
-    params: {
-      creation_id: containerId,
-      access_token: accessToken
-    }
-  });
+  const publishData = new URLSearchParams();
+  publishData.append('creation_id', containerId);
+  publishData.append('access_token', accessToken);
+
+  let pubRes;
+  try {
+    pubRes = await axios.post(publishUrl, publishData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+  } catch (err) {
+    const errorDetails = err.response?.data ? JSON.stringify(err.response.data) : err.message;
+    console.error('❌ Error detallado al publicar Reel:', errorDetails);
+    throw new Error(`Error de Meta en media_publish: ${errorDetails}`);
+  }
 
   const mediaId = pubRes.data?.id;
   if (!mediaId) {
