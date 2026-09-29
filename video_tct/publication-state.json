@@ -1,0 +1,26 @@
+{
+  "a96af241695954dffdbf0126de1933108a971f82a7779e5e5d7fc2c555f0acc5": {
+    "source_url": "https://spanish.entrepreneur.com/emprendedores/si-asi-trabajamos-aqui-es-norma-tu-diversidad-es-decoracion",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "945823321419377",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18119535388807797",
+        "phase": "publishing",
+        "id": "18127926328699273"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7691101098434185222"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "sh40jZo-IHA"
+      }
+    }
+  }
+}
