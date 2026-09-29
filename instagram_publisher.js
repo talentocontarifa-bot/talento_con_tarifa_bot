@@ -32,13 +32,15 @@ const GRAPH_API_VERSION = process.env.META_GRAPH_VERSION || 'v21.0';
  */
 async function getInstagramAccountId(pageId, accessToken) {
   if (process.env.INSTAGRAM_ACCOUNT_ID) {
-    return process.env.INSTAGRAM_ACCOUNT_ID;
+    return process.env.INSTAGRAM_ACCOUNT_ID.trim();
   }
 
-  if (!pageId || !accessToken) return null;
+  const pId = pageId?.trim();
+  const token = accessToken?.trim();
+  if (!pId || !token) return null;
 
   try {
-    const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/${pageId}?fields=instagram_business_account&access_token=${accessToken}`;
+    const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/${pId}?fields=instagram_business_account&access_token=${token}`;
     const res = await axios.get(url);
     if (res.data?.instagram_business_account?.id) {
       return res.data.instagram_business_account.id;
@@ -56,8 +58,8 @@ async function getInstagramAccountId(pageId, accessToken) {
  * @param {object} options - Opciones adicionales (caption, share_to_feed, cover_url)
  */
 async function publishReelToInstagram(videoFilePath, options = {}) {
-  const pageId = process.env.META_PAGE_ID;
-  const accessToken = process.env.META_PAGE_ACCESS_TOKEN || process.env.META_USER_ACCESS_TOKEN;
+  const pageId = process.env.META_PAGE_ID?.trim();
+  const accessToken = (process.env.META_PAGE_ACCESS_TOKEN || process.env.META_USER_ACCESS_TOKEN)?.trim();
 
   if (!accessToken) {
     throw new Error('Falta META_PAGE_ACCESS_TOKEN en las variables de entorno.');

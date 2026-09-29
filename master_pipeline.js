@@ -6,8 +6,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const parser = new Parser();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const PAGE_ID = process.env.META_PAGE_ID;
-const ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN;
+const PAGE_ID = process.env.META_PAGE_ID?.trim();
+const ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN?.trim();
 
 /**
  * 1. OBTENER FUENTE DE CONTENIDO (Prioridad: Issues > RSS)

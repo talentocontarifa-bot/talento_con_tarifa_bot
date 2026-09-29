@@ -8,16 +8,16 @@ function settings(env){
  if(!platforms.length||platforms.some(p=>!['facebook','instagram','youtube','tiktok'].includes(p))||new Set(platforms).size!==platforms.length)throw new Error('PUBLISH_PLATFORMS contiene redes inválidas o repetidas.');
  const version=env.META_GRAPH_VERSION||'v21.0';
  if(!/^v\d+\.0$/.test(version))throw new Error('META_GRAPH_VERSION inválida.');
- const token=env.META_PAGE_ACCESS_TOKEN||env.META_USER_ACCESS_TOKEN;
+ const token=(env.META_PAGE_ACCESS_TOKEN||env.META_USER_ACCESS_TOKEN)?.trim();
  const targets=platforms.map(platform=>{
   if(platform==='facebook'||platform==='instagram'){
-   const account=platform==='facebook'?env.META_PAGE_ID:(env.INSTAGRAM_ACCOUNT_ID||env.INSTAGRAM_USER_ID);
+   const account=(platform==='facebook'?env.META_PAGE_ID:(env.INSTAGRAM_ACCOUNT_ID||env.INSTAGRAM_USER_ID))?.trim();
    if(!/^\d+$/.test(account||'')||!token)throw new Error(`Faltan ID o token para ${platform}.`);
    return {platform,account,token};
   }
-  const secret=platform==='youtube'?env.YOUTUBE_REFRESH_TOKEN:(env.TIKTOK_REFRESH_TOKEN||env.TIKTOK_ACCESS_TOKEN);
+  const secret=(platform==='youtube'?env.YOUTUBE_REFRESH_TOKEN:(env.TIKTOK_REFRESH_TOKEN||env.TIKTOK_ACCESS_TOKEN))?.trim();
   if(!secret||(platform==='youtube'&&(!env.YOUTUBE_CLIENT_ID||!env.YOUTUBE_CLIENT_SECRET)))throw new Error(`Faltan credenciales para ${platform}.`);
-  const identity=platform==='youtube'?(env.YOUTUBE_CHANNEL_ID||env.YOUTUBE_CLIENT_ID):(env.TIKTOK_OPEN_ID||env.TIKTOK_CLIENT_KEY);
+  const identity=(platform==='youtube'?(env.YOUTUBE_CHANNEL_ID||env.YOUTUBE_CLIENT_ID):(env.TIKTOK_OPEN_ID||env.TIKTOK_CLIENT_KEY))?.trim();
   if(!identity)throw new Error(`Falta una identidad estable para ${platform}: configura TIKTOK_OPEN_ID o TIKTOK_CLIENT_KEY.`);
   return {platform,account:require('node:crypto').createHash('sha256').update(identity).digest('hex').slice(0,16)};
  });
