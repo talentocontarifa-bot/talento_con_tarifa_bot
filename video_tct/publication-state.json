@@ -22,5 +22,29 @@
         "id": "sh40jZo-IHA"
       }
     }
+  },
+  "9245197aa0d3818961ccc7d2ed976a784a2d3c6bbefe8afb717d1cbc65ce6f97": {
+    "source_url": "https://spanish.entrepreneur.com/iniciar-un-negocio/la-soledad-no-es-tu-enemiga-asi-puedes-convertirla-en-tu-mayor-aliada",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1895287755177524",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18119852134807797",
+        "phase": "publishing",
+        "id": "18144838891602188"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7691472589289654292"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "hEpY8CA0zmk"
+      }
+    }
   }
 }
