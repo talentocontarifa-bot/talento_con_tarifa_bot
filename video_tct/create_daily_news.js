@@ -421,9 +421,10 @@ function sanitizeTtsText(text) {
 
 async function synthesizeSnippet(text, targetPath) {
   const clean = sanitizeTtsText(text);
+  const ttsEngine = (process.env.TTS_ENGINE || 'kokoro').toLowerCase();
 
-  // 1. ElevenLabs si hay API key
-  if (ELEVENLABS_API_KEY) {
+  // 1. ElevenLabs si está configurado explícitamente y hay API key
+  if (ttsEngine === 'elevenlabs' && ELEVENLABS_API_KEY) {
     try {
       const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`, {
         method: 'POST',
@@ -445,11 +446,34 @@ async function synthesizeSnippet(text, targetPath) {
     }
   }
 
-  // 2. edge-tts (voz neuronal es-MX-JorgeNeural, gratuita y de alta fidelidad)
+  // 2. Kokoro TTS (em_alex predeterminado con Masterización Broadcast TCT)
+  if (ttsEngine !== 'edge' && ttsEngine !== 'google') {
+    try {
+      const { execFileSync } = require('child_process');
+      const kokoroScript = path.join(__dirname, '..', 'video_shared', 'synthesize_kokoro.py');
+      const voice = process.env.KOKORO_VOICE || 'em_alex';
+      const speed = process.env.KOKORO_SPEED || '1.05';
+      const pythonBin = process.env.PYTHON_PATH || 'python';
+      execFileSync(pythonBin, [
+        kokoroScript,
+        '--text', clean,
+        '--voice', voice,
+        '--speed', String(speed),
+        '--out', targetPath
+      ], { stdio: 'pipe', timeout: 120000 });
+      if (fs.existsSync(targetPath) && fs.statSync(targetPath).size > 1000) {
+        return;
+      }
+    } catch (kokoroErr) {
+      // Continuar al respaldo de edge-tts
+    }
+  }
+
+  // 3. edge-tts (voz neuronal es-MX-JorgeNeural a +8%, con masterización broadcast)
   try {
     const { execFileSync } = require('child_process');
     const rawSnippet = targetPath.replace(/\.mp3$/, '_raw.mp3');
-    execFileSync('python', ['-m', 'edge_tts', '--voice', 'es-MX-JorgeNeural', '--rate', '+0%', '--text', clean, '--write-media', rawSnippet], { stdio: 'pipe', timeout: 120000 });
+    execFileSync('python', ['-m', 'edge_tts', '--voice', 'es-MX-JorgeNeural', '--rate', '+8%', '--text', clean, '--write-media', rawSnippet], { stdio: 'pipe', timeout: 120000 });
     if (fs.existsSync(rawSnippet) && fs.statSync(rawSnippet).size > 1000) {
       // Cadena de Masterización Vocal Broadcast (Highpass, Warmth, Presence, Compresor y Loudnorm a -14 LUFS)
       const filterChain = "highpass=f=80,equalizer=f=140:width_type=h:width=60:g=3.5,equalizer=f=3600:width_type=h:width=1200:g=4.0,acompressor=threshold=-16dB:ratio=4:attack=10:release=120:makeup=2.5dB,loudnorm=I=-14:TP=-1.0:LRA=7";
@@ -461,7 +485,7 @@ async function synthesizeSnippet(text, targetPath) {
     // Si falla edge-tts, continuar al fallback
   }
 
-  // 3. Fallback a Google TTS
+  // 4. Fallback a Google TTS
   const base64s = await googleTTS.getAllAudioBase64(clean, { lang: 'es', slow: false });
   const buffer = Buffer.concat(base64s.map(chunk => Buffer.from(chunk.base64, 'base64')));
   fs.writeFileSync(targetPath, buffer);

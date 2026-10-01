@@ -12,7 +12,9 @@
     "auth:youtube": "node get_youtube_token.js",
     "get:instagram-id": "node get_instagram_id.js",
     "video:preview": "npm run dev --prefix video_tct",
-    "video:demo": "npm run demo --prefix video_tct"
+    "video:demo": "npm run demo --prefix video_tct",
+    "video:trending": "npm run generate:trending --prefix video_tct",
+    "trending:all": "node trending_top10.js --video"
   },
   "keywords": [],
   "author": "",

@@ -24,7 +24,7 @@ test('TikTok inbox delivery is recorded and never uploaded twice',async t=>{
 });
 test('voice windows include exact frame-rounded pauses without accumulated drift',()=>{
  const t=createTimeline(demo.scenes,[2.101,3,4,5,6]);
- assert.equal(t.scenes[1].start,(Math.ceil(2.101*30)+6)/30);
+ assert.equal(t.scenes[1].start,(Math.ceil(2.101*30)+12)/30);
  t.scenes.forEach((s,i)=>{if(i)assert.equal(s.start,t.scenes[i-1].end);assert.ok(s.end-s.start>=s.audio_duration);});
  assert.equal(t.total_duration_sec,t.scenes.at(-1).end);
 });

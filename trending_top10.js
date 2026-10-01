@@ -184,6 +184,14 @@ async function main() {
   await sendTelegram(reportHtml);
   await publishToFacebook(reportHtml);
 
+  // Si se pasa --video, ejecutar automáticamente el generador de video
+  if (process.argv.includes('--video')) {
+    console.log("\n🎬 Iniciando generador de video Reel para el Top 10...");
+    const { execFileSync } = require('child_process');
+    const generatorScript = path.join(__dirname, 'video_tct', 'create_trending_video.js');
+    execFileSync('node', [generatorScript], { stdio: 'inherit' });
+  }
+
   console.log("\n🎉 TOP 10 TRENDING COMPLETADO CON ÉXITO.");
 }
 
@@ -194,4 +202,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { fetchHuggingFaceTrending, fetchGitHubTrending, generateExecutiveSummary };
+module.exports = { main, fetchHuggingFaceTrending, fetchGitHubTrending, generateExecutiveSummary };

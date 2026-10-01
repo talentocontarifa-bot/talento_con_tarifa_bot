@@ -19,7 +19,7 @@ function createTimeline(scenes, durations) {
   const result = scenes.map((scene,i) => {
     if(!Number.isFinite(durations[i]) || durations[i]<=0) throw new Error('Duración de audio inválida.');
     const audioFrames = Math.ceil(durations[i]*FPS);
-    const frames = audioFrames + (i === scenes.length-1 ? 30 : 6);
+    const frames = audioFrames + (i === scenes.length-1 ? 45 : 12);
     const start = frame / FPS;
     frame += frames;
     return {...scene, start, end:frame/FPS, audio_duration:durations[i], durationInFrames:frames, audio:`public/voice_scene_${i+1}.mp3`};

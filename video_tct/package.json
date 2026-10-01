@@ -44,6 +44,7 @@
     "render:hf": "hyperframes render -o out/video_final_tct.mp4",
     "dev:legacy": "remotion studio",
     "generate": "node create_daily_news.js",
+    "generate:trending": "node create_trending_video.js",
     "demo": "node scripts/demo.js",
     "compose": "node scripts/compose.js",
     "check": "hyperframes check",

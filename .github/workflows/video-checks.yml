@@ -15,7 +15,9 @@ jobs:
           node-version: '22'
       - run: node --test video_tct/tests/*.test.js
       - run: node --check video_tct/create_daily_news.js
+      - run: node --check video_tct/create_trending_video.js
       - run: node --check video_tct/publish_video.js
+      - run: node --check trending_top10.js
 
       - uses: actions/setup-python@v5
         with:

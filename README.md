@@ -57,9 +57,23 @@ node publish_video.js --dry-run
 
 En Actions:
 
-- `Crear y publicar Reel TCT`: la ejecución manual genera una vista previa por defecto; activa `publish` para publicar. El horario automático mantiene 15:00 UTC.
-- `Crear Video Editorial`: procesa entrada manual o issues de autores con acceso al repositorio que coincidan con los disparadores editoriales. Los campos del usuario viajan por variables de entorno, sin interpolarlos en comandos de shell. Este flujo conserva la publicación automática existente.
+- `Crear y publicar Reel TCT` (`crear_video_tct.yml`): conserva íntegramente sus 3 ejecuciones diarias automáticas para noticias de la cola/RSS.
+- `Crear Video Editorial` (`crear_video_editorial.yml`): conserva el procesamiento de ensayos y documentales a partir de issues o manual.
+- `Top 10 Trending IA Semanal` (`trending_semanal.yml`): conserva el reporte de texto a Telegram y Facebook de los viernes.
+- `Análisis Semanal de Redes` (`analisis_semanal.yml`): conserva el reporte analítico de desempeño de los lunes.
+- `Crear Video Reel Top 10 Trending` (`crear_video_trending.yml`): **nueva función complementaria** que se ejecuta los **lunes y viernes** a las 09:00 AM CDMX (`0 15 * * 1,5`) para generar y publicar el video Reel de los 5 modelos de Hugging Face y 5 repositorios de GitHub.
 - Los workflows validan la composición antes del render, normalizan el MP4 y guardan resultados como artefactos incluso si falla una red.
+
+Comandos para Top 10 Trending:
+```sh
+# Consultar datos y publicar resumen en texto a Telegram / Facebook:
+node trending_top10.js
+
+# Generar composición de video Reel del Top 10:
+npm run video:trending
+# O proceso completo (datos + video):
+npm run trending:all
+```
 
 `PUBLISH_PLATFORMS` permite elegir una lista separada por comas. Si está vacía, se solicitan Facebook e Instagram; se añaden TikTok y YouTube cuando sus credenciales están presentes. Las integraciones existentes de TikTok y YouTube se conservan. TikTok recibe una versión con la pista de voz reconstruida con los mismos tiempos del video, sin música de fondo.
 
