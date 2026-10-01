@@ -1,0 +1,26 @@
+{
+  "90471d5431d91a1d73bc44bf14640692cc99ba5873b4e8092e9f032e152d7ac9": {
+    "source_url": "https://github.com/talentocontarifa-bot/talento_con_tarifa_bot/issues/14",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "959815879896068",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18119875528807797",
+        "phase": "publishing",
+        "id": "17924697336424896"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7691508989183543303"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "fFKV6e1bxRE"
+      }
+    }
+  }
+}
