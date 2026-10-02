@@ -1,68 +1,604 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><title>TCT · Cinematic Reel</title><script src="public/vendor/gsap.min.js"></script><style>@font-face{font-family:Inter;src:url('public/vendor/inter-400.woff2') format('woff2');font-weight:400}
-@font-face{font-family:Inter;src:url('public/vendor/inter-700.woff2') format('woff2');font-weight:700}
-*{box-sizing:border-box;margin:0}html,body{width:100%;height:100%;overflow:hidden;background:#090d13;color:#f5f8ff;font-family:Inter,sans-serif}#root{width:100%;height:100%;position:relative;overflow:hidden;background:#090d13}.scene,.scene-inner{position:absolute;inset:0;overflow:hidden}.picture{position:absolute;left:0;top:0;width:1080px;height:1420px;overflow:hidden;background:#101b25}.picture img{width:100%;height:100%;object-fit:cover;object-position:50% 44%;display:block}.top-shade{position:absolute;inset:0 0 auto;height:320px;background:linear-gradient(#080d15e8,transparent)}.bottom-shade{position:absolute;inset:650px 0 0;background:linear-gradient(transparent,#090d13 650px)}.brand{position:absolute;left:84px;top:168px;right:160px;display:flex;gap:20px;align-items:center;z-index:10}.brand img{width:72px;height:72px;filter:invert(1)}.brand>span{font-size:24px;font-weight:700;line-height:1.1;letter-spacing:1px}.brand .edition{margin-left:auto;font-size:18px;font-weight:400;color:#c6d2e3;letter-spacing:3px}.editorial{position:absolute;left:84px;right:164px;top:940px}.eyebrow{color:#80e6ff;font-size:20px;font-weight:700;letter-spacing:3px;margin-bottom:25px;display:flex;justify-content:space-between}.eyebrow span{color:#b0c1d2;font-size:18px;letter-spacing:2px}h1{font-size:80px;font-weight:700;line-height:1.06;letter-spacing:-4px;overflow-wrap:break-word;max-width:830px}.body-copy{font-size:32px;line-height:1.45;color:#c4d1e1;margin-top:28px;max-width:790px}ul{list-style:none;display:flex;flex-direction:column;gap:16px;margin-top:28px}li{font-size:28px;line-height:1.3;display:flex;gap:20px;color:#d5dfec}li>span{font-size:18px;color:#80e6ff;padding-top:5px}.scene-insight .picture{height:1000px}.scene-insight .editorial{top:830px}.scene-insight h1{font-size:90px;max-width:800px}.scene-insight .body-copy{border-left:3px solid #80e6ff;padding-left:28px;margin-top:40px}.scene-cta .editorial{top:910px}.action{display:flex;justify-content:space-between;align-items:center;max-width:760px;border-top:1px solid #516273;padding-top:26px;margin-top:38px;font-size:27px;color:#80e6ff;letter-spacing:1px}.action span{font-size:40px}.image-note{position:absolute;top:840px;left:84px;color:#e0e8f1;background:#090d13cc;padding:8px 12px;font-size:14px;letter-spacing:2px}.scene-insight .image-note{top:750px}.caption{position:absolute;left:84px;right:164px;top:1460px;z-index:12}.caption{padding:22px 26px;background:#101923;font-size:30px;font-weight:400;line-height:1.4;color:#f1f6ff;border-radius:12px;max-height:230px}.progress{position:absolute;left:84px;right:164px;top:1720px;height:3px;background:#2c3948;z-index:12}.progress>div{height:3px;background:#80e6ff;transform-origin:left center}
-.eyebrow span { color: #f5f8ff; background: #090d13; padding: 2px 8px; }
-/* No WebGL, video backgrounds, remote fonts, particles, or per-frame JS. */
-.motion-scene{background:#121014;color:#fff7e6;--accent:#dbff00;--secondary:#ff4e9b}
-.motion-scene.palette-1{--accent:#ff8bc1;--secondary:#dbff00;background:#211121}
-.motion-scene.palette-2{--accent:#ffb85c;--secondary:#ff4e9b;background:#191016}
-.motion-art{position:absolute;left:84px;top:285px;width:800px;height:420px;opacity:.95}
-.motion-art svg{width:100%;height:100%;overflow:visible}
-.motion-art .shape{stroke:var(--accent);stroke-width:9;fill:#29212d}
-.motion-art .shape:nth-child(2){stroke:var(--secondary);fill:#392139}
-.motion-art .shape:nth-child(3){stroke:#fff7e6;fill:var(--secondary)}
-.motion-art .shape.arrow{fill:none;stroke-width:22;stroke-linecap:square;stroke-linejoin:miter}
-.motion-art .shape.arrow-ring{fill:none}
-.motion-art .connector{stroke:var(--accent);stroke-width:7;fill:none}
-.motion-word{display:inline-block;max-width:100%;overflow-wrap:anywhere}
-.motion-word:last-child{color:#121014;background:var(--accent);padding:0 8px 5px;margin-top:6px}
-.motion-scene .editorial,.motion-scene .editorial-copy{top:760px;left:84px;right:164px}
-.motion-scene h1{font-size:98px;line-height:1.08;letter-spacing:-4px;max-width:830px;text-transform:uppercase;color:#fff7e6}
-.motion-scene .body-copy{font-size:32px;line-height:1.3;margin-top:25px;border:0;padding:0;color:#fff7e6}
-.motion-scene ul{gap:12px;margin-top:24px}
-.motion-scene li{font-size:29px;padding:12px 18px;border-left:7px solid var(--accent);background:#312336;color:#fff7e6}
-.motion-scene li>span{color:var(--accent)}
-.motion-scene .chapter,.motion-scene .eyebrow{background:transparent;padding:0;margin-bottom:24px;color:var(--accent);font-size:20px;font-weight:700;letter-spacing:2px}
-.motion-scene .chapter span,.motion-scene .eyebrow span{background:transparent;color:#fff7e6}
-.motion-scene .highlight{font-size:29px;letter-spacing:2px;color:var(--accent);border-color:var(--secondary)}
-.motion-scene .action{color:var(--accent);border-color:var(--secondary);margin-top:25px;padding-top:20px}
-.motion-scene .motion-rule{position:absolute;left:84px;top:705px;width:210px;height:12px;background:var(--accent);transform:rotate(-3deg)}
-.motion-wipe{position:absolute;inset:0;background:var(--accent);z-index:15;pointer-events:none}
-.motion-scene.long-title h1{font-size:72px;letter-spacing:-2px}
-.motion-scene .top-shade,.motion-scene .bottom-shade,.motion-scene .editorial-shade{display:none}
-.motion-scene .picture,.motion-scene .editorial-picture{position:absolute;display:block;left:84px;top:290px;width:810px;height:385px;overflow:hidden;border:7px solid var(--accent);box-shadow:15px 15px 0 var(--secondary);transform:rotate(-2deg)}
-.motion-scene .picture img,.motion-scene .editorial-picture img{width:100%;height:100%;object-fit:cover}
-.motion-scene .image-note{display:block;position:absolute;left:100px;top:615px;padding:8px 12px;background:#121014;color:#fff7e6;z-index:2;font-size:15px;letter-spacing:1px}
-.caption,.editorial-caption{background:#fff7e6;color:#121014;border-radius:0;border-left:9px solid #ff4e9b;font-size:31px;font-weight:700}
-.brand,.editorial-brand{color:#fff7e6}.brand .edition,.editorial-brand>span:last-child{color:#dbff00}
-.progress>div,.editorial-progress>div{background:#dbff00;height:6px}
-/* Screen treatment adapted from HyperFrames yt-screen-warp + grain-overlay.
-   Static seeded grain replaces the registry's infinite CSS animation. */
-@font-face{font-family:Inter;src:url('public/vendor/inter-900.woff2') format('woff2');font-weight:900}
-.motion-scene h1{font-weight:900;letter-spacing:-4px;text-shadow:2px 0 #ff008044,-2px 0 #00ffff33}
-.cctv-screen{position:absolute;inset:0;z-index:18;pointer-events:none;background:linear-gradient(115deg,#ffffff09,transparent 30%),repeating-linear-gradient(0deg,#00000022 0 1px,transparent 1px 4px),repeating-linear-gradient(90deg,#00000009 0 1px,transparent 1px 5px);box-shadow:inset 0 0 90px #00000066,inset 0 0 8px #00000088}
-.cctv-grain{position:absolute;inset:0;z-index:17;pointer-events:none;opacity:.095;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");background-size:256px 256px}
-.cctv-hud{position:absolute;top:110px;left:84px;right:164px;display:flex;justify-content:space-between;z-index:19;font:700 22px monospace;color:#dbff00;letter-spacing:2px}.rec-dot{display:inline-block;background:#ff326b;border-radius:50%;width:15px;height:15px;margin-right:12px}
-.cctv-corners{position:absolute;left:52px;top:95px;width:44px;height:44px;border-left:3px solid #dbff00;border-top:3px solid #dbff00;z-index:16;pointer-events:none;opacity:.7}.cctv-corner-end{left:auto;top:auto;right:132px;bottom:180px;border:0;border-right:3px solid #dbff00;border-bottom:3px solid #dbff00}
-.motion-art:after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(173deg,transparent 0 41px,#12101499 42px 44px,transparent 45px 87px);opacity:.4}
-.scene-cta .ending-mark{position:absolute;left:84px;right:164px;top:330px;display:flex;flex-direction:column;align-items:center;gap:28px;font-size:26px;letter-spacing:5px;color:var(--accent)}
-.ending-mark img{width:220px;height:220px;filter:invert(1)}
-.scene-cta .editorial{text-align:center;top:790px}
-.scene-cta .eyebrow{justify-content:center;gap:35px}
-.scene-cta .action{background:var(--accent);border:6px solid #fff7e6;color:#121014;font-weight:900;font-size:39px;letter-spacing:-1px;padding:28px 18px;box-shadow:10px 10px 0 #ff4e9b;margin-top:45px}
-.scene-cta .action span{font-size:35px}
-.scene-cta .body-copy{font-size:35px}
-</style></head><body><div id="root" data-composition-id="main" data-width="1080" data-height="1920" data-fps="30" data-duration="41.46666666666667"><div id="host-0" class="clip" data-composition-id="scene-0" data-composition-src="compositions/scene-0.html" data-start="0" data-duration="6.5" data-width="1080" data-height="1920" data-track-index="0"></div>
-<div id="host-1" class="clip" data-composition-id="scene-1" data-composition-src="compositions/scene-1.html" data-start="6.5" data-duration="7.333333333333334" data-width="1080" data-height="1920" data-track-index="0"></div>
-<div id="host-2" class="clip" data-composition-id="scene-2" data-composition-src="compositions/scene-2.html" data-start="13.833333333333334" data-duration="5.933333333333332" data-width="1080" data-height="1920" data-track-index="0"></div>
-<div id="host-3" class="clip" data-composition-id="scene-3" data-composition-src="compositions/scene-3.html" data-start="19.766666666666666" data-duration="6" data-width="1080" data-height="1920" data-track-index="0"></div>
-<div id="host-4" class="clip" data-composition-id="scene-4" data-composition-src="compositions/scene-4.html" data-start="25.766666666666666" data-duration="15.700000000000003" data-width="1080" data-height="1920" data-track-index="0"></div><header class="brand"><img src="public/tct_logo.svg" alt=""><span>TALENTO<br>CON TARIFA</span><span class="edition">VISTA PREVIA</span></header><p id="caption-0" class="clip caption" data-start="0" data-duration="6.288" data-track-index="2">Antes de sumar otra herramienta de inteligencia artificial, define qué problema quieres resolver.</p>
-<p id="caption-1" class="clip caption" data-start="6.5" data-duration="7.104" data-track-index="2">Elige una tarea repetitiva que puedas medir y revisar. Ese puede ser un buen punto de partida.</p>
-<p id="caption-2" class="clip caption" data-start="13.833333333333334" data-duration="5.712" data-track-index="2">La pregunta no es cuánta inteligencia artificial usas, sino para qué la estás usando.</p>
-<p id="caption-3" class="clip caption" data-start="19.766666666666666" data-duration="5.784" data-track-index="2">Prueba con un proceso pequeño, revisa la calidad y decide si vale la pena ampliarlo.</p>
-<p id="caption-4" class="clip caption" data-start="25.766666666666666" data-duration="14.688" data-track-index="2">Conéctate con nosotros en talentocontarifa.lat</p><div class="progress"><div id="progress-fill"></div></div><audio id="voice-0" class="clip" src="public/voice_scene_1.mp3" data-start="0" data-duration="6.288" data-track-index="3" data-volume="1"></audio>
-<audio id="voice-1" class="clip" src="public/voice_scene_2.mp3" data-start="6.5" data-duration="7.104" data-track-index="3" data-volume="1"></audio>
-<audio id="voice-2" class="clip" src="public/voice_scene_3.mp3" data-start="13.833333333333334" data-duration="5.712" data-track-index="3" data-volume="1"></audio>
-<audio id="voice-3" class="clip" src="public/voice_scene_4.mp3" data-start="19.766666666666666" data-duration="5.784" data-track-index="3" data-volume="1"></audio>
-<audio id="voice-4" class="clip" src="public/voice_scene_5.mp3" data-start="25.766666666666666" data-duration="14.688" data-track-index="3" data-volume="1"></audio><audio id="sfx-0" class="clip" src="public/sfx_code/hit.wav" data-start="0" data-duration="0.24" data-volume="0.25" data-track-index="5"></audio><audio id="sfx-1" class="clip" src="public/sfx_code/swish.wav" data-start="6.5" data-duration="0.32" data-volume="0.25" data-track-index="5"></audio><audio id="tick-1-0" class="clip" src="public/sfx_code/tick.wav" data-start="7.15" data-duration="0.09" data-volume="0.14" data-track-index="6"></audio><audio id="tick-1-1" class="clip" src="public/sfx_code/tick.wav" data-start="7.33" data-duration="0.09" data-volume="0.14" data-track-index="6"></audio><audio id="tick-1-2" class="clip" src="public/sfx_code/tick.wav" data-start="7.510000000000001" data-duration="0.09" data-volume="0.14" data-track-index="6"></audio><audio id="sfx-2" class="clip" src="public/sfx_code/hit.wav" data-start="13.833333333333334" data-duration="0.24" data-volume="0.25" data-track-index="5"></audio><audio id="sfx-3" class="clip" src="public/sfx_code/swish.wav" data-start="19.766666666666666" data-duration="0.32" data-volume="0.25" data-track-index="5"></audio><audio id="sfx-4" class="clip" src="public/sfx_code/hit.wav" data-start="25.766666666666666" data-duration="0.24" data-volume="0.25" data-track-index="5"></audio><div class="cctv-corners"></div><div class="cctv-corners cctv-corner-end"></div><div class="cctv-grain"></div><div class="cctv-screen"></div><div class="cctv-hud"><span><i class="rec-dot"></i>REC // CAM 01</span><span id="cctv-time">00:00:00</span></div></div><script>const tl=gsap.timeline({paused:true});
-tl.fromTo('#progress-fill',{scaleX:0},{scaleX:1,duration:41.46666666666667,ease:'none'},0);tl.fromTo('.rec-dot',{opacity:1},{opacity:.25,duration:.5,repeat:Math.max(0,Math.floor(41.46666666666667*2)-1),yoyo:true,ease:'steps(1)'},0);for(let n=0;n<=Math.floor(41.46666666666667);n++)tl.set('#cctv-time',{textContent:'00:'+String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')},n);window.__timelines=window.__timelines||{};window.__timelines.main=tl;</script></body></html>
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Talento con Tarifa - Video Sincronizado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=JetBrains+Mono:wght@700;800;900&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="./news_data.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --theme-color: #FF3300;
+      }
+      html, body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #000;
+        font-family: 'Montserrat', sans-serif;
+        color: #fff;
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: radial-gradient(circle at 50% 50%, #15151A 0%, #000000 100%);
+      }
+
+      /* SCANLINES CRT EFFECT */
+      .scanlines {
+        position: absolute;
+        inset: 0;
+        z-index: 500;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(0, 0, 0, 0.25) 3px,
+          rgba(0, 0, 0, 0.25) 4px
+        );
+      }
+
+      /* HEADER UI */
+      .header-ui {
+        position: absolute;
+        top: 80px;
+        left: 50px;
+        right: 50px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 600;
+      }
+      .live-badge {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #000;
+        padding: 12px 26px;
+        border: 4px solid var(--theme-color);
+        box-shadow: 6px 6px 0 var(--theme-color);
+      }
+      .live-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: var(--theme-color);
+        box-shadow: 0 0 14px var(--theme-color);
+      }
+      .live-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 22px;
+        font-weight: 800;
+        color: #FFF;
+        letter-spacing: 2px;
+      }
+      .watermark-badge {
+        background: #FFF;
+        padding: 12px 28px;
+        border: 4px solid #000;
+        box-shadow: 6px 6px 0 var(--theme-color);
+        font-size: 24px;
+        font-weight: 900;
+        color: #000;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      /* PROGRESS BAR */
+      .progress-container {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 16px;
+        background: rgba(255, 255, 255, 0.1);
+        z-index: 600;
+      }
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--theme-color);
+        box-shadow: 0 0 15px var(--theme-color);
+      }
+
+      /* DYNAMIC SUBTITLES / CAPTION OVERLAY */
+      .subtitles-container {
+        position: absolute;
+        bottom: 80px;
+        left: 50px;
+        right: 50px;
+        z-index: 700;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        pointer-events: none;
+      }
+      .subtitle-pill {
+        position: absolute;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.92);
+        border: 4px solid var(--theme-color);
+        box-shadow: 8px 8px 0 #FFF, 0 0 25px rgba(255, 51, 0, 0.3);
+        padding: 18px 36px;
+        width: 100%;
+        text-align: center;
+        border-radius: 6px;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      .subtitle-tag {
+        display: inline-block;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--theme-color);
+        letter-spacing: 3px;
+        margin-bottom: 8px;
+      }
+      .subtitle-text {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 32px;
+        font-weight: 900;
+        color: #FFF;
+        line-height: 1.25;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
+      /* SCENE CONTAINERS */
+      .scene {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        pointer-events: none;
+        padding: 60px;
+        z-index: 100;
+      }
+
+      /* SCENE 1: TITLE */
+      #scene-title .title-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: 90%;
+      }
+      .tag-pill {
+        background: var(--theme-color);
+        color: #000;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 26px;
+        font-weight: 800;
+        padding: 12px 30px;
+        letter-spacing: 3px;
+        margin-bottom: 30px;
+        border: 4px solid #FFF;
+        box-shadow: 8px 8px 0 #FFF;
+      }
+      .title-hero-1 {
+        font-size: clamp(52px, 7.5vw, 80px);
+        font-weight: 900;
+        line-height: 1.05;
+        text-transform: uppercase;
+        color: #FFF;
+        text-shadow: 0 0 30px rgba(255,255,255,0.2);
+        word-break: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+      }
+      .title-hero-2 {
+        font-size: clamp(56px, 8vw, 86px);
+        font-weight: 900;
+        line-height: 1.05;
+        text-transform: uppercase;
+        color: var(--theme-color);
+        text-shadow: 0 0 40px rgba(255, 51, 0, 0.6);
+        margin-top: 15px;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+      }
+
+      /* SCENE 2 & 4: IMAGE + TEXT */
+      .image-card {
+        width: 92%;
+        height: 60%;
+        background: #000;
+        border: 8px solid #FFF;
+        box-shadow: 14px 14px 0 var(--theme-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow: hidden;
+        position: relative;
+        margin-top: -100px;
+      }
+      .image-frame {
+        width: 100%;
+        height: 75%;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #111;
+      }
+      .image-content {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .image-caption-bar {
+        width: 100%;
+        min-height: 25%;
+        background: #000;
+        border-top: 6px solid #FFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 30px;
+        text-align: center;
+      }
+      .caption-text {
+        font-size: clamp(26px, 3.6vw, 38px);
+        font-weight: 900;
+        color: #FFF;
+        text-transform: uppercase;
+        line-height: 1.2;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+      }
+
+      /* KEY POINTS OVERLAY (SCENE 2) */
+      .key-points-grid {
+        width: 92%;
+        margin-top: 35px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        z-index: 200;
+      }
+      .kp-card {
+        background: rgba(0, 0, 0, 0.95);
+        border: 4px solid #FFF;
+        box-shadow: 8px 8px 0 var(--theme-color);
+        padding: 16px 26px;
+        font-size: clamp(22px, 2.8vw, 28px);
+        font-weight: 900;
+        color: #FFF;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        opacity: 0;
+        transform: translateX(-40px);
+        word-break: break-word;
+        overflow-wrap: break-word;
+      }
+      .kp-icon {
+        color: var(--theme-color);
+        font-size: 30px;
+        font-weight: 900;
+        flex-shrink: 0;
+      }
+
+      /* SCENE 3: PERCENTAGE */
+      .percentage-box {
+        width: 90%;
+        background: #000;
+        border: 8px solid var(--theme-color);
+        box-shadow: 16px 16px 0 #FFF;
+        padding: 60px 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .huge-percent {
+        font-size: clamp(100px, 15vw, 160px);
+        font-weight: 900;
+        color: var(--theme-color);
+        text-shadow: 0 0 50px rgba(255, 51, 0, 0.5);
+        line-height: 1;
+        margin-bottom: 20px;
+      }
+      .percent-label {
+        font-size: clamp(28px, 4vw, 44px);
+        font-weight: 900;
+        color: #FFF;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        word-break: break-word;
+        overflow-wrap: break-word;
+      }
+
+      /* SCENE 5: CTA */
+      .cta-box {
+        width: 90%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .cta-headline {
+        font-size: clamp(48px, 6.8vw, 74px);
+        font-weight: 900;
+        color: #FFF;
+        text-transform: uppercase;
+        margin-bottom: 25px;
+        line-height: 1.1;
+        word-break: break-word;
+        overflow-wrap: break-word;
+      }
+      .cta-sub {
+        font-size: clamp(24px, 3vw, 32px);
+        color: #CCC;
+        font-weight: 700;
+        margin-bottom: 60px;
+        word-break: break-word;
+        overflow-wrap: break-word;
+      }
+      .cta-btn-brutal {
+        background: var(--theme-color);
+        color: #000;
+        border: 8px solid #FFF;
+        box-shadow: 14px 14px 0 #FFF;
+        padding: 24px 50px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: clamp(30px, 4vw, 42px);
+        font-weight: 900;
+        letter-spacing: 2px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="38"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- CRT SCANLINES -->
+      <div class="scanlines"></div>
+
+      <!-- HEADER UI -->
+      <div class="header-ui">
+        <div class="live-badge">
+          <div class="live-dot"></div>
+          <span class="live-text">NOTICIAS IA</span>
+        </div>
+        <div class="watermark-badge">
+          Talento con Tarifa
+        </div>
+      </div>
+
+      <!-- PROGRESS BAR -->
+      <div class="progress-container">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+
+      <!-- SCENE 1: TITLE -->
+      <div id="scene-title" class="scene">
+        <div class="title-box">
+          <div class="tag-pill" id="title-tag">✦ REVOLUCIÓN TECNOLÓGICA ✦</div>
+          <h1 class="title-hero-1" id="title-text-1">AGENTES IA</h1>
+          <h2 class="title-hero-2" id="title-text-2">NUEVA ERA</h2>
+        </div>
+      </div>
+
+      <!-- SCENE 2: IMAGE 1 + KEY POINTS -->
+      <div id="scene-img1" class="scene">
+        <div class="image-card">
+          <div class="image-frame" data-layout-allow-overflow>
+            <img id="img-scene-1" class="image-content" src="./public/scene_1.png" alt="Escena 1" data-layout-allow-overflow />
+          </div>
+          <div class="image-caption-bar">
+            <h3 class="caption-text" id="caption-scene-1">AUTOMATIZACIÓN EXTREMA</h3>
+          </div>
+        </div>
+        <div class="key-points-grid" id="scene2-points">
+          <div class="kp-card" id="kp-1"><span class="kp-icon">✦</span> Multiplican tu alcance</div>
+          <div class="kp-card" id="kp-2"><span class="kp-icon">✦</span> Operan 24 horas continuas</div>
+          <div class="kp-card" id="kp-3"><span class="kp-icon">✦</span> Reducen costos operativos</div>
+        </div>
+      </div>
+
+      <!-- SCENE 3: PERCENTAGE -->
+      <div id="scene-percent" class="scene">
+        <div class="percentage-box">
+          <div class="tag-pill" style="margin-bottom: 25px;">✦ DATO CLAVE DE MERCADO ✦</div>
+          <div class="huge-percent" id="percent-number">85%</div>
+          <div class="percent-label" id="percent-label-text">Empresas Adaptadas</div>
+        </div>
+      </div>
+
+      <!-- SCENE 4: IMAGE 2 -->
+      <div id="scene-img2" class="scene">
+        <div class="image-card">
+          <div class="image-frame" data-layout-allow-overflow>
+            <img id="img-scene-3" class="image-content" src="./public/scene_3.png" alt="Escena 3" data-layout-allow-overflow />
+          </div>
+          <div class="image-caption-bar">
+            <h3 class="caption-text" id="caption-scene-3">COBRA POR TU VALOR</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 5: CTA -->
+      <div id="scene-cta" class="scene">
+        <div class="cta-box">
+          <div class="tag-pill" style="margin-bottom: 25px;">✦ EL MOMENTO ES AHORA ✦</div>
+          <h1 class="cta-headline" id="cta-headline-text">¿LISTO PARA DOMINAR?</h1>
+          <p class="cta-sub">Tu talento amplificado con agentes de IA.</p>
+          <div class="cta-btn-brutal" id="cta-btn">
+            <span>TALENTOCONTARIFA.LAT</span>
+            <span>➔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DYNAMIC SUBTITLES OVERLAY -->
+      <div class="subtitles-container">
+        <div class="subtitle-pill" id="sub-1">
+          <span class="subtitle-tag">VOZ EN DIRECTO</span>
+          <p class="subtitle-text" id="sub-text-1">¡Atención emprendedor! Los agentes de IA llegaron para cambiar las reglas.</p>
+        </div>
+        <div class="subtitle-pill" id="sub-2">
+          <span class="subtitle-tag">VOZ EN DIRECTO</span>
+          <p class="subtitle-text" id="sub-text-2">Automatización extrema: multiplican tu alcance y operan 24/7.</p>
+        </div>
+        <div class="subtitle-pill" id="sub-3">
+          <span class="subtitle-tag">VOZ EN DIRECTO</span>
+          <p class="subtitle-text" id="sub-text-3">El 85% de las empresas líderes ya integraron agentes autónomos.</p>
+        </div>
+        <div class="subtitle-pill" id="sub-4">
+          <span class="subtitle-tag">VOZ EN DIRECTO</span>
+          <p class="subtitle-text" id="sub-text-4">No compitas por precio: cobra por el valor de tu talento.</p>
+        </div>
+        <div class="subtitle-pill" id="sub-5">
+          <span class="subtitle-tag">VOZ EN DIRECTO</span>
+          <p class="subtitle-text" id="sub-text-5">Visita hoy talentocontarifa.lat y transforma tu futuro.</p>
+        </div>
+      </div>
+
+      <!-- AUDIO TRACKS (Master Ducked Tech BGM + Mastered Broadcast Voice) -->
+      <audio id="bgm" src="./public/tct_music.mp3" class="clip" data-start="0" data-duration="38" data-volume="0.85"></audio>
+      <audio id="vo" src="./public/news_voice.mp3" class="clip" data-start="0" data-duration="38" data-volume="1.0"></audio>
+
+      <!-- MICRO-SFX TRACKS -->
+      <audio id="sfx-whoosh1" src="./public/sfx/whoosh.mp3" class="clip" data-start="0.05" data-duration="0.35" data-volume="0.35"></audio>
+      <audio id="sfx-pop1" src="./public/sfx/pop.mp3" class="clip" data-start="7.2" data-duration="0.1" data-volume="0.45"></audio>
+      <audio id="sfx-cash" src="./public/sfx/cash.mp3" class="clip" data-start="14.4" data-duration="0.8" data-volume="0.55"></audio>
+      <audio id="sfx-whoosh2" src="./public/sfx/whoosh.mp3" class="clip" data-start="21.2" data-duration="0.35" data-volume="0.35"></audio>
+      <audio id="sfx-ding" src="./public/sfx/ding.mp3" class="clip" data-start="27.4" data-duration="0.6" data-volume="0.45"></audio>
+    </div>
+
+    <script>
+      // 1. Población dinámica de datos
+      const data = window.NEWS_DATA || {};
+      const totalDur = data.total_duration_sec || 35;
+      const scenes = data.scenes || [];
+
+      if (data.theme_color) {
+        document.documentElement.style.setProperty('--theme-color', data.theme_color);
+      }
+
+      // Actualizar atributos de duración en root y audio
+      const rootEl = document.getElementById('root');
+      rootEl.setAttribute('data-duration', String(totalDur));
+      const bgmEl = document.getElementById('bgm');
+      if (bgmEl) bgmEl.setAttribute('data-duration', String(totalDur));
+      const voEl = document.getElementById('vo');
+      if (voEl) voEl.setAttribute('data-duration', String(Math.max(1, totalDur - 0.5)));
+
+      // Extraer datos de escenas
+      const sc1 = scenes[0] || { start: 0, end: 7.10 };
+      const sc2 = scenes[1] || { start: 7.26, end: 14.32 };
+      const sc3 = scenes[2] || { start: 14.48, end: 21.10, number: 85 };
+      const sc4 = scenes[3] || { start: 21.26, end: 27.24 };
+      const sc5 = scenes[4] || { start: 27.40, end: 34.31 };
+
+      // Sincronizar SFX con marcas de tiempo de las escenas
+      const w1 = document.getElementById('sfx-whoosh1'); if (w1) w1.setAttribute('data-start', String(sc1.start || 0.05));
+      const p1 = document.getElementById('sfx-pop1'); if (p1) p1.setAttribute('data-start', String(sc2.start));
+      const cash = document.getElementById('sfx-cash'); if (cash) cash.setAttribute('data-start', String(sc3.start));
+      const w2 = document.getElementById('sfx-whoosh2'); if (w2) w2.setAttribute('data-start', String(sc4.start));
+      const ding = document.getElementById('sfx-ding'); if (ding) ding.setAttribute('data-start', String(sc5.start + 0.5));
+
+      if (sc1.title1) document.getElementById('title-text-1').innerText = sc1.title1;
+      if (sc1.title2) document.getElementById('title-text-2').innerText = sc1.title2;
+      if (sc1.tag) document.getElementById('title-tag').innerText = sc1.tag;
+      if (sc1.subtitle) document.getElementById('sub-text-1').innerText = sc1.subtitle;
+
+      if (sc2.title) document.getElementById('caption-scene-1').innerText = sc2.title;
+      if (sc2.subtitle) document.getElementById('sub-text-2').innerText = sc2.subtitle;
+
+      if (sc3.number) document.getElementById('percent-number').innerText = `${sc3.number}%`;
+      if (sc3.label) document.getElementById('percent-label-text').innerText = sc3.label;
+      if (sc3.subtitle) document.getElementById('sub-text-3').innerText = sc3.subtitle;
+
+      if (sc4.title) document.getElementById('caption-scene-3').innerText = sc4.title;
+      if (sc4.subtitle) document.getElementById('sub-text-4').innerText = sc4.subtitle;
+
+      if (sc5.headline) document.getElementById('cta-headline-text').innerText = sc5.headline;
+      if (sc5.sub) document.querySelector('.cta-sub').innerText = sc5.sub;
+      if (sc5.btn) document.querySelector('#cta-btn span:first-child').innerText = sc5.btn;
+      if (sc5.subtitle) document.getElementById('sub-text-5').innerText = sc5.subtitle;
+
+      // 2. Timeline GSAP sincronizada exactamente a las marcas de tiempo de la voz
+      const tl = gsap.timeline({ paused: true });
+
+      // Barra de progreso continua
+      tl.to("#progress-fill", { width: "100%", duration: totalDur, ease: "none" }, 0);
+
+      // --- ESCENA 1: TITLE (0.0s -> sc1.end) ---
+      tl.fromTo("#scene-title", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }, sc1.start);
+      tl.fromTo("#title-tag", { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, sc1.start + 0.15);
+      tl.fromTo("#title-text-1", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, sc1.start + 0.4);
+      tl.fromTo("#title-text-2", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, sc1.start + 0.7);
+      // Subtitle 1
+      tl.fromTo("#sub-1", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc1.start + 0.2);
+      tl.to("#sub-1", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, sc1.end - 0.25);
+      tl.to("#scene-title", { opacity: 0, scale: 1.05, duration: 0.3, ease: "power2.in" }, sc1.end - 0.3);
+
+      // --- ESCENA 2: IMAGE 1 + KEY POINTS (sc2.start -> sc2.end) ---
+      tl.fromTo("#scene-img1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, sc2.start);
+      tl.fromTo("#img-scene-1", { scale: 1.0 }, { scale: 1.12, duration: (sc2.end - sc2.start), ease: "sine.inOut" }, sc2.start);
+      // Subtitle 2
+      tl.fromTo("#sub-2", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc2.start + 0.15);
+      tl.to("#sub-2", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, sc2.end - 0.25);
+      // Key points sincronizados con las frases de la locución
+      tl.fromTo("#kp-1", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(1.5)" }, sc2.start + 1.2);
+      tl.fromTo("#kp-2", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(1.5)" }, sc2.start + 3.0);
+      tl.fromTo("#kp-3", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(1.5)" }, sc2.start + 4.8);
+      tl.to("#scene-img1", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, sc2.end - 0.3);
+
+      // --- ESCENA 3: PERCENTAGE (sc3.start -> sc3.end) ---
+      tl.fromTo("#scene-percent", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.5)" }, sc3.start);
+      tl.fromTo("#percent-number", { scale: 0.7 }, { scale: 1.08, duration: 0.6, ease: "elastic.out(1, 0.5)" }, sc3.start + 0.2);
+      // Subtitle 3
+      tl.fromTo("#sub-3", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc3.start + 0.15);
+      tl.to("#sub-3", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, sc3.end - 0.25);
+      tl.to("#scene-percent", { opacity: 0, scale: 1.05, duration: 0.3, ease: "power2.in" }, sc3.end - 0.3);
+
+      // --- ESCENA 4: IMAGE 2 (sc4.start -> sc4.end) ---
+      tl.fromTo("#scene-img2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, sc4.start);
+      tl.fromTo("#img-scene-3", { scale: 1.0 }, { scale: 1.12, duration: (sc4.end - sc4.start), ease: "sine.inOut" }, sc4.start);
+      // Subtitle 4
+      tl.fromTo("#sub-4", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc4.start + 0.15);
+      tl.to("#sub-4", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, sc4.end - 0.25);
+      tl.to("#scene-img2", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, sc4.end - 0.3);
+
+      // --- ESCENA 5: CTA (sc5.start -> totalDur) ---
+      tl.fromTo("#scene-cta", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, sc5.start);
+      tl.fromTo("#cta-btn", { scale: 0.95 }, { scale: 1.04, repeat: 7, yoyo: true, duration: 0.4, ease: "power1.inOut" }, sc5.start + 0.2);
+      // Subtitle 5
+      tl.fromTo("#sub-5", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc5.start + 0.15);
+      tl.to("#sub-5", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, totalDur - 0.4);
+
+      // Registrar timeline para HyperFrames
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

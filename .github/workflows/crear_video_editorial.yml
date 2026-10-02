@@ -50,14 +50,14 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install system dependencies (ffmpeg & espeak-ng)
+      - name: Install system dependencies (ffmpeg)
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg espeak-ng
+          sudo apt-get install -y ffmpeg
 
       - name: Install Python dependencies
         run: |
-          pip install edge-tts kokoro soundfile requests google-generativeai python-dotenv
+          pip install edge-tts requests google-generativeai python-dotenv
 
       - name: Install Node.js dependencies
         run: |
