@@ -13,6 +13,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: video_tct/package-lock.json
+      - name: Instalar dependencias de video_tct
+        run: npm ci --prefix video_tct --ignore-scripts --no-audit --no-fund
       - run: node --test video_tct/tests/*.test.js
       - run: node --check video_tct/create_daily_news.js
       - run: node --check video_tct/create_trending_video.js
