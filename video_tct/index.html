@@ -3,488 +3,257 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1080, height=1920" />
-    <title>Talento con Tarifa - Video Sincronizado</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=JetBrains+Mono:wght@700;800;900&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <title>Talento con Tarifa - Reel diario</title>
+    <!-- Todo local: el render no depende de CDNs (determinista y sin fallos de red en CI) -->
+    <script src="./public/vendor/gsap.min.js"></script>
     <script src="./news_data.js"></script>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+      @font-face { font-family: 'Inter'; src: url('./public/vendor/inter-400.woff2') format('woff2'); font-weight: 400; }
+      @font-face { font-family: 'Inter'; src: url('./public/vendor/inter-700.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Inter'; src: url('./public/vendor/inter-900.woff2') format('woff2'); font-weight: 900; }
+
+      /* Marca bloqueada (Neo-Brutalist): Limón, Negro, Off-White */
       :root {
-        --theme-color: #FF3300;
+        --lime: #CCFF00;
+        --ink: #000000;
+        --paper: #F0F0F0;
+        --night: #0B0B0B;
+        /* Zonas seguras de Reels/TikTok: la UI de la app tapa abajo y a la derecha */
+        --safe-x: 70px;
+        --safe-right: 150px;
       }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body {
-        width: 1080px;
-        height: 1920px;
-        overflow: hidden;
-        background: #000;
-        font-family: 'Montserrat', sans-serif;
-        color: #fff;
+        width: 1080px; height: 1920px; overflow: hidden;
+        background: var(--night);
+        font-family: 'Inter', sans-serif; color: var(--paper);
       }
       #root {
-        position: relative;
-        width: 1080px;
-        height: 1920px;
-        overflow: hidden;
-        background: radial-gradient(circle at 50% 50%, #15151A 0%, #000000 100%);
+        position: relative; width: 1080px; height: 1920px; overflow: hidden;
+        background-color: var(--night);
+        background-image: radial-gradient(circle, rgba(204, 255, 0, 0.13) 2px, transparent 2.5px);
+        background-size: 44px 44px;
       }
 
-      /* SCANLINES CRT EFFECT */
-      .scanlines {
-        position: absolute;
-        inset: 0;
-        z-index: 500;
-        pointer-events: none;
-        background: repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 3px,
-          rgba(0, 0, 0, 0.25) 3px,
-          rgba(0, 0, 0, 0.25) 4px
-        );
-      }
+      /* ---------- CHROME FIJO ---------- */
+      .progress { position: absolute; top: 0; left: 0; right: 0; height: 12px; background: #1d1d1d; z-index: 900; }
+      .progress-fill { height: 100%; width: 100%; background: var(--lime); transform-origin: left center; transform: scaleX(0); }
 
-      /* HEADER UI */
-      .header-ui {
-        position: absolute;
-        top: 80px;
-        left: 50px;
-        right: 50px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 600;
+      .header {
+        position: absolute; top: 64px; left: var(--safe-x); right: var(--safe-x);
+        display: flex; justify-content: space-between; align-items: center; z-index: 800;
       }
+      .brand-sticker {
+        display: flex; align-items: center; gap: 16px;
+        background: var(--lime); color: var(--ink);
+        border: 5px solid var(--ink); box-shadow: 8px 8px 0 var(--paper);
+        padding: 10px 22px 10px 12px; transform: rotate(-2deg);
+      }
+      .brand-sticker img { width: 58px; height: 53px; display: block; }
+      .brand-sticker span { font-size: 25px; font-weight: 900; line-height: 0.95; letter-spacing: 0.5px; text-transform: uppercase; }
       .live-badge {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        background: #000;
-        padding: 12px 26px;
-        border: 4px solid var(--theme-color);
-        box-shadow: 6px 6px 0 var(--theme-color);
+        display: flex; align-items: center; gap: 12px;
+        background: var(--ink); border: 4px solid var(--lime);
+        padding: 12px 22px; font-size: 22px; font-weight: 900; letter-spacing: 3px; color: var(--paper);
       }
-      .live-dot {
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background-color: var(--theme-color);
-        box-shadow: 0 0 14px var(--theme-color);
-      }
-      .live-text {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 22px;
-        font-weight: 800;
-        color: #FFF;
-        letter-spacing: 2px;
-      }
-      .watermark-badge {
-        background: #FFF;
-        padding: 12px 28px;
-        border: 4px solid #000;
-        box-shadow: 6px 6px 0 var(--theme-color);
-        font-size: 24px;
-        font-weight: 900;
-        color: #000;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-      }
+      .live-dot { width: 16px; height: 16px; background: var(--lime); border-radius: 50%; }
 
-      /* PROGRESS BAR */
-      .progress-container {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 16px;
-        background: rgba(255, 255, 255, 0.1);
-        z-index: 600;
+      .marquee {
+        position: absolute; top: 212px; left: -60px; width: 1200px; height: 66px;
+        background: var(--lime); border-top: 5px solid var(--ink); border-bottom: 5px solid var(--ink);
+        transform: rotate(-2deg); overflow: hidden; z-index: 700;
       }
-      .progress-fill {
-        height: 100%;
-        width: 0%;
-        background: var(--theme-color);
-        box-shadow: 0 0 15px var(--theme-color);
+      .marquee-track {
+        position: absolute; top: 0; left: 0; height: 100%; display: flex; align-items: center;
+        white-space: nowrap; font-size: 30px; font-weight: 900; color: var(--ink); letter-spacing: 1px;
       }
+      .marquee-track span { padding-right: 34px; }
 
-      /* DYNAMIC SUBTITLES / CAPTION OVERLAY */
-      .subtitles-container {
-        position: absolute;
-        bottom: 80px;
-        left: 50px;
-        right: 50px;
-        z-index: 700;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        pointer-events: none;
-      }
-      .subtitle-pill {
-        position: absolute;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.92);
-        border: 4px solid var(--theme-color);
-        box-shadow: 8px 8px 0 #FFF, 0 0 25px rgba(255, 51, 0, 0.3);
-        padding: 18px 36px;
-        width: 100%;
-        text-align: center;
-        border-radius: 6px;
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      .subtitle-tag {
-        display: inline-block;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 18px;
-        font-weight: 800;
-        color: var(--theme-color);
-        letter-spacing: 3px;
-        margin-bottom: 8px;
-      }
-      .subtitle-text {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 32px;
-        font-weight: 900;
-        color: #FFF;
-        line-height: 1.25;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-      }
-
-      /* SCENE CONTAINERS */
+      /* ---------- ESCENAS (área de contenido 330px → 1450px) ---------- */
       .scene {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        opacity: 0;
-        pointer-events: none;
-        padding: 60px;
-        z-index: 100;
+        position: absolute; left: 0; right: 0; top: 330px; height: 1130px;
+        opacity: 0; visibility: hidden; z-index: 100;
+      }
+      .sticker {
+        display: inline-block; background: var(--lime); color: var(--ink);
+        border: 5px solid var(--ink); box-shadow: 7px 7px 0 var(--paper);
+        font-size: 28px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase;
+        padding: 12px 26px;
       }
 
-      /* SCENE 1: TITLE */
-      #scene-title .title-box {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        width: 90%;
+      /* Escena 1: portada */
+      #scene-title .mascot {
+        position: absolute; left: 50%; top: 0; width: 400px; margin-left: -200px;
+        filter: drop-shadow(14px 14px 0 var(--lime));
       }
-      .tag-pill {
-        background: var(--theme-color);
-        color: #000;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 26px;
-        font-weight: 800;
-        padding: 12px 30px;
-        letter-spacing: 3px;
-        margin-bottom: 30px;
-        border: 4px solid #FFF;
-        box-shadow: 8px 8px 0 #FFF;
+      #scene-title .title-block { position: absolute; left: var(--safe-x); right: var(--safe-x); top: 470px; text-align: center; }
+      #title-tag { transform: rotate(2deg); margin-bottom: 30px; }
+      .title-1 {
+        display: block; font-weight: 900; line-height: 0.95; letter-spacing: -3px;
+        text-transform: uppercase; color: var(--paper); overflow-wrap: anywhere;
       }
-      .title-hero-1 {
-        font-size: clamp(52px, 7.5vw, 80px);
-        font-weight: 900;
-        line-height: 1.05;
-        text-transform: uppercase;
-        color: #FFF;
-        text-shadow: 0 0 30px rgba(255,255,255,0.2);
-        word-break: break-word;
-        overflow-wrap: break-word;
-        max-width: 100%;
-      }
-      .title-hero-2 {
-        font-size: clamp(56px, 8vw, 86px);
-        font-weight: 900;
-        line-height: 1.05;
-        text-transform: uppercase;
-        color: var(--theme-color);
-        text-shadow: 0 0 40px rgba(255, 51, 0, 0.6);
-        margin-top: 15px;
-        word-break: break-word;
-        overflow-wrap: break-word;
-        max-width: 100%;
+      .title-2-wrap { display: inline-block; margin-top: 18px; transform: rotate(-1.5deg); }
+      .title-2 {
+        display: inline-block; background: var(--lime); color: var(--ink);
+        border: 6px solid var(--ink); box-shadow: 12px 12px 0 var(--paper);
+        font-weight: 900; line-height: 1; letter-spacing: -3px; text-transform: uppercase;
+        padding: 10px 26px 16px; overflow-wrap: anywhere;
       }
 
-      /* SCENE 2 & 4: IMAGE + TEXT */
+      /* Escenas 2 y 4: imagen de la nota */
+      .scene-tag { position: absolute; left: var(--safe-x); top: 0; transform: rotate(-1.5deg); z-index: 5; }
       .image-card {
-        width: 92%;
-        height: 60%;
-        background: #000;
-        border: 8px solid #FFF;
-        box-shadow: 14px 14px 0 var(--theme-color);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        overflow: hidden;
-        position: relative;
-        margin-top: -100px;
+        position: absolute; left: var(--safe-x); right: calc(var(--safe-x) + 16px);
+        background: var(--ink); border: 7px solid var(--paper); box-shadow: 16px 16px 0 var(--lime); overflow: hidden;
       }
-      .image-frame {
-        width: 100%;
-        height: 75%;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: #111;
+      .image-card .frame { position: relative; width: 100%; overflow: hidden; background: #151515; }
+      .image-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .image-card .bar {
+        display: flex; align-items: center; justify-content: center; text-align: center;
+        border-top: 7px solid var(--paper); padding: 22px 30px; min-height: 140px;
+        font-weight: 900; text-transform: uppercase; line-height: 1.05; letter-spacing: -1px; overflow-wrap: anywhere;
       }
-      .image-content {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+      #scene-img1 .image-card { top: 60px; }
+      #scene-img1 .frame { height: 520px; }
+      #scene-img1 .bar { background: var(--ink); color: var(--paper); }
+      #scene-img2 .image-card { top: 60px; }
+      #scene-img2 .frame { height: 780px; }
+      #scene-img2 .bar { background: var(--lime); color: var(--ink); border-top-color: var(--ink); }
+
+      .kp-list { position: absolute; left: var(--safe-x); right: var(--safe-right); top: 800px; display: flex; flex-direction: column; gap: 18px; }
+      .kp {
+        display: flex; align-items: stretch; background: var(--ink);
+        border: 5px solid var(--paper); box-shadow: 8px 8px 0 var(--lime);
       }
-      .image-caption-bar {
-        width: 100%;
-        min-height: 25%;
-        background: #000;
-        border-top: 6px solid #FFF;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px 30px;
-        text-align: center;
+      .kp-num {
+        flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
+        min-width: 96px; background: var(--lime); color: var(--ink); font-size: 40px; font-weight: 900;
+        border-right: 5px solid var(--paper);
       }
-      .caption-text {
-        font-size: clamp(26px, 3.6vw, 38px);
-        font-weight: 900;
-        color: #FFF;
-        text-transform: uppercase;
-        line-height: 1.2;
-        word-break: break-word;
-        overflow-wrap: break-word;
-        max-width: 100%;
+      .kp-text { padding: 16px 24px; font-size: 36px; font-weight: 900; line-height: 1.1; color: var(--paper); overflow-wrap: anywhere; }
+
+      /* Escena 3: dato duro */
+      #scene-percent .stat-box {
+        position: absolute; left: var(--safe-x); right: calc(var(--safe-x) + 16px); top: 190px;
+        background: var(--ink); border: 8px solid var(--lime); box-shadow: 18px 18px 0 var(--paper);
+        padding: 60px 50px 56px; text-align: center;
+      }
+      #scene-percent .sticker { transform: rotate(-2deg); }
+      .huge-percent { font-size: 300px; font-weight: 900; line-height: 0.95; letter-spacing: -14px; color: var(--lime); margin-top: 30px; }
+      .meter { position: relative; height: 64px; border: 6px solid var(--paper); margin: 30px 10px 34px; background: #151515; }
+      .meter-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: var(--lime); transform-origin: left center; transform: scaleX(0); }
+      .percent-label { font-size: 56px; font-weight: 900; line-height: 1.05; text-transform: uppercase; letter-spacing: -1px; color: var(--paper); overflow-wrap: anywhere; }
+
+      /* Escena 5: cierre */
+      #scene-cta .mascot {
+        position: absolute; right: 60px; top: -10px; width: 330px;
+        filter: drop-shadow(12px 12px 0 var(--lime)); transform: rotate(8deg);
+      }
+      #scene-cta .cta-box { position: absolute; left: var(--safe-x); right: var(--safe-x); top: 340px; }
+      #scene-cta .sticker { transform: rotate(-2deg); margin-bottom: 34px; }
+      .cta-headline { font-size: 104px; font-weight: 900; line-height: 0.95; letter-spacing: -4px; text-transform: uppercase; color: var(--paper); overflow-wrap: anywhere; }
+      .cta-sub { margin-top: 26px; font-size: 38px; font-weight: 700; line-height: 1.25; color: #BDBDBD; max-width: 860px; }
+      .cta-btn {
+        display: inline-flex; align-items: center; gap: 22px; margin-top: 54px;
+        background: var(--lime); color: var(--ink); border: 7px solid var(--ink);
+        box-shadow: 14px 14px 0 var(--paper); padding: 26px 40px;
+        font-size: 46px; font-weight: 900; letter-spacing: 1px;
       }
 
-      /* KEY POINTS OVERLAY (SCENE 2) */
-      .key-points-grid {
-        width: 92%;
-        margin-top: 35px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        z-index: 200;
+      /* ---------- TRANSICIÓN (cortina limón con el logo) ---------- */
+      #wipe {
+        position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; z-index: 600;
+        background: var(--lime); display: flex; align-items: center; justify-content: center;
+        visibility: hidden;
       }
-      .kp-card {
-        background: rgba(0, 0, 0, 0.95);
-        border: 4px solid #FFF;
-        box-shadow: 8px 8px 0 var(--theme-color);
-        padding: 16px 26px;
-        font-size: clamp(22px, 2.8vw, 28px);
-        font-weight: 900;
-        color: #FFF;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        opacity: 0;
-        transform: translateX(-40px);
-        word-break: break-word;
-        overflow-wrap: break-word;
-      }
-      .kp-icon {
-        color: var(--theme-color);
-        font-size: 30px;
-        font-weight: 900;
-        flex-shrink: 0;
-      }
+      #wipe img { width: 260px; height: auto; transform: rotate(-6deg); }
 
-      /* SCENE 3: PERCENTAGE */
-      .percentage-box {
-        width: 90%;
-        background: #000;
-        border: 8px solid var(--theme-color);
-        box-shadow: 16px 16px 0 #FFF;
-        padding: 60px 40px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+      /* ---------- SUBTÍTULOS (dentro de zona segura) ---------- */
+      .subs { position: absolute; left: var(--safe-x); right: var(--safe-right); bottom: 300px; z-index: 850; }
+      .sub {
+        position: absolute; left: 0; right: 0; bottom: 0;
+        background: var(--ink); border: 5px solid var(--lime); box-shadow: 8px 8px 0 var(--lime);
+        padding: 20px 28px; opacity: 0;
       }
-      .huge-percent {
-        font-size: clamp(100px, 15vw, 160px);
-        font-weight: 900;
-        color: var(--theme-color);
-        text-shadow: 0 0 50px rgba(255, 51, 0, 0.5);
-        line-height: 1;
-        margin-bottom: 20px;
-      }
-      .percent-label {
-        font-size: clamp(28px, 4vw, 44px);
-        font-weight: 900;
-        color: #FFF;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        word-break: break-word;
-        overflow-wrap: break-word;
-      }
-
-      /* SCENE 5: CTA */
-      .cta-box {
-        width: 90%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-      }
-      .cta-headline {
-        font-size: clamp(48px, 6.8vw, 74px);
-        font-weight: 900;
-        color: #FFF;
-        text-transform: uppercase;
-        margin-bottom: 25px;
-        line-height: 1.1;
-        word-break: break-word;
-        overflow-wrap: break-word;
-      }
-      .cta-sub {
-        font-size: clamp(24px, 3vw, 32px);
-        color: #CCC;
-        font-weight: 700;
-        margin-bottom: 60px;
-        word-break: break-word;
-        overflow-wrap: break-word;
-      }
-      .cta-btn-brutal {
-        background: var(--theme-color);
-        color: #000;
-        border: 8px solid #FFF;
-        box-shadow: 14px 14px 0 #FFF;
-        padding: 24px 50px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: clamp(30px, 4vw, 42px);
-        font-weight: 900;
-        letter-spacing: 2px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-      }
+      .sub p { font-size: 36px; font-weight: 700; line-height: 1.25; color: var(--paper); }
     </style>
   </head>
   <body>
-    <div
-      id="root"
-      data-composition-id="main"
-      data-start="0"
-      data-duration="38"
-      data-width="1080"
-      data-height="1920"
-    >
-      <!-- CRT SCANLINES -->
-      <div class="scanlines"></div>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="38" data-width="1080" data-height="1920">
+      <div class="progress"><div id="progress-fill" class="progress-fill"></div></div>
 
-      <!-- HEADER UI -->
-      <div class="header-ui">
-        <div class="live-badge">
-          <div class="live-dot"></div>
-          <span class="live-text">NOTICIAS IA</span>
-        </div>
-        <div class="watermark-badge">
-          Talento con Tarifa
-        </div>
+      <div class="header">
+        <div class="brand-sticker"><img src="./public/tct_icon.svg" alt="" /><span>Talento<br />con Tarifa</span></div>
+        <div class="live-badge"><div class="live-dot" id="live-dot"></div>NOTICIAS IA</div>
       </div>
 
-      <!-- PROGRESS BAR -->
-      <div class="progress-container">
-        <div id="progress-fill" class="progress-fill"></div>
-      </div>
+      <div class="marquee" data-layout-allow-overflow><div class="marquee-track" id="marquee-track" data-layout-allow-overflow></div></div>
 
-      <!-- SCENE 1: TITLE -->
+      <!-- ESCENA 1: PORTADA -->
       <div id="scene-title" class="scene">
-        <div class="title-box">
-          <div class="tag-pill" id="title-tag">✦ REVOLUCIÓN TECNOLÓGICA ✦</div>
-          <h1 class="title-hero-1" id="title-text-1">AGENTES IA</h1>
-          <h2 class="title-hero-2" id="title-text-2">NUEVA ERA</h2>
+        <img class="mascot" id="mascot-1" src="./public/cerebro.webp" alt="" />
+        <div class="title-block">
+          <div class="sticker" id="title-tag">✦ NOTICIAS IA ✦</div>
+          <h1 class="title-1" id="title-text-1">AGENTES IA</h1>
+          <div class="title-2-wrap"><h2 class="title-2" id="title-text-2">NUEVA ERA</h2></div>
         </div>
       </div>
 
-      <!-- SCENE 2: IMAGE 1 + KEY POINTS -->
+      <!-- ESCENA 2: IMAGEN + IDEAS CLAVE -->
       <div id="scene-img1" class="scene">
-        <div class="image-card">
-          <div class="image-frame" data-layout-allow-overflow>
-            <img id="img-scene-1" class="image-content" src="./public/scene_1.png" alt="Escena 1" data-layout-allow-overflow />
-          </div>
-          <div class="image-caption-bar">
-            <h3 class="caption-text" id="caption-scene-1">AUTOMATIZACIÓN EXTREMA</h3>
-          </div>
+        <div class="sticker scene-tag">✦ LO QUE PASÓ</div>
+        <div class="image-card" id="card-1">
+          <div class="frame"><img id="img-scene-1" src="./public/scene_1.png" alt="" data-layout-allow-overflow /></div>
+          <div class="bar" id="caption-scene-1">AUTOMATIZACIÓN EXTREMA</div>
         </div>
-        <div class="key-points-grid" id="scene2-points">
-          <div class="kp-card" id="kp-1"><span class="kp-icon">✦</span> Multiplican tu alcance</div>
-          <div class="kp-card" id="kp-2"><span class="kp-icon">✦</span> Operan 24 horas continuas</div>
-          <div class="kp-card" id="kp-3"><span class="kp-icon">✦</span> Reducen costos operativos</div>
-        </div>
+        <div class="kp-list" id="kp-list" data-layout-allow-overflow></div>
       </div>
 
-      <!-- SCENE 3: PERCENTAGE -->
+      <!-- ESCENA 3: DATO -->
       <div id="scene-percent" class="scene">
-        <div class="percentage-box">
-          <div class="tag-pill" style="margin-bottom: 25px;">✦ DATO CLAVE DE MERCADO ✦</div>
-          <div class="huge-percent" id="percent-number">85%</div>
-          <div class="percent-label" id="percent-label-text">Empresas Adaptadas</div>
+        <div class="stat-box" id="stat-box">
+          <div class="sticker">✦ DATO CLAVE ✦</div>
+          <div class="huge-percent" id="percent-number">0%</div>
+          <div class="meter"><div class="meter-fill" id="meter-fill"></div></div>
+          <div class="percent-label" id="percent-label-text">Empresas adaptadas</div>
         </div>
       </div>
 
-      <!-- SCENE 4: IMAGE 2 -->
+      <!-- ESCENA 4: IMAGEN + JUGADA -->
       <div id="scene-img2" class="scene">
-        <div class="image-card">
-          <div class="image-frame" data-layout-allow-overflow>
-            <img id="img-scene-3" class="image-content" src="./public/scene_3.png" alt="Escena 3" data-layout-allow-overflow />
-          </div>
-          <div class="image-caption-bar">
-            <h3 class="caption-text" id="caption-scene-3">COBRA POR TU VALOR</h3>
-          </div>
+        <div class="sticker scene-tag">✦ LA JUGADA</div>
+        <div class="image-card" id="card-2">
+          <div class="frame"><img id="img-scene-3" src="./public/scene_3.png" alt="" data-layout-allow-overflow /></div>
+          <div class="bar" id="caption-scene-3">COBRA POR TU VALOR</div>
         </div>
       </div>
 
-      <!-- SCENE 5: CTA -->
+      <!-- ESCENA 5: CIERRE -->
       <div id="scene-cta" class="scene">
+        <img class="mascot" id="mascot-5" src="./public/cerebro.webp" alt="" />
         <div class="cta-box">
-          <div class="tag-pill" style="margin-bottom: 25px;">✦ EL MOMENTO ES AHORA ✦</div>
+          <div class="sticker" id="cta-tag">✦ EL MOMENTO ES AHORA ✦</div>
           <h1 class="cta-headline" id="cta-headline-text">¿LISTO PARA DOMINAR?</h1>
-          <p class="cta-sub">Tu talento amplificado con agentes de IA.</p>
-          <div class="cta-btn-brutal" id="cta-btn">
-            <span>TALENTOCONTARIFA.LAT</span>
-            <span>➔</span>
-          </div>
+          <p class="cta-sub" id="cta-sub">Tu talento amplificado con agentes de IA.</p>
+          <div class="cta-btn" id="cta-btn"><span id="cta-btn-text">TALENTOCONTARIFA.LAT</span><span>➔</span></div>
         </div>
       </div>
 
-      <!-- DYNAMIC SUBTITLES OVERLAY -->
-      <div class="subtitles-container">
-        <div class="subtitle-pill" id="sub-1">
-          <span class="subtitle-tag">VOZ EN DIRECTO</span>
-          <p class="subtitle-text" id="sub-text-1">¡Atención emprendedor! Los agentes de IA llegaron para cambiar las reglas.</p>
-        </div>
-        <div class="subtitle-pill" id="sub-2">
-          <span class="subtitle-tag">VOZ EN DIRECTO</span>
-          <p class="subtitle-text" id="sub-text-2">Automatización extrema: multiplican tu alcance y operan 24/7.</p>
-        </div>
-        <div class="subtitle-pill" id="sub-3">
-          <span class="subtitle-tag">VOZ EN DIRECTO</span>
-          <p class="subtitle-text" id="sub-text-3">El 85% de las empresas líderes ya integraron agentes autónomos.</p>
-        </div>
-        <div class="subtitle-pill" id="sub-4">
-          <span class="subtitle-tag">VOZ EN DIRECTO</span>
-          <p class="subtitle-text" id="sub-text-4">No compitas por precio: cobra por el valor de tu talento.</p>
-        </div>
-        <div class="subtitle-pill" id="sub-5">
-          <span class="subtitle-tag">VOZ EN DIRECTO</span>
-          <p class="subtitle-text" id="sub-text-5">Visita hoy talentocontarifa.lat y transforma tu futuro.</p>
-        </div>
+      <div id="wipe" data-layout-allow-overflow><img src="./public/tct_icon.svg" alt="" /></div>
+
+      <div class="subs">
+        <div class="sub" id="sub-1"><p id="sub-text-1"></p></div>
+        <div class="sub" id="sub-2"><p id="sub-text-2"></p></div>
+        <div class="sub" id="sub-3"><p id="sub-text-3"></p></div>
+        <div class="sub" id="sub-4"><p id="sub-text-4"></p></div>
+        <div class="sub" id="sub-5"><p id="sub-text-5"></p></div>
       </div>
 
-      <!-- AUDIO TRACKS (Master Ducked Tech BGM + Mastered Broadcast Voice) -->
+      <!-- AUDIO (música con ducking + voz masterizada) -->
       <audio id="bgm" src="./public/tct_music.mp3" class="clip" data-start="0" data-duration="38" data-volume="0.85"></audio>
       <audio id="vo" src="./public/news_voice.mp3" class="clip" data-start="0" data-duration="38" data-volume="1.0"></audio>
 
-      <!-- MICRO-SFX TRACKS -->
+      <!-- SFX (se reubican en cada transición) -->
       <audio id="sfx-whoosh1" src="./public/sfx/whoosh.mp3" class="clip" data-start="0.05" data-duration="0.35" data-volume="0.35"></audio>
       <audio id="sfx-pop1" src="./public/sfx/pop.mp3" class="clip" data-start="7.2" data-duration="0.1" data-volume="0.45"></audio>
       <audio id="sfx-cash" src="./public/sfx/cash.mp3" class="clip" data-start="14.4" data-duration="0.8" data-volume="0.55"></audio>
@@ -493,111 +262,212 @@
     </div>
 
     <script>
-      // 1. Población dinámica de datos
+      // ============ 1. DATOS ============
       const data = window.NEWS_DATA || {};
-      const totalDur = data.total_duration_sec || 35;
-      const scenes = data.scenes || [];
+      const scenes = Array.isArray(data.scenes) ? data.scenes : [];
+      const defaults = [
+        { start: 0, end: 7.1 }, { start: 7.5, end: 14.3 }, { start: 14.7, end: 21.1 },
+        { start: 21.5, end: 27.2 }, { start: 27.6, end: 34.3 }
+      ];
+      const sc = defaults.map((d, i) => {
+        const s = scenes[i] || {};
+        const start = Number.isFinite(s.start) ? s.start : d.start;
+        const end = Number.isFinite(s.end) && s.end > start ? s.end : d.end;
+        return { ...s, start, end };
+      });
+      const lastEnd = sc[4].end;
+      const totalDur = Math.max(Number(data.total_duration_sec) || 0, lastEnd + 1);
 
-      if (data.theme_color) {
-        document.documentElement.style.setProperty('--theme-color', data.theme_color);
-      }
+      const $ = (id) => document.getElementById(id);
+      const setText = (id, value) => {
+        const v = value == null ? '' : String(value).trim();
+        if (v && $(id)) $(id).textContent = v;
+      };
+      // Tamaño de letra según largo (sin medir el DOM: determinista antes de cargar fuentes)
+      // k ≈ "presupuesto" de caracteres×px por línea; width = ancho útil de la columna
+      const fit = (id, max, min, k, width = 900) => {
+        const el = $(id); if (!el) return;
+        const text = el.textContent.trim();
+        const longest = text.split(/\s+/).reduce((m, w) => Math.max(m, w.length), 1);
+        const size = Math.max(min, Math.min(max, k / Math.max(text.length, 1) * 2, width / (0.72 * longest)));
+        el.style.fontSize = Math.round(size) + 'px';
+      };
 
-      // Actualizar atributos de duración en root y audio
-      const rootEl = document.getElementById('root');
-      rootEl.setAttribute('data-duration', String(totalDur));
-      const bgmEl = document.getElementById('bgm');
-      if (bgmEl) bgmEl.setAttribute('data-duration', String(totalDur));
-      const voEl = document.getElementById('vo');
-      if (voEl) voEl.setAttribute('data-duration', String(Math.max(1, totalDur - 0.5)));
+      $('root').setAttribute('data-duration', String(totalDur));
+      $('bgm').setAttribute('data-duration', String(totalDur));
+      $('vo').setAttribute('data-duration', String(Math.max(1, lastEnd + 0.2)));
 
-      // Extraer datos de escenas
-      const sc1 = scenes[0] || { start: 0, end: 7.10 };
-      const sc2 = scenes[1] || { start: 7.26, end: 14.32 };
-      const sc3 = scenes[2] || { start: 14.48, end: 21.10, number: 85 };
-      const sc4 = scenes[3] || { start: 21.26, end: 27.24 };
-      const sc5 = scenes[4] || { start: 27.40, end: 34.31 };
+      // Escena 1 — el generador entrega text1/text2 (title1/title2 se aceptan por compatibilidad)
+      const s1 = sc[0];
+      setText('title-text-1', s1.text1 || s1.title1);
+      setText('title-text-2', s1.text2 || s1.title2);
+      setText('title-tag', s1.tag);
+      fit('title-text-1', 150, 70, 1250);
+      fit('title-text-2', 120, 60, 1000);
 
-      // Sincronizar SFX con marcas de tiempo de las escenas
-      const w1 = document.getElementById('sfx-whoosh1'); if (w1) w1.setAttribute('data-start', String(sc1.start || 0.05));
-      const p1 = document.getElementById('sfx-pop1'); if (p1) p1.setAttribute('data-start', String(sc2.start));
-      const cash = document.getElementById('sfx-cash'); if (cash) cash.setAttribute('data-start', String(sc3.start));
-      const w2 = document.getElementById('sfx-whoosh2'); if (w2) w2.setAttribute('data-start', String(sc4.start));
-      const ding = document.getElementById('sfx-ding'); if (ding) ding.setAttribute('data-start', String(sc5.start + 0.5));
+      // Escena 2 — titular + 3 ideas clave reales
+      const s2 = sc[1];
+      setText('caption-scene-1', s2.title);
+      fit('caption-scene-1', 58, 36, 1250);
+      const points = (Array.isArray(s2.key_points) ? s2.key_points : [])
+        .map((p) => String(p || '').replace(/^\s*\d+[.)-]\s*/, '').trim())
+        .filter(Boolean).slice(0, 3);
+      const kpList = $('kp-list');
+      points.forEach((p, i) => {
+        const row = document.createElement('div');
+        row.className = 'kp'; row.id = 'kp-' + (i + 1);
+        const num = document.createElement('div'); num.className = 'kp-num'; num.textContent = '0' + (i + 1);
+        const txt = document.createElement('div'); txt.className = 'kp-text'; txt.textContent = p;
+        if (p.length > 26) txt.style.fontSize = '30px';
+        row.append(num, txt); kpList.appendChild(row);
+      });
 
-      if (sc1.title1) document.getElementById('title-text-1').innerText = sc1.title1;
-      if (sc1.title2) document.getElementById('title-text-2').innerText = sc1.title2;
-      if (sc1.tag) document.getElementById('title-tag').innerText = sc1.tag;
-      if (sc1.subtitle) document.getElementById('sub-text-1').innerText = sc1.subtitle;
+      // Escena 3 — porcentaje (1-99)
+      const s3 = sc[2];
+      const pct = Math.min(99, Math.max(1, Math.round(Number(s3.number) || 85)));
+      setText('percent-label-text', s3.label);
+      fit('percent-label-text', 60, 38, 1300);
 
-      if (sc2.title) document.getElementById('caption-scene-1').innerText = sc2.title;
-      if (sc2.subtitle) document.getElementById('sub-text-2').innerText = sc2.subtitle;
+      // Escena 4
+      const s4 = sc[3];
+      setText('caption-scene-3', s4.title);
+      fit('caption-scene-3', 64, 38, 1300);
 
-      if (sc3.number) document.getElementById('percent-number').innerText = `${sc3.number}%`;
-      if (sc3.label) document.getElementById('percent-label-text').innerText = sc3.label;
-      if (sc3.subtitle) document.getElementById('sub-text-3').innerText = sc3.subtitle;
+      // Escena 5
+      const s5 = sc[4];
+      setText('cta-headline-text', s5.headline);
+      setText('cta-sub', s5.sub);
+      setText('cta-btn-text', s5.btn);
+      fit('cta-headline-text', 110, 64, 1500);
+      fit('cta-btn-text', 46, 30, 900);
 
-      if (sc4.title) document.getElementById('caption-scene-3').innerText = sc4.title;
-      if (sc4.subtitle) document.getElementById('sub-text-4').innerText = sc4.subtitle;
+      // Subtítulos
+      sc.forEach((s, i) => setText('sub-text-' + (i + 1), s.subtitle));
 
-      if (sc5.headline) document.getElementById('cta-headline-text').innerText = sc5.headline;
-      if (sc5.sub) document.querySelector('.cta-sub').innerText = sc5.sub;
-      if (sc5.btn) document.querySelector('#cta-btn span:first-child').innerText = sc5.btn;
-      if (sc5.subtitle) document.getElementById('sub-text-5').innerText = sc5.subtitle;
+      // Marquesina
+      const phrase = ['NOTICIAS IA', 'TALENTO CON TARIFA', 'DISEÑO QUE VENDE O SE MUERE', 'TALENTOCONTARIFA.LAT'];
+      const track = $('marquee-track');
+      for (let r = 0; r < 6; r++) phrase.forEach((t) => {
+        const span = document.createElement('span'); span.textContent = t + '  ✦'; track.appendChild(span);
+      });
 
-      // 2. Timeline GSAP sincronizada exactamente a las marcas de tiempo de la voz
+      // ============ 2. TIEMPOS DE TRANSICIÓN ============
+      // Corte a mitad del silencio entre locuciones (o en el borde si no hay silencio)
+      const cuts = [1, 2, 3, 4].map((i) => {
+        const gap = Math.max(0, sc[i].start - sc[i - 1].end);
+        return sc[i - 1].end + Math.min(gap / 2, 0.2);
+      });
+      const sceneIds = ['#scene-title', '#scene-img1', '#scene-percent', '#scene-img2', '#scene-cta'];
+      const inAt = [0, ...cuts];
+      const outAt = [...cuts, totalDur];
+
+      // SFX: golpe en cada corte
+      const sfxAt = (id, t) => { const el = $(id); if (el) el.setAttribute('data-start', String(Math.max(0, t).toFixed(3))); };
+      sfxAt('sfx-whoosh1', 0.05);
+      sfxAt('sfx-pop1', cuts[0] - 0.1);
+      sfxAt('sfx-cash', cuts[1] + 0.45);
+      sfxAt('sfx-whoosh2', cuts[2] - 0.15);
+      sfxAt('sfx-ding', cuts[3] + 0.5);
+
+      // ============ 3. TIMELINE ============
       const tl = gsap.timeline({ paused: true });
 
-      // Barra de progreso continua
-      tl.to("#progress-fill", { width: "100%", duration: totalDur, ease: "none" }, 0);
+      tl.to('#progress-fill', { scaleX: 1, duration: totalDur, ease: 'none' }, 0);
+      tl.fromTo('#marquee-track', { x: 0 }, { x: -1600, duration: totalDur, ease: 'none' }, 0);
+      tl.fromTo('#live-dot', { opacity: 1 }, { opacity: 0.2, duration: 0.5, repeat: Math.floor(totalDur * 2) - 1, yoyo: true, ease: 'steps(1)' }, 0);
 
-      // --- ESCENA 1: TITLE (0.0s -> sc1.end) ---
-      tl.fromTo("#scene-title", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }, sc1.start);
-      tl.fromTo("#title-tag", { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, sc1.start + 0.15);
-      tl.fromTo("#title-text-1", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, sc1.start + 0.4);
-      tl.fromTo("#title-text-2", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, sc1.start + 0.7);
-      // Subtitle 1
-      tl.fromTo("#sub-1", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc1.start + 0.2);
-      tl.to("#sub-1", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, sc1.end - 0.25);
-      tl.to("#scene-title", { opacity: 0, scale: 1.05, duration: 0.3, ease: "power2.in" }, sc1.end - 0.3);
+      // Visibilidad de escenas (cortes secos bajo la cortina)
+      sceneIds.forEach((sel, i) => {
+        tl.set(sel, { autoAlpha: 1 }, inAt[i]);
+        if (i < 4) tl.set(sel, { autoAlpha: 0 }, outAt[i]);
+      });
 
-      // --- ESCENA 2: IMAGE 1 + KEY POINTS (sc2.start -> sc2.end) ---
-      tl.fromTo("#scene-img1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, sc2.start);
-      tl.fromTo("#img-scene-1", { scale: 1.0 }, { scale: 1.12, duration: (sc2.end - sc2.start), ease: "sine.inOut" }, sc2.start);
-      // Subtitle 2
-      tl.fromTo("#sub-2", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc2.start + 0.15);
-      tl.to("#sub-2", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, sc2.end - 0.25);
-      // Key points sincronizados con las frases de la locución
-      tl.fromTo("#kp-1", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(1.5)" }, sc2.start + 1.2);
-      tl.fromTo("#kp-2", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(1.5)" }, sc2.start + 3.0);
-      tl.fromTo("#kp-3", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(1.5)" }, sc2.start + 4.8);
-      tl.to("#scene-img1", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, sc2.end - 0.3);
+      // Cortina limón: entra antes del corte y sale después
+      gsap.set('#wipe', { xPercent: -100, visibility: 'visible' });
+      cuts.forEach((t) => {
+        tl.fromTo('#wipe', { xPercent: -100 }, { xPercent: 0, duration: 0.2, ease: 'power3.in', immediateRender: false }, t - 0.2);
+        tl.to('#wipe', { xPercent: 100, duration: 0.24, ease: 'power3.out' }, t);
+      });
 
-      // --- ESCENA 3: PERCENTAGE (sc3.start -> sc3.end) ---
-      tl.fromTo("#scene-percent", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.5)" }, sc3.start);
-      tl.fromTo("#percent-number", { scale: 0.7 }, { scale: 1.08, duration: 0.6, ease: "elastic.out(1, 0.5)" }, sc3.start + 0.2);
-      // Subtitle 3
-      tl.fromTo("#sub-3", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc3.start + 0.15);
-      tl.to("#sub-3", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, sc3.end - 0.25);
-      tl.to("#scene-percent", { opacity: 0, scale: 1.05, duration: 0.3, ease: "power2.in" }, sc3.end - 0.3);
+      // Subtítulos: entran con su locución y salen al terminarla
+      sc.forEach((s, i) => {
+        const id = '#sub-' + (i + 1);
+        if (!$('sub-text-' + (i + 1)).textContent) return;
+        const showAt = Math.max(inAt[i] + 0.12, s.start);
+        const hideAt = i === 4 ? totalDur - 0.35 : Math.max(showAt + 0.6, s.end - 0.1);
+        tl.fromTo(id, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.25, ease: 'back.out(2)' }, showAt);
+        tl.to(id, { opacity: 0, y: -12, duration: 0.18, ease: 'power2.in' }, hideAt);
+      });
 
-      // --- ESCENA 4: IMAGE 2 (sc4.start -> sc4.end) ---
-      tl.fromTo("#scene-img2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, sc4.start);
-      tl.fromTo("#img-scene-3", { scale: 1.0 }, { scale: 1.12, duration: (sc4.end - sc4.start), ease: "sine.inOut" }, sc4.start);
-      // Subtitle 4
-      tl.fromTo("#sub-4", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc4.start + 0.15);
-      tl.to("#sub-4", { opacity: 0, y: -10, duration: 0.25, ease: "power2.in" }, sc4.end - 0.25);
-      tl.to("#scene-img2", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, sc4.end - 0.3);
+      // --- ESCENA 1: PORTADA ---
+      {
+        const t = inAt[0];
+        tl.fromTo('#mascot-1', { y: 120, scale: 0.6, rotation: -12, opacity: 0 }, { y: 0, scale: 1, rotation: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.6)' }, t + 0.05);
+        tl.fromTo('#mascot-1', { y: 0 }, { y: -26, duration: 1.4, ease: 'sine.inOut', repeat: Math.max(0, Math.floor((outAt[0] - t - 0.7) / 1.4) - 1), yoyo: true, immediateRender: false }, t + 0.65);
+        tl.fromTo('#title-tag', { scale: 2.2, opacity: 0, rotation: 10 }, { scale: 1, opacity: 1, rotation: 2, duration: 0.35, ease: 'power4.out' }, t + 0.25);
+        tl.fromTo('#title-text-1', { y: 80, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power4.out' }, t + 0.45);
+        tl.fromTo('.title-2-wrap', { scale: 1.6, opacity: 0, rotation: 6 }, { scale: 1, opacity: 1, rotation: -1.5, duration: 0.42, ease: 'back.out(2.2)' }, t + 0.75);
+        tl.fromTo('#title-text-2', { boxShadow: '0px 0px 0 #F0F0F0' }, { boxShadow: '12px 12px 0 #F0F0F0', duration: 0.2, ease: 'power2.out' }, t + 1.05);
+      }
 
-      // --- ESCENA 5: CTA (sc5.start -> totalDur) ---
-      tl.fromTo("#scene-cta", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, sc5.start);
-      tl.fromTo("#cta-btn", { scale: 0.95 }, { scale: 1.04, repeat: 7, yoyo: true, duration: 0.4, ease: "power1.inOut" }, sc5.start + 0.2);
-      // Subtitle 5
-      tl.fromTo("#sub-5", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, sc5.start + 0.15);
-      tl.to("#sub-5", { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" }, totalDur - 0.4);
+      // --- ESCENA 2: IMAGEN + IDEAS ---
+      {
+        const t = inAt[1], d = outAt[1] - t;
+        tl.fromTo('#scene-img1 .scene-tag', { x: -300 }, { x: 0, duration: 0.3, ease: 'power4.out' }, t + 0.05);
+        tl.fromTo('#card-1', { y: 140, rotation: 3, opacity: 0 }, { y: 0, rotation: 0, opacity: 1, duration: 0.45, ease: 'back.out(1.4)' }, t);
+        tl.fromTo('#img-scene-1', { scale: 1.02 }, { scale: 1.16, duration: d, ease: 'none' }, t);
+        // Cada idea entra repartida en la locución (aprox. cuando se menciona)
+        const slots = [0.14, 0.42, 0.68];
+        points.forEach((_, i) => {
+          tl.fromTo('#kp-' + (i + 1), { x: -1150 }, { x: 0, duration: 0.32, ease: 'power4.out' }, t + d * slots[i]);
+          tl.fromTo('#kp-' + (i + 1) + ' .kp-num', { scale: 1.8 }, { scale: 1, duration: 0.3, ease: 'back.out(3)' }, t + d * slots[i] + 0.18);
+        });
+      }
+
+      // --- ESCENA 3: DATO (cuenta 0 → N%) ---
+      {
+        const t = inAt[2];
+        tl.fromTo('#stat-box', { scale: 0.7, rotation: -4, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.45, ease: 'back.out(1.8)' }, t);
+        const counter = { v: 0 };
+        const numEl = $('percent-number');
+        tl.fromTo(counter, { v: 0 }, {
+          v: pct, duration: 1.3, ease: 'power3.out',
+          onUpdate: () => { numEl.textContent = Math.round(counter.v) + '%'; }
+        }, t + 0.35);
+        tl.fromTo('#meter-fill', { scaleX: 0 }, { scaleX: pct / 100, duration: 1.3, ease: 'power3.out' }, t + 0.35);
+        tl.fromTo('#percent-number', { scale: 1 }, { scale: 1.12, duration: 0.14, yoyo: true, repeat: 1, ease: 'power2.out' }, t + 1.65);
+        tl.fromTo('#percent-label-text', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power3.out' }, t + 0.9);
+      }
+
+      // --- ESCENA 4: IMAGEN + JUGADA ---
+      {
+        const t = inAt[3], d = outAt[3] - t;
+        tl.fromTo('#scene-img2 .scene-tag', { x: -300 }, { x: 0, duration: 0.3, ease: 'power4.out' }, t + 0.05);
+        tl.fromTo('#card-2', { y: 140, rotation: -3, opacity: 0 }, { y: 0, rotation: 0, opacity: 1, duration: 0.45, ease: 'back.out(1.4)' }, t);
+        tl.fromTo('#img-scene-3', { scale: 1.16, xPercent: 2 }, { scale: 1.02, xPercent: -2, duration: d, ease: 'none' }, t);
+        tl.fromTo('#caption-scene-3', { yPercent: 100 }, { yPercent: 0, duration: 0.35, ease: 'power4.out' }, t + 0.4);
+      }
+
+      // --- ESCENA 5: CIERRE ---
+      {
+        const t = inAt[4], d = totalDur - t;
+        tl.fromTo('#mascot-5', { x: 400, rotation: 40, opacity: 0 }, { x: 0, rotation: 8, opacity: 1, duration: 0.55, ease: 'back.out(1.5)' }, t + 0.1);
+        tl.fromTo('#cta-tag', { scale: 2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'power4.out' }, t + 0.15);
+        tl.fromTo('#cta-headline-text', { y: 70, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power4.out' }, t + 0.3);
+        tl.fromTo('#cta-sub', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power3.out' }, t + 0.55);
+        tl.fromTo('#cta-btn', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2)' }, t + 0.8);
+        // Botón "mecánico": se hunde y regresa (sombra dura que se comprime)
+        const presses = Math.max(1, Math.floor((d - 1.6) / 1.2));
+        for (let k = 0; k < presses; k++) {
+          const p = t + 1.4 + k * 1.2;
+          tl.to('#cta-btn', { x: 10, y: 10, boxShadow: '4px 4px 0 #F0F0F0', duration: 0.1, ease: 'power2.in' }, p);
+          tl.to('#cta-btn', { x: 0, y: 0, boxShadow: '14px 14px 0 #F0F0F0', duration: 0.22, ease: 'back.out(3)' }, p + 0.1);
+        }
+      }
 
       // Registrar timeline para HyperFrames
       window.__timelines = window.__timelines || {};
-      window.__timelines["main"] = tl;
+      window.__timelines['main'] = tl;
       tl.seek(0);
     </script>
   </body>
