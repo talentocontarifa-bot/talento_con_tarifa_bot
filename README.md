@@ -77,6 +77,24 @@ npm run trending:all
 
 `PUBLISH_PLATFORMS` permite elegir una lista separada por comas. Si está vacía, se solicitan Facebook e Instagram; se añaden TikTok y YouTube cuando sus credenciales están presentes. Las integraciones existentes de TikTok y YouTube se conservan. TikTok recibe una versión con la pista de voz reconstruida con los mismos tiempos del video, sin música de fondo.
 
+## Post diario de Facebook y selección de noticias
+
+`Publicador de Talento con Tarifa` (`publisher.yml`) ejecuta `master_pipeline.js`. La selección y extracción de noticias vive en `news_sources.js` (sin dependencias) y la comparte el video diario (`video_tct/create_daily_news.js`):
+
+- **Feeds en paralelo** con timeout; se elige la mejor noticia de todos los feeds, no la primera del primero.
+- **Filtro IA + frescura**: puntuación por palabras clave ES/EN (IA, OpenAI, Gemini, agentes, automatización, …) y se descartan notas de más de 72 h. El post puede caer a una nota de negocios si no hay ninguna de IA; el video no.
+- **Historial compartido** `published_news.json` (últimas 200 entradas: URL normalizada, título, fecha y canal `fb_article` / `video_news`). Ningún motor repite una noticia que ya usó el otro. Ambos workflows lo guardan con `.github/scripts/persist_state.sh` (commit `[skip ci]`, `pull --rebase` con reintentos y fusión automática del JSON).
+- **Extracción**: 1) texto completo del RSS si trae más de 800 caracteres (Xataka/Genbeta/wwwhatsnew), 2) Jina Reader con timeout, `X-Target-Selector: article` y reintento sin él, 3) Scrapling en modo ligero (`requirements-scraper.txt`, sin navegadores). Las páginas de bloqueo (Cloudflare, 403, captcha) o con poco texto se descartan y se prueba la siguiente noticia.
+- `JINA_API_KEY` (secret **opcional**) da más cuota en Jina Reader.
+- `DRY_RUN=1 node master_pipeline.js` (o `DRY_RUN=1 node video_tct/create_daily_news.js`) muestra la noticia elegida y el texto extraído sin llamar al LLM ni publicar.
+
+**Issues como solicitud de artículo.** El publicador solo toma un issue abierto si incluye una URL y además:
+
+- tiene la etiqueta `publicar`, `articulo`, `noticia` o `post`, **o** su título empieza con `[POST]`, `[ARTICULO]`, `[NOTICIA]` o `[PUBLICAR]`, **o** no tiene etiquetas especiales y el cuerpo contiene la URL;
+- **no** tiene las etiquetas `bug`, `editorial` o `video`, ni `GUION:` en el cuerpo ni `[EDITORIAL]` en el título (esos son del video editorial).
+
+El título (sin el prefijo `[POST]`) se usa como instrucción para el tono del post. La puntuación final pegada a la URL (`)`, `]`, `.`, `,`) se elimina. El issue se cierra al publicar.
+
 ## Estado y recuperación
 
 Cada motor guarda `publication-state.json` por fuente y cuenta. Una red ya confirmada se omite al repetir el mismo contenido. TikTok en bandeja de entrada se registra como `submitted`, no como publicación pública.

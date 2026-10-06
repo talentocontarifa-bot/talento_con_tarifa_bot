@@ -3,9 +3,9 @@ const path = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { HfInference } = require('@huggingface/inference');
 const { getAudioDurationInSeconds } = require('get-audio-duration');
-const Parser = require('rss-parser');
 const axios = require('axios');
 const googleTTS = require('google-tts-api');
+const news = require('../news_sources');
 
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -14,20 +14,26 @@ const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const ELEVENLABS_VOICE_ID = 'pVSoAhDpVO8HBRVURsj5';
 const FPS = 30;
+const BRAND_COLOR = '#CCFF00'; // Limón TCT (identidad Neo-Brutalista bloqueada)
 
-const parser = new Parser();
 const FEEDS = [
+  'https://www.xataka.com/tag/inteligencia-artificial/rss2.xml',
   'https://www.entrepreneur.com/es/feed',
   'https://feeds.weblogssl.com/xataka2',
   'https://feeds.weblogssl.com/genbeta',
   'https://wwwhatsnew.com/feed/'
 ];
+const HISTORY_CHANNEL = 'video_news';
 
 // Variables globales para la noticia procesada y sus imágenes reales
 let processedNewsLink = null;
+let processedNewsTitle = '';
 let extractedArticleImages = [];
 
-if (!GEMINI_API_KEY && !GROQ_API_KEY) {
+// DRY_RUN=1: solo selecciona/extrae la noticia y sus imágenes; no llama al LLM, TTS ni escribe archivos
+const DRY_RUN = ['1', 'true', 'yes'].includes(String(process.env.DRY_RUN || '').toLowerCase());
+
+if (!GEMINI_API_KEY && !GROQ_API_KEY && !DRY_RUN) {
   console.error("❌ Faltan variables de entorno: necesitas GEMINI_API_KEY o GROQ_API_KEY");
   process.exit(1);
 }
@@ -42,60 +48,45 @@ const hf = HF_API_KEY ? new HfInference(HF_API_KEY) : null;
 // EXTRAER IMÁGENES REALES DEL ARTÍCULO
 // ─────────────────────────────────────────
 async function extractArticleImages(articleUrl, feedItem, jinaText) {
-  const images = [];
+  let ogImage = null;
+  const leadImages = [];
+  const bodyImages = [];
 
-  // 1. De enclosure / media:content en el feed RSS
-  if (feedItem?.enclosure?.url && feedItem.enclosure.url.startsWith('http')) {
-    images.push(feedItem.enclosure.url);
-  }
-  if (feedItem?.['media:content']?.['$']?.url && feedItem['media:content']['$'].url.startsWith('http')) {
-    images.push(feedItem['media:content']['$'].url);
-  }
-
-  // 2. Extraer de las imágenes markdown de Jina Reader (![alt](url))
-  if (jinaText) {
-    const markdownImgRegex = /!\[.*?\]\((https?:\/\/[^\s\)]+)\)/g;
-    let match;
-    while ((match = markdownImgRegex.exec(jinaText)) !== null) {
-      const imgUrl = match[1];
-      if (!images.includes(imgUrl) && !imgUrl.includes('.svg') && !imgUrl.includes('avatar') && !imgUrl.includes('pixel') && !imgUrl.includes('icon')) {
-        images.push(imgUrl);
-      }
-    }
-  }
-
-  // 3. Consultar la página web directamente para extraer og:image y twitter:image
+  // 1. Consultar la página web directamente: og:image/twitter:image + imágenes DENTRO del cuerpo del artículo
   if (articleUrl) {
     try {
       const res = await axios.get(articleUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36' },
+        headers: { 'User-Agent': news.USER_AGENT },
         timeout: 8000
       });
       const html = res.data;
       if (typeof html === 'string') {
-        const ogMatch = html.match(/<meta[^>]+property=["']og:image(?::secure_url)?["'][^>]+content=["']([^"']+)["']/i) ||
-                        html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image(?::secure_url)?["']/i) ||
-                        html.match(/<meta[^>]+name=["']twitter:image(?::src)?["'][^>]+content=["']([^"']+)["']/i);
-        if (ogMatch && ogMatch[1] && ogMatch[1].startsWith('http')) {
-          const ogUrl = ogMatch[1];
-          if (!images.includes(ogUrl)) {
-            images.unshift(ogUrl);
-          }
-        }
-
-        // Buscar imágenes de contenido dentro de <img>
-        const imgTags = [...html.matchAll(/<img[^>]+src=["'](https?:\/\/[^"']+\.(?:jpg|jpeg|png|webp)[^"']*)["']/gi)];
-        for (const t of imgTags) {
-          const u = t[1];
-          if (!images.includes(u) && !u.includes('logo') && !u.includes('icon') && !u.includes('avatar') && !u.includes('pixel') && !u.includes('advert')) {
-            images.push(u);
-          }
-        }
+        ogImage = news.extractOgImage(html);
+        // Solo <article>, [itemprop=articleBody], .article-content o <main> (nada de header/sidebar/footer)
+        const bodyHtml = news.extractArticleBodyHtml(html);
+        if (bodyHtml) bodyImages.push(...news.extractImagesFromHtml(bodyHtml, articleUrl));
       }
     } catch (e) {
       console.log(`⚠️ No se pudo obtener HTML directo para og:image: ${e.message}`);
     }
   }
+
+  // 2. De enclosure / media:content en el feed RSS (imagen principal de la nota)
+  for (const u of [feedItem?.enclosureUrl, feedItem?.mediaUrl]) {
+    if (u && news.isUsefulImageUrl(u)) leadImages.push(u);
+  }
+
+  // 3. Imágenes del contenido completo del RSS (content:encoded / description = cuerpo del artículo)
+  const rssImages = feedItem?.contentHtml ? news.extractImagesFromHtml(feedItem.contentHtml, articleUrl) : [];
+
+  // 4. Último recurso: imágenes markdown de Jina Reader (ya filtradas)
+  const jinaImages = jinaText ? news.imagesFromMarkdown(jinaText) : [];
+
+  let images = news.dedupeImages([
+    ...(ogImage && news.isUsefulImageUrl(ogImage) ? [ogImage] : []),
+    ...leadImages, ...rssImages, ...bodyImages
+  ]);
+  if (images.length < 2) images = news.dedupeImages([...images, ...jinaImages]);
 
   console.log(`📸 Imágenes reales encontradas para el artículo: ${images.length}`);
   images.slice(0, 3).forEach((img, idx) => console.log(`   [${idx + 1}] ${img.substring(0, 80)}...`));
@@ -135,6 +126,9 @@ async function getTodaysContext() {
       console.log('⚠️ Error al leer used_video_news.json:', e.message);
     }
   }
+  const usedLinkKeys = new Set(usedLinks.map(news.normalizeUrl));
+  // Historial compartido con el publicador diario de artículos (published_news.json)
+  const sharedHistory = news.loadHistory();
 
   const queuePath = path.join(__dirname, '..', 'talento_queue.json');
   if (fs.existsSync(queuePath)) {
@@ -157,7 +151,9 @@ async function getTodaysContext() {
         let chosen = null;
         for (let i = recentPosts.length - 1; i >= 0; i--) {
           const candidate = recentPosts[i];
-          const isUsedInHistory = candidate.link && usedLinks.includes(candidate.link);
+          // Solo el canal de video: los posts del queue SON el contenido del día y se espera su video
+          const isUsedInHistory = candidate.link && (usedLinkKeys.has(news.normalizeUrl(candidate.link)) ||
+            news.isInHistory(sharedHistory, { url: candidate.link }, { channels: [HISTORY_CHANNEL] }));
           const isUsedInFb = recentVideoTexts.some(text => {
             if (candidate.link && text.includes(candidate.link)) return true;
             const cleanMsg = (candidate.message || '').trim().toLowerCase();
@@ -180,6 +176,7 @@ async function getTodaysContext() {
           const contextText = (chosen.message || '').substring(0, 600); // máx 600 chars
           console.log(`📋 Contexto reciente encontrado en queue.json (ID: ${chosen.id}): "${contextText.substring(0, 100)}..."`);
           processedNewsLink = chosen.link || '';
+          processedNewsTitle = contextText.split('\n')[0].substring(0, 140);
           if (chosen.link) {
             extractedArticleImages = await extractArticleImages(chosen.link, null, chosen.message);
           }
@@ -194,88 +191,78 @@ async function getTodaysContext() {
   // Fallback / Piloto automático: Buscar en feeds RSS una noticia no utilizada
   console.log('🤖 Buscando noticia fresca en feeds RSS...');
 
-  let selectedItem = null;
-  for (const feedUrl of FEEDS) {
-    try {
-      console.log(`📡 Consultando feed: ${feedUrl}`);
-      const feed = await parser.parseURL(feedUrl);
-      for (const item of feed.items) {
-        if (item.link) {
-          // Comprobar si ya se usó en el historial local
-          if (usedLinks.includes(item.link)) continue;
-
-          // Comprobar si ya se usó en los videos recientes de Facebook
-          const isUsedInFb = recentVideoTexts.some(text => {
-            if (text.includes(item.link)) return true;
-            const cleanTitle = (item.title || '').trim().toLowerCase();
-            const keywords = cleanTitle.split(/\s+/).filter(w => w.length > 3).slice(0, 3);
-            if (keywords.length > 0) {
-              return keywords.every(kw => text.toLowerCase().includes(kw));
-            }
-            return false;
-          });
-
-          if (isUsedInFb) {
-            console.log(`⏭️ Saltando noticia (detectada en videos recientes de Facebook): "${item.title}"`);
-            continue;
-          }
-
-          selectedItem = item;
-          console.log(`📰 Noticia seleccionada: "${item.title}" (${item.link})`);
-          break;
-        }
-      }
-      if (selectedItem) break;
-    } catch (err) {
-      console.log(`⚠️ Error leyendo el feed ${feedUrl}:`, err.message);
+  // Comprobar si ya se usó en los videos recientes de Facebook (heurística por link / palabras del título)
+  const isUsedInFb = item => recentVideoTexts.some(text => {
+    if (text.includes(item.link)) return true;
+    const cleanTitle = (item.title || '').trim().toLowerCase();
+    const keywords = cleanTitle.split(/\s+/).filter(w => w.length > 3).slice(0, 3);
+    if (keywords.length > 0) {
+      return keywords.every(kw => text.toLowerCase().includes(kw));
     }
-  }
+    return false;
+  });
+  const isSeen = item => {
+    // Comprobar si ya se usó en el historial local
+    if (usedLinkKeys.has(news.normalizeUrl(item.link))) return true;
+    if (isUsedInFb(item)) {
+      console.log(`⏭️ Saltando noticia (detectada en videos recientes de Facebook): "${item.title}"`);
+      return true;
+    }
+    return false;
+  };
 
-  if (!selectedItem) {
+  // Feeds en paralelo + filtro IA/frescura + historial compartido (todas las fuentes: artículo FB y video)
+  const { items } = await news.fetchFeeds(FEEDS);
+  const { candidates, stats } = news.rankCandidates(items, { history: sharedHistory, isSeen, log: console.log });
+  console.log(`📊 Items: ${stats.total} | duplicados: ${stats.duplicates} | viejos: ${stats.stale} | ya publicados: ${stats.inHistory} | ya en video: ${stats.seen} | poco relevantes IA: ${stats.lowScore} | candidatos: ${candidates.length}`);
+
+  if (!candidates.length) {
     console.log('🤷 No hay noticias nuevas en los feeds RSS. Usando fallback genérico de tendencias.');
     return null;
   }
 
-  // Scrapear el contenido limpio con Jina Reader
-  const articleUrl = selectedItem.link;
-  console.log(`📄 Scrapeando con Jina Reader: ${articleUrl}`);
-  try {
-    const response = await axios.get(`https://r.jina.ai/${articleUrl}`, { timeout: 15000 });
-    const scrapedText = response.data || '';
-    processedNewsLink = articleUrl;
-    extractedArticleImages = await extractArticleImages(articleUrl, selectedItem, scrapedText);
+  // Extraer texto: contenido completo del RSS -> Jina Reader endurecido -> Scrapling ligero
+  const picked = await news.pickArticle(candidates, { fallback: extractWithScrapling });
+  if (picked) {
+    console.log(`📰 Noticia seleccionada: "${picked.item.title}" (${picked.item.link}) [método: ${picked.method}]`);
+    processedNewsLink = picked.item.link;
+    processedNewsTitle = picked.item.title;
+    extractedArticleImages = await extractArticleImages(picked.item.link, picked.item, picked.method.startsWith('jina') ? picked.text : null);
     return {
-      message: scrapedText.substring(0, 10000),
-      link: articleUrl
-    };
-  } catch (e) {
-    console.log(`⚠️ Error scrapeando con Jina Reader: ${e.message}. Intentando Scrapling local...`);
-    try {
-      const { execSync } = require('child_process');
-      const escapedUrl = articleUrl.replace(/"/g, '\\"');
-      const helperPath = path.join(__dirname, '..', 'scrapling_helper.py');
-      const output = execSync(`python "${helperPath}" --url "${escapedUrl}"`, { encoding: 'utf-8' });
-      const parsed = JSON.parse(output);
-      if (parsed.success && parsed.text && parsed.text.length > 50) {
-        console.log(`✅ Scrapling extrajo exitosamente el contenido.`);
-        processedNewsLink = articleUrl;
-        extractedArticleImages = await extractArticleImages(articleUrl, selectedItem, null);
-        return {
-          message: parsed.text.substring(0, 10000),
-          link: articleUrl
-        };
-      }
-    } catch (scraplingErr) {
-      console.log(`⚠️ Scrapling falló: ${scraplingErr.message}. Usando el fragmento del RSS.`);
-    }
-    
-    processedNewsLink = articleUrl;
-    extractedArticleImages = await extractArticleImages(articleUrl, selectedItem, null);
-    return {
-      message: `${selectedItem.title}\n\n${selectedItem.contentSnippet || selectedItem.content || ''}`,
-      link: articleUrl
+      message: picked.text.substring(0, 10000),
+      link: picked.item.link
     };
   }
+
+  // Ninguna candidata legible: usamos el fragmento del RSS de la mejor candidata
+  const selectedItem = candidates[0];
+  console.log(`⚠️ No se pudo extraer texto completo. Usando el fragmento del RSS de: "${selectedItem.title}"`);
+  processedNewsLink = selectedItem.link;
+  processedNewsTitle = selectedItem.title;
+  extractedArticleImages = await extractArticleImages(selectedItem.link, selectedItem, null);
+  return {
+    message: `${selectedItem.title}\n\n${selectedItem.contentSnippet || ''}`,
+    link: selectedItem.link
+  };
+}
+
+// Fallback local (modo ligero HTTP, sin navegadores). Requiere `pip install -r requirements-scraper.txt`.
+function extractWithScrapling(url) {
+  try {
+    const { execSync } = require('child_process');
+    const escapedUrl = url.replace(/"/g, '\\"');
+    const helperPath = path.join(__dirname, '..', 'scrapling_helper.py');
+    const output = execSync(`python "${helperPath}" --url "${escapedUrl}" --timeout 20`, { encoding: 'utf-8', timeout: 60000 });
+    const parsed = JSON.parse(output);
+    if (parsed.success && parsed.text && parsed.text.length > 50) {
+      console.log(`✅ Scrapling extrajo el contenido (${parsed.engine}).`);
+      return parsed.text;
+    }
+    console.log(`⚠️ Scrapling sin texto útil: ${parsed.error || 'texto muy corto'}`);
+  } catch (scraplingErr) {
+    console.log(`⚠️ Scrapling falló: ${scraplingErr.message}`);
+  }
+  return null;
 }
 
 // ─────────────────────────────────────────
@@ -285,6 +272,14 @@ async function generateScriptAndScenes() {
   console.log("🤖 [1/4] Consultando a Gemini para guion y estructura de escenas...");
 
   const queueContext = await getTodaysContext();
+  if (DRY_RUN) {
+    console.log('\n🧪 DRY_RUN: deteniendo antes del LLM.');
+    console.log(`   Título: ${processedNewsTitle}`);
+    console.log(`   URL: ${queueContext?.link || '(fallback genérico)'}`);
+    console.log(`   Imágenes: ${extractedArticleImages.length}`);
+    console.log(`   Texto (primeros 500):\n-----------------\n${(queueContext?.message || '').substring(0, 500)}\n-----------------`);
+    process.exit(0);
+  }
   const contextSection = queueContext
     ? `\nCONTEXTO DEL DÍA (úsalo como base del video — adapta el tono y la idea central):
 """
@@ -325,12 +320,12 @@ Tienes 4 tipos de escena (debes crear exactamente 5 escenas en este orden):
    - 'subtitle': subtítulo corto (ej: "Visita hoy talentocontarifa.lat y transforma tu futuro.").
 
 Reglas Obligatorias:
-1. "theme_color": elige entre: #FF3300, #CCFF00, #00FFFF, #FF00FF, #00FF66
+1. La identidad visual es fija (Limón #CCFF00 / Negro / Off-White): NO elijas colores.
 2. Cada escena DEBE tener su propio 'voice_text' sincronizado con el contenido visual mostrado.
+3. 'text1', 'text2' y los 'title' van en MAYÚSCULAS y respetan los límites de letras (se leen en un celular).
 
 Responde ÚNICAMENTE con JSON válido:
 {
-  "theme_color": "#FF3300",
   "layout_type": "neo_brutalist",
   "scenes": [
     { "type": "title", "text1": "AGENTES IA", "text2": "NUEVA ERA", "tag": "✦ REVOLUCIÓN TECNOLÓGICA ✦", "voice_text": "¡Atención emprendedor! Los agentes de inteligencia artificial llegaron para cambiar todas las reglas del juego.", "subtitle": "¡Atención emprendedor! Los agentes de IA cambiaron las reglas." },
@@ -439,7 +434,7 @@ Responde ÚNICAMENTE con JSON válido:
 
   console.warn(`⚠️ Todos los modelos de IA fallaron (${lastGeminiError?.message}). Activando guion de contingencia para asegurar la generación del video.`);
   return {
-    theme_color: "#FF3300",
+    theme_color: BRAND_COLOR,
     layout_type: "neo_brutalist",
     scenes: [
       {
@@ -593,12 +588,17 @@ async function generateVoice(scenes) {
   const totalDurationSec = Math.ceil(currentTime + 1.5); // 1.5s (45 frames a 30fps) retención final para lectura de CTA
   const totalFrames = totalDurationSec * FPS;
 
-  // Concatenar snippets de audio en news_voice.mp3
-  const listFile = path.join(tempDir, 'concat_list.txt');
-  fs.writeFileSync(listFile, sceneFiles.map(f => `file '${path.resolve(f).replace(/\\/g, '/')}'`).join('\n'));
+  // Mezclar snippets en news_voice.mp3 colocando cada uno en su `start` exacto.
+  // (El concat demuxer pegaba los audios sin las pausas de 0.4s que sí cuenta la timeline,
+  //  y la voz se adelantaba ~0.4s por escena respecto a los gráficos.)
   const finalAudioPath = path.join(__dirname, 'public', 'news_voice.mp3');
-  const { execSync } = require('child_process');
-  execSync(`ffmpeg -y -f concat -safe 0 -i "${listFile}" -c:a libmp3lame -b:a 192k "${finalAudioPath}"`, { stdio: 'pipe' });
+  const { execSync, execFileSync: execFileSyncMix } = require('child_process');
+  const mixArgs = ['-y'];
+  sceneFiles.forEach(f => mixArgs.push('-i', f));
+  const delays = timelineScenes.map((s, i) => `[${i}:a]aformat=sample_rates=48000:channel_layouts=mono,adelay=${Math.round(s.start * 1000)}:all=1[a${i}]`);
+  const mix = timelineScenes.map((_, i) => `[a${i}]`).join('') + `amix=inputs=${timelineScenes.length}:normalize=0:dropout_transition=0[voice]`;
+  mixArgs.push('-filter_complex', delays.concat(mix).join(';'), '-map', '[voice]', '-c:a', 'libmp3lame', '-b:a', '192k', finalAudioPath);
+  execFileSyncMix(process.env.FFMPEG_PATH || 'ffmpeg', mixArgs, { stdio: 'pipe' });
 
   // Procesar música temática con Sidechain Ducking automático
   const musicSrc = path.join(__dirname, 'public', 'music_shiny_tech.mp3');
@@ -687,19 +687,16 @@ async function generateImages(scenes) {
     }
 
     if (!downloaded) {
-      console.log(`    ℹ️ Usando imagen de respaldo local para ${filename}...`);
-      if (!fs.existsSync(targetPath)) {
-        const fallbackSrc = path.join(__dirname, 'public', k === 0 ? 'agent_robot.png' : 'cerebro.webp');
-        if (fs.existsSync(fallbackSrc)) {
-          fs.copyFileSync(fallbackSrc, targetPath);
-          console.log(`    💾 Copiado fallback local a ${filename}.`);
-        } else {
-          const emptyPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
-          fs.writeFileSync(targetPath, emptyPng);
-          console.log(`    💾 Escrito pixel de fallback en ${filename}.`);
-        }
+      // Siempre sobrescribir: scene_*.png está versionado y conservarlo publicaría la imagen de otra noticia.
+      console.log(`    ℹ️ Usando imagen de marca para ${filename}...`);
+      const fallbackSrc = path.join(__dirname, 'public', k === 0 ? 'agent_robot.png' : 'cerebro.webp');
+      if (fs.existsSync(fallbackSrc)) {
+        fs.copyFileSync(fallbackSrc, targetPath);
+        console.log(`    💾 Copiado fallback de marca a ${filename}.`);
       } else {
-        console.log(`    ℹ️ Imagen previa existente conservada en ${filename}.`);
+        const emptyPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+        fs.writeFileSync(targetPath, emptyPng);
+        console.log(`    💾 Escrito pixel de fallback en ${filename}.`);
       }
     }
   }
@@ -718,7 +715,7 @@ async function main() {
 
     // PASO 3: Guardar el JSON final para Remotion y news_data.js para HyperFrames
     const newsData = {
-      theme_color: data.theme_color,
+      theme_color: BRAND_COLOR,
       layout_type: data.layout_type || 'neo_brutalist',
       scenes: timelineScenes,
       total_duration_sec: totalDurationSec,
@@ -745,6 +742,12 @@ async function main() {
         usedLinks.push(processedNewsLink);
         fs.writeFileSync(historyPath, JSON.stringify(usedLinks, null, 2));
         console.log(`💾 Link guardado en historial de videos: ${processedNewsLink}`);
+      }
+      // Historial compartido con el publicador de artículos (published_news.json)
+      try {
+        news.recordPublished({ url: processedNewsLink, title: processedNewsTitle, channel: HISTORY_CHANNEL });
+      } catch (histErr) {
+        console.log('⚠️ Error al guardar historial compartido:', histErr.message);
       }
     }
 

@@ -1,71 +1,81 @@
 require('dotenv').config({ path: './.env' });
 const { execSync } = require('child_process');
+const path = require('path');
 const axios = require('axios');
-const Parser = require('rss-parser');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const news = require('./news_sources');
 
-const parser = new Parser();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const PAGE_ID = process.env.META_PAGE_ID?.trim();
 const ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN?.trim();
+// DRY_RUN=1: selecciona y extrae la noticia, imprime el resultado y se detiene ANTES del LLM y de Facebook
+const DRY_RUN = ['1', 'true', 'yes'].includes(String(process.env.DRY_RUN || '').toLowerCase());
+const HISTORY_CHANNEL = 'fb_article';
+
+const FEEDS = [
+    'https://www.xataka.com/tag/inteligencia-artificial/rss2.xml', // la URL /categoria/.../rss redirige a HTML
+    'https://feeds.weblogssl.com/genbeta',
+    'https://feeds.weblogssl.com/xataka2',
+    'https://www.entrepreneur.com/es/feed'
+];
 
 /**
  * 1. OBTENER FUENTE DE CONTENIDO (Prioridad: Issues > RSS)
  */
-async function getContentSource() {
-    console.log("🔍 1. Buscando fuente de contenido...");
-    
-    // Prioridad Alta: Revisar Issues Abiertos
+function getIssueSource() {
     try {
-        const output = execSync('gh issue list --state open --json number,title,body', { encoding: 'utf-8' });
+        const output = execSync('gh issue list --state open --limit 30 --json number,title,body,labels', { encoding: 'utf-8', timeout: 30000 });
         const issues = JSON.parse(output);
-        
-        if (issues.length > 0) {
-            const issue = issues[0];
-            const urlMatch = issue.body.match(/https?:\/\/[^\s]+/);
-            if (urlMatch) {
-                console.log(`✅ [MODO HUMANO] Issue #${issue.number} detectado. Prioridad Alta activada.`);
-                return {
-                    type: 'issue',
-                    url: urlMatch[0],
-                    instruction: issue.title, // El título del issue funciona como comando maestro
-                    issueNumber: issue.number
-                };
-            }
+        // Solo issues que parecen solicitudes de contenido (ver README: label "publicar"/"articulo"/"noticia" o título [POST])
+        const issue = issues.find(news.isContentRequestIssue);
+        if (issue) {
+            const url = news.extractFirstUrl(issue.body) || news.extractFirstUrl(issue.title);
+            console.log(`✅ [MODO HUMANO] Issue #${issue.number} detectado. Prioridad Alta activada.`);
+            return {
+                type: 'issue',
+                url,
+                title: issue.title,
+                instruction: news.issueInstruction(issue.title), // El título del issue funciona como comando maestro
+                issueNumber: issue.number
+            };
         }
+        if (issues.length > 0) console.log(`ℹ️ ${issues.length} issue(s) abiertos, pero ninguno es una solicitud de artículo.`);
     } catch (e) {
         console.log("⚠️ No hay issues pendientes o no hay acceso a GitHub CLI.");
     }
+    return null;
+}
 
-    // Piloto Automático: Lector RSS
+async function getContentSource() {
+    console.log("🔍 1. Buscando fuente de contenido...");
+
+    // Prioridad Alta: Revisar Issues Abiertos
+    const issueSource = getIssueSource();
+    if (issueSource) {
+        const extracted = await extractText(issueSource.url);
+        if (extracted) return { ...issueSource, ...extracted };
+        console.log(`⚠️ No se pudo leer la URL del Issue #${issueSource.issueNumber}. Continuando con RSS.`);
+    }
+
+    // Piloto Automático: Lector RSS (en paralelo, filtrado por IA + frescura + historial compartido)
     console.log("🤖 [MODO PILOTO AUTOMÁTICO] Leyendo feeds de RSS...");
-    const feeds = [
-        'https://www.xataka.com/categoria/inteligencia-artificial/rss',
-        'https://feeds.weblogssl.com/genbeta',
-        'https://feeds.weblogssl.com/xataka2',
-        'https://www.entrepreneur.com/es/feed'
-    ];
-    let latestItem = null;
-    for (const feedUrl of feeds) {
-        try {
-            console.log(`📡 Intentando leer feed: ${feedUrl}`);
-            const feed = await parser.parseURL(feedUrl);
-            if (feed.items && feed.items.length > 0) {
-                latestItem = feed.items[0];
-                console.log(`📰 Noticia seleccionada del feed ${feedUrl}: ${latestItem.title}`);
-                break;
-            }
-        } catch (err) {
-            console.error(`⚠️ Error al leer feed ${feedUrl}: ${err.message}`);
-        }
+    const { items } = await news.fetchFeeds(FEEDS);
+    const history = news.loadHistory();
+    const { candidates, stats } = news.rankCandidates(items, { history, allowNonAi: true, log: console.log });
+    console.log(`📊 Items: ${stats.total} | duplicados: ${stats.duplicates} | viejos: ${stats.stale} | ya publicados: ${stats.inHistory} | poco relevantes IA: ${stats.lowScore} | candidatos: ${candidates.length}`);
+
+    const picked = await news.pickArticle(candidates, { fallback: extractWithScrapling });
+    if (!picked) {
+        throw new Error("No se pudo obtener ninguna noticia fresca, nueva y legible de los feeds RSS.");
     }
-    if (!latestItem) {
-        throw new Error("No se pudo obtener ninguna noticia de los feeds RSS de fallback.");
-    }
-    
+    console.log(`📰 Noticia seleccionada: "${picked.item.title}" (método: ${picked.method})`);
+
     return {
         type: 'rss',
-        url: latestItem.link,
+        url: picked.item.link,
+        title: picked.item.title,
+        text: picked.text,
+        method: picked.method,
         instruction: 'Ninguna', // Estilo base por defecto
         issueNumber: null
     };
@@ -76,7 +86,7 @@ async function getContentSource() {
  */
 async function resolveUrl(url) {
     try {
-        const response = await fetch(url, { method: 'HEAD', redirect: 'follow' });
+        const response = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: AbortSignal.timeout(10000) });
         return response.url;
     } catch (e) {
         return url;
@@ -84,13 +94,11 @@ async function resolveUrl(url) {
 }
 
 function extractWithScrapling(url) {
-    const { execSync } = require('child_process');
-    const path = require('path');
     try {
-        console.log(`   [Scrapling] Ejecutando extracción local avanzada para: ${url}`);
+        console.log(`   [Scrapling] Ejecutando extracción local (modo ligero HTTP) para: ${url}`);
         const escapedUrl = url.replace(/"/g, '\\"');
         const helperPath = path.join(__dirname, 'scrapling_helper.py');
-        const output = execSync(`python "${helperPath}" --url "${escapedUrl}"`, { encoding: 'utf-8' });
+        const output = execSync(`python "${helperPath}" --url "${escapedUrl}" --timeout 20`, { encoding: 'utf-8', timeout: 60000 });
         const parsed = JSON.parse(output);
         if (parsed.success && parsed.text && parsed.text.length > 50) {
             return parsed.text;
@@ -104,38 +112,35 @@ function extractWithScrapling(url) {
     }
 }
 
+/** Extrae texto de una URL suelta (modo Issue): Jina endurecido -> URL resuelta -> Scrapling. */
 async function extractText(url) {
     console.log(`📄 2. Extrayendo texto limpio de: ${url}`);
-    let resolvedUrl = url;
-    try {
-        console.log(`   Scrapeando directamente con Jina Reader...`);
-        const response = await axios.get(`https://r.jina.ai/${url}`);
-        return response.data;
-    } catch (e) {
-        console.log(`⚠️ Error scrapeando directamente con Jina: ${e.message}. Intentando resolver URL primero...`);
-        try {
-            resolvedUrl = await resolveUrl(url);
-            if (resolvedUrl !== url) {
-                console.log(`   URL redireccionada: ${resolvedUrl}`);
-            }
-            const response = await axios.get(`https://r.jina.ai/${resolvedUrl}`);
-            return response.data;
-        } catch (err) {
-            console.log(`⚠️ Jina Reader falló definitivamente: ${err.message}. Intentando Scrapling local...`);
+    let result = await news.extractArticleContent({ link: url }, { useRss: false, fallback: null });
+    let finalUrl = url;
+    if (!result) {
+        const resolvedUrl = await resolveUrl(url);
+        if (resolvedUrl !== url) {
+            console.log(`   URL redireccionada: ${resolvedUrl}`);
+            finalUrl = resolvedUrl;
+            result = await news.extractArticleContent({ link: resolvedUrl }, { useRss: false, fallback: null });
         }
     }
-    
-    // Fallback absoluto: Scrapling
-    const scraplingText = extractWithScrapling(resolvedUrl);
-    if (scraplingText) {
-        console.log(`✅ Scrapling extrajo exitosamente el contenido.`);
-        return scraplingText;
+    if (!result) {
+        // Fallback absoluto: Scrapling (modo ligero, sin navegadores)
+        const scraplingText = extractWithScrapling(finalUrl);
+        const reason = scraplingText ? news.detectGarbage(scraplingText) : 'sin texto';
+        if (!reason) result = { text: scraplingText, method: 'scrapling' };
+        else console.log(`   [Scrapling] Descartado: ${reason}`);
     }
-    
-    throw new Error("Jina Reader y Scrapling fallaron al extraer el contenido. El anti-bot de la página bloqueó la lectura, o el link es inválido.");
+    if (!result) {
+        console.log("⚠️ Jina Reader y Scrapling fallaron (anti-bot, página de error o link inválido).");
+        return null;
+    }
+    console.log(`✅ Texto extraído (método: ${result.method}).`);
+    return { text: result.text, method: result.method };
 }
 
-async function callGeminiWithRetry(model, content, maxRetries = 5) {
+async function callGeminiWithRetry(model, content, maxRetries = 3) {
     let attempts = 0;
     while (attempts < maxRetries) {
         try {
@@ -146,10 +151,10 @@ async function callGeminiWithRetry(model, content, maxRetries = 5) {
             if (attempts >= maxRetries) {
                 throw error;
             }
-            let waitTime = Math.pow(2, attempts) * 1000 + 10000;
-            if (error.message.includes("429") || error.message.toLowerCase().includes("quota exceeded") || attempts > 2) {
-                waitTime = 65000; // Espera 65 segundos si es cuota o si ya van varios intentos
-                console.log(`Error persistente o rate limit detectado. Esperando 65s para enfriar la API...`);
+            let waitTime = Math.min(Math.pow(2, attempts) * 1000 + 5000, 30000);
+            if (error.message.includes("429") || error.message.toLowerCase().includes("quota exceeded")) {
+                waitTime = 30000; // Máximo 30s si es cuota (antes 65s)
+                console.log(`Rate limit detectado. Esperando 30s para enfriar la API...`);
             } else {
                 console.log(`Espera de ${waitTime/1000}s antes del próximo intento...`);
             }
@@ -157,7 +162,6 @@ async function callGeminiWithRetry(model, content, maxRetries = 5) {
         }
     }
 }
-
 /**
  * 3. CEREBRO (Generación de Copy con Groq + Fallback a Gemini)
  */
@@ -183,6 +187,7 @@ INSTRUCCIÓN DEL JEFE: "${customInstruction}"`;
                 try {
                     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                         method: "POST",
+                        signal: AbortSignal.timeout(60000),
                         headers: {
                             "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
                             "Content-Type": "application/json"
@@ -228,11 +233,12 @@ INSTRUCCIÓN DEL JEFE: "${customInstruction}"`;
  */
 async function publishToMeta(message, url) {
     console.log("🌐 4. Publicando en Facebook...");
+    // La URL va solo en `link` (genera la vista previa); no se repite en el texto del mensaje
     const response = await axios.post(`https://graph.facebook.com/v21.0/${PAGE_ID}/feed`, {
-        message: `${message}\n\nFuente completa: ${url}\n\n#TalentoConTarifa #Automatizacion #IA #Startups`,
+        message: `${message}\n\n#TalentoConTarifa #Automatizacion #IA #Startups`,
         link: url,
         access_token: ACCESS_TOKEN
-    });
+    }, { timeout: 30000 });
     return response.data.id;
 }
 
@@ -242,15 +248,24 @@ async function publishToMeta(message, url) {
 async function run() {
     try {
         console.log("=========================================");
-        console.log("🚀 INICIANDO MASTER PIPELINE T.C.T 🚀");
+        console.log(`🚀 INICIANDO MASTER PIPELINE T.C.T 🚀${DRY_RUN ? ' (DRY_RUN)' : ''}`);
         console.log("=========================================\n");
 
-        // 1. Decidir origen
+        // 1. Decidir origen y 2. extraer información (RSS completo / Jina / Scrapling)
         const source = await getContentSource();
-        
-        // 2. Extraer información (cortamos a 10,000 caracteres para no saturar tokens)
-        const rawText = await extractText(source.url);
-        const shortText = rawText.substring(0, 10000); 
+        // Cortamos a 10,000 caracteres para no saturar tokens
+        const shortText = source.text.substring(0, 10000); 
+
+        if (DRY_RUN) {
+            console.log("\n🧪 DRY_RUN: deteniendo antes del LLM y de Facebook.");
+            console.log(`   Tipo: ${source.type}${source.issueNumber ? ` (#${source.issueNumber})` : ''}`);
+            console.log(`   Título: ${source.title}`);
+            console.log(`   URL: ${source.url}`);
+            console.log(`   Método de extracción: ${source.method}`);
+            console.log(`   Instrucción: ${source.instruction}`);
+            console.log(`   Texto (${shortText.length} caracteres), primeros 500:\n-----------------\n${shortText.substring(0, 500)}\n-----------------`);
+            return;
+        }
         
         // 3. Crear el post con Gemini
         const aiPost = await generateAIContent(shortText, source.instruction);
@@ -259,11 +274,19 @@ async function run() {
         // 4. Publicar
         const postId = await publishToMeta(aiPost, source.url);
         console.log(`✅ ¡Post publicado exitosamente en Talento con Tarifa! ID: ${postId}`);
+
+        // Historial compartido con el video diario (evita repetir la noticia en reruns)
+        try {
+            news.recordPublished({ url: source.url, title: source.title, channel: HISTORY_CHANNEL });
+            console.log(`💾 Noticia guardada en historial compartido (${path.basename(news.HISTORY_PATH)}).`);
+        } catch (histErr) {
+            console.warn(`⚠️ No se pudo guardar el historial compartido: ${histErr.message}`);
+        }
         
         // 5. Limpieza (Manejo de estado)
         if (source.type === 'issue') {
             console.log(`\n🔒 Cerrando el Issue #${source.issueNumber} para evitar reciclaje...`);
-            execSync(`gh issue close ${source.issueNumber} -c "✅ Post generado por IA y publicado. Post ID: ${postId}"`);
+            execSync(`gh issue close ${source.issueNumber} -c "✅ Post generado por IA y publicado. Post ID: ${postId}"`, { timeout: 30000 });
         } else {
             console.log(`\n✅ Flujo RSS terminado.`);
         }

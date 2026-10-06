@@ -1,0 +1,3 @@
+# Último recurso de extracción (scrapling_helper.py). Modo ligero: Fetcher HTTP (curl_cffi),
+# NO se ejecuta `scrapling install` (no se descargan navegadores).
+scrapling[fetchers]

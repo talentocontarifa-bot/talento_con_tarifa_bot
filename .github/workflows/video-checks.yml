@@ -18,6 +18,8 @@ jobs:
       - run: node --check video_tct/create_trending_video.js
       - run: node --check video_tct/publish_video.js
       - run: node --check trending_top10.js
+      - run: node --check master_pipeline.js
+      - run: node --check news_sources.js
 
       - uses: actions/setup-python@v5
         with:

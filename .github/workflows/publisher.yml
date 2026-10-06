@@ -8,13 +8,19 @@ on:
   repository_dispatch: # Permite que cron-job.org dispare el bot vía Webhook
     types: [trigger-publicador]
 
+# Evita dos publicaciones simultáneas (cron + webhook) que leerían el mismo historial
+concurrency:
+  group: tct-article-publisher
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     
-    # Permisos vitales para leer la bandeja de entrada y cerrar el issue
+    # Permisos vitales para leer la bandeja de entrada, cerrar el issue y persistir published_news.json
     permissions:
-      contents: read
+      contents: write
       issues: write
 
     steps:
@@ -33,14 +39,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-scraper.txt
 
-      - name: Update apt package database
-        run: sudo apt-get update
-
-      - name: Install Scrapling
-        run: |
-          pip install "scrapling[fetchers]"
-          scrapling install
+      # Scrapling solo es el último recurso (RSS completo y Jina van primero): modo ligero HTTP,
+      # sin `scrapling install` ni navegadores; pip queda cacheado por setup-python.
+      - name: Install Scrapling (modo ligero)
+        run: pip install -r requirements-scraper.txt
 
       - name: Ejecutar el Master Pipeline de Contenido (Issues + RSS)
         env:
@@ -48,7 +53,13 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           HF_API_KEY: ${{ secrets.HF_API_KEY }}
           NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          JINA_API_KEY: ${{ secrets.JINA_API_KEY }} # Opcional: más cuota en Jina Reader
           META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Necesario para que gh cli pueda cerrar los issues
         run: node master_pipeline.js
+
+      - name: Persistir historial compartido de noticias
+        if: always()
+        run: |
+          bash .github/scripts/persist_state.sh "chore: persist published news history [skip ci]" published_news.json

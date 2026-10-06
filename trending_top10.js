@@ -41,8 +41,10 @@ async function fetchGitHubTrending() {
     if (process.env.GITHUB_TOKEN || process.env.GH_TOKEN) {
       headers['Authorization'] = `token ${process.env.GITHUB_TOKEN || process.env.GH_TOKEN}`;
     }
+    // Ventana móvil: repos creados en los últimos 30 días (evita fechas fijas que envejecen)
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     const res = await axios.get(
-      'https://api.github.com/search/repositories?q=topic:artificial-intelligence+created:>2026-01-01&sort=stars&order=desc&per_page=5',
+      `https://api.github.com/search/repositories?q=topic:artificial-intelligence+created:>${since}&sort=stars&order=desc&per_page=5`,
       { headers, timeout: 10000 }
     );
     return (res.data.items || []).map(r => ({
