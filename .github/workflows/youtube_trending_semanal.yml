@@ -1,0 +1,38 @@
+name: Radar Semanal YouTube IA
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 15 * * 3'  # Miércoles 09:00 AM CDMX (UTC-6)
+
+jobs:
+  youtube-trending:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Ejecutar Radar YouTube IA (Transcripciones + Gemini)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+        run: node youtube_trending_pipeline.js
+
+      - name: Upload Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: youtube-trending-${{ github.run_number }}
+          path: youtube_trending_latest.json
+          retention-days: 7
