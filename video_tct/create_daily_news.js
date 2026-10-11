@@ -12,7 +12,8 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const HF_API_KEY = process.env.HF_API_KEY;
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
-const ELEVENLABS_VOICE_ID = 'pVSoAhDpVO8HBRVURsj5';
+const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'TX3LPaxmHKxFdv7VOQHJ';
+const ELEVENLABS_MODEL_ID = process.env.ELEVENLABS_MODEL_ID || 'eleven_v4_turbo';
 const FPS = 30;
 const BRAND_COLOR = '#CCFF00'; // Limón TCT (identidad Neo-Brutalista bloqueada)
 
@@ -518,7 +519,7 @@ async function synthesizeSnippet(text, targetPath) {
         headers: { 'xi-api-key': ELEVENLABS_API_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: clean,
-          model_id: 'eleven_multilingual_v2',
+          model_id: ELEVENLABS_MODEL_ID,
           voice_settings: { stability: 0.65, similarity_boost: 0.85 }
         })
       });

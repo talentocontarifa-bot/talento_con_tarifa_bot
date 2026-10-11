@@ -66,6 +66,8 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ELEVENLABS_VOICE_ID: ${{ vars.ELEVENLABS_VOICE_ID || 'TX3LPaxmHKxFdv7VOQHJ' }}
+          ELEVENLABS_MODEL_ID: ${{ vars.ELEVENLABS_MODEL_ID || 'eleven_v4_turbo' }}
           JINA_API_KEY: ${{ secrets.JINA_API_KEY }} # Opcional: más cuota en Jina Reader
         run: npm run generate --prefix video_tct
       - name: Validar composición y renderizar
