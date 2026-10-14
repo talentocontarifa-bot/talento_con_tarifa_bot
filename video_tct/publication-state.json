@@ -46,5 +46,27 @@
         "id": "hEpY8CA0zmk"
       }
     }
+  },
+  "faecd58a9df830c3b08a133251de86a488f370826c9ebaf1d8950424166ce343": {
+    "source_url": "https://www.xataka.com/servicios/motor-busqueda-aleman-ha-rechazado-a-mistral-apostando-modelos-ia-chinos-open-source-su-lugar",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1745904660040782",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18124498432807797",
+        "phase": "publishing",
+        "id": "18286009657293938"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
