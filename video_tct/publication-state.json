@@ -92,5 +92,26 @@
         "status": "requires_review"
       }
     }
+  },
+  "e86bbd4f5da1c49513ffb3e94881575acbb4c98818ae9de0f897a591bed7ca29": {
+    "source_url": "https://wwwhatsnew.com/2026/10/14/meta-muse-wonder-wonder-full-modelos-ia-benchmark/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "4080302782275252",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18124744984807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
