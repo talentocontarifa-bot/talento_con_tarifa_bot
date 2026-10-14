@@ -65,10 +65,8 @@ async function generateExecutiveSummary(hfModels, ghRepos) {
     return "Esta semana el ecosistema open source destaca con potentes avances en agentes autónomos, modelos de visión y herramientas locales de IA.";
   }
 
-  try {
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const prompt = `
+  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  const prompt = `
 Eres el analista de tecnología de 'Talento con Tarifa'. Redacta una introducción ejecutiva concisa (máximo 3 oraciones de alto impacto) resumiendo las tendencias clave de estos 10 proyectos de IA de la semana:
 
 Modelos Hugging Face:
@@ -79,12 +77,16 @@ ${ghRepos.map(r => `- ${r.name}: ${r.description}`).join('\n')}
 
 Enfócate en cómo los emprendedores y profesionales de software pueden aprovechar esta ola para automatizar y cobrar más por su tarifa. No uses saludos largos.
 `;
-    const result = await model.generateContent(prompt);
-    return result.response.text().trim();
-  } catch (e) {
-    console.warn("⚠️ Error generando resumen con Gemini:", e.message);
-    return "Los modelos de generación visual y los frameworks de agentes autónomos dominan las tendencias de código abierto esta semana.";
+  for (const modelName of ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash']) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(prompt);
+      return result.response.text().trim();
+    } catch (e) {
+      console.warn(`⚠️ Error generando resumen con Gemini (${modelName}):`, e.message);
+    }
   }
+  return "Los modelos de generación visual y los frameworks de agentes autónomos dominan las tendencias de código abierto esta semana.";
 }
 
 async function sendTelegram(text) {
@@ -123,7 +125,8 @@ async function publishToFacebook(text) {
   }
   try {
     const cleanText = text.replace(/<[^>]*>?/gm, '');
-    const url = `https://graph.facebook.com/v19.0/${PAGE_ID}/feed`;
+    const version = process.env.META_GRAPH_VERSION || 'v21.0';
+    const url = `https://graph.facebook.com/${version}/${PAGE_ID}/feed`;
     await axios.post(url, null, {
       params: {
         message: cleanText,
@@ -182,9 +185,14 @@ async function main() {
   fs.writeFileSync(jsonOutPath, JSON.stringify(outputData, null, 2));
   console.log(`💾 Datos guardados en ${jsonOutPath}`);
 
-  // Publicar si se ejecuta en GitHub Actions / Producción
-  await sendTelegram(reportHtml);
-  await publishToFacebook(reportHtml);
+  const jsonOnly = process.argv.includes('--json-only') || process.argv.includes('--no-publish');
+  if (!jsonOnly) {
+    // Publicar si se ejecuta como reporte de texto independiente
+    await sendTelegram(reportHtml);
+    await publishToFacebook(reportHtml);
+  } else {
+    console.log("ℹ️ Modo --json-only activo: omitiendo envío de texto a Telegram/Facebook para publicar únicamente el Reel.");
+  }
 
   // Si se pasa --video, ejecutar automáticamente el generador de video
   if (process.argv.includes('--video')) {

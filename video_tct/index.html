@@ -212,9 +212,9 @@
       <!-- ESCENA 3: DATO -->
       <div id="scene-percent" class="scene">
         <div class="stat-box" id="stat-box">
-          <div class="sticker">✦ DATO CLAVE ✦</div>
-          <div class="huge-percent" id="percent-number">0%</div>
-          <div class="meter"><div class="meter-fill" id="meter-fill"></div></div>
+          <div class="sticker" id="stat-sticker" data-layout-allow-overlap>✦ DATO CLAVE ✦</div>
+          <div class="huge-percent" id="percent-number" data-layout-allow-overlap>0%</div>
+          <div class="meter" id="percent-meter"><div class="meter-fill" id="meter-fill"></div></div>
           <div class="percent-label" id="percent-label-text">Empresas adaptadas</div>
         </div>
       </div>
@@ -232,7 +232,7 @@
       <div id="scene-cta" class="scene">
         <img class="mascot" id="mascot-5" src="./public/cerebro.webp" alt="" />
         <div class="cta-box">
-          <div class="sticker" id="cta-tag">✦ EL MOMENTO ES AHORA ✦</div>
+          <div class="sticker" id="cta-tag" data-layout-allow-overflow>✦ EL MOMENTO ES AHORA ✦</div>
           <h1 class="cta-headline" id="cta-headline-text">¿LISTO PARA DOMINAR?</h1>
           <p class="cta-sub" id="cta-sub">Tu talento amplificado con agentes de IA.</p>
           <div class="cta-btn" id="cta-btn"><span id="cta-btn-text">TALENTOCONTARIFA.LAT</span><span>➔</span></div>
@@ -322,11 +322,18 @@
         row.append(num, txt); kpList.appendChild(row);
       });
 
-      // Escena 3 — porcentaje (1-99)
+      // Escena 3 — porcentaje (1-99) o insight estratégico
       const s3 = sc[2];
+      const isInsight = s3.type === 'insight' && !s3.number;
       const pct = Math.min(99, Math.max(1, Math.round(Number(s3.number) || 85)));
-      setText('percent-label-text', s3.label);
-      fit('percent-label-text', 60, 38, 1300);
+      if (isInsight) {
+        setText('stat-sticker', `✦ ${s3.title || 'INSIGHT CLAVE'} ✦`);
+        setText('percent-number', '10X');
+        setText('percent-label-text', s3.body || s3.label);
+      } else {
+        setText('percent-label-text', s3.label || s3.body);
+      }
+      fit('percent-label-text', 60, 34, 1300);
 
       // Escena 4
       const s4 = sc[3];
@@ -341,8 +348,8 @@
       fit('cta-headline-text', 110, 64, 1500);
       fit('cta-btn-text', 46, 30, 900);
 
-      // Subtítulos
-      sc.forEach((s, i) => setText('sub-text-' + (i + 1), s.subtitle));
+      // Subtítulos (usa subtitle o voice_text)
+      sc.forEach((s, i) => setText('sub-text-' + (i + 1), s.subtitle || s.voice_text));
 
       // Marquesina
       const phrase = ['NOTICIAS IA', 'TALENTO CON TARIFA', 'DISEÑO QUE VENDE O SE MUERE', 'TALENTOCONTARIFA.LAT'];
@@ -374,7 +381,7 @@
 
       tl.to('#progress-fill', { scaleX: 1, duration: totalDur, ease: 'none' }, 0);
       tl.fromTo('#marquee-track', { x: 0 }, { x: -1600, duration: totalDur, ease: 'none' }, 0);
-      tl.fromTo('#live-dot', { opacity: 1 }, { opacity: 0.2, duration: 0.5, repeat: Math.floor(totalDur * 2) - 1, yoyo: true, ease: 'steps(1)' }, 0);
+      tl.fromTo('#live-dot', { opacity: 1 }, { opacity: 0.2, duration: 0.5, repeat: Math.max(0, Math.floor(totalDur * 2) - 1), yoyo: true, ease: 'steps(1)' }, 0);
 
       // Visibilidad de escenas (cortes secos bajo la cortina)
       sceneIds.forEach((sel, i) => {
@@ -385,8 +392,8 @@
       // Cortina limón: entra antes del corte y sale después
       gsap.set('#wipe', { xPercent: -100, visibility: 'visible' });
       cuts.forEach((t) => {
-        tl.fromTo('#wipe', { xPercent: -100 }, { xPercent: 0, duration: 0.2, ease: 'power3.in', immediateRender: false }, t - 0.2);
-        tl.to('#wipe', { xPercent: 100, duration: 0.24, ease: 'power3.out' }, t);
+        tl.fromTo('#wipe', { xPercent: -100 }, { xPercent: 0, duration: 0.2, ease: 'power3.in', immediateRender: false, overwrite: 'auto' }, t - 0.2);
+        tl.to('#wipe', { xPercent: 100, duration: 0.24, ease: 'power3.out', overwrite: 'auto' }, t);
       });
 
       // Subtítulos: entran con su locución y salen al terminarla
@@ -430,11 +437,13 @@
         tl.fromTo('#stat-box', { scale: 0.7, rotation: -4, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.45, ease: 'back.out(1.8)' }, t);
         const counter = { v: 0 };
         const numEl = $('percent-number');
-        tl.fromTo(counter, { v: 0 }, {
-          v: pct, duration: 1.3, ease: 'power3.out',
-          onUpdate: () => { numEl.textContent = Math.round(counter.v) + '%'; }
-        }, t + 0.35);
-        tl.fromTo('#meter-fill', { scaleX: 0 }, { scaleX: pct / 100, duration: 1.3, ease: 'power3.out' }, t + 0.35);
+        if (!isInsight) {
+          tl.fromTo(counter, { v: 0 }, {
+            v: pct, duration: 1.3, ease: 'power3.out',
+            onUpdate: () => { numEl.textContent = Math.round(counter.v) + '%'; }
+          }, t + 0.35);
+        }
+        tl.fromTo('#meter-fill', { scaleX: 0 }, { scaleX: isInsight ? 1 : (pct / 100), duration: 1.3, ease: 'power3.out' }, t + 0.35);
         tl.fromTo('#percent-number', { scale: 1 }, { scale: 1.12, duration: 0.14, yoyo: true, repeat: 1, ease: 'power2.out' }, t + 1.65);
         tl.fromTo('#percent-label-text', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power3.out' }, t + 0.9);
       }

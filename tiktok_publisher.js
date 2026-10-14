@@ -24,7 +24,13 @@ try {
     throw e;
   }
 }
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+try {
+  require('dotenv').config({ path: path.join(__dirname, '.env') });
+} catch (e) {
+  try {
+    require(path.join(__dirname, 'video_tct', 'node_modules', 'dotenv')).config({ path: path.join(__dirname, '.env') });
+  } catch (e2) {}
+}
 
 const TOKEN_FILE = path.join(__dirname, 'tiktok_tokens.json');
 const ENV_FILE = path.join(__dirname, '.env');
@@ -42,9 +48,9 @@ function getTokens() {
   }
 
   return {
-    access_token: process.env.TIKTOK_ACCESS_TOKEN,
-    refresh_token: process.env.TIKTOK_REFRESH_TOKEN,
-    open_id: process.env.TIKTOK_OPEN_ID
+    access_token: process.env.TIKTOK_ACCESS_TOKEN?.trim(),
+    refresh_token: process.env.TIKTOK_REFRESH_TOKEN?.trim(),
+    open_id: process.env.TIKTOK_OPEN_ID?.trim()
   };
 }
 
@@ -80,8 +86,8 @@ function saveTokens(tokenData) {
  */
 async function refreshAccessToken() {
   const tokens = getTokens();
-  const clientKey = process.env.TIKTOK_CLIENT_KEY;
-  const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
+  const clientKey = process.env.TIKTOK_CLIENT_KEY?.trim();
+  const clientSecret = process.env.TIKTOK_CLIENT_SECRET?.trim();
 
   if (!tokens.refresh_token || !clientKey || !clientSecret) {
     throw new Error('Faltan credenciales para refrescar el token de TikTok.');
@@ -195,7 +201,13 @@ async function publishVideoToTikTok(videoFilePath, options = {}) {
   }
 
   const title = options.title || 'Talento con Tarifa #TalentoConTarifa #InteligenciaArtificial #Emprendedores';
-  const privacyLevel = options.privacy_level || 'SELF_ONLY';
+  const supportedPrivacy = Array.isArray(creatorInfo?.privacy_level_options) ? creatorInfo.privacy_level_options : [];
+  let privacyLevel = options.privacy_level || process.env.TIKTOK_PRIVACY_LEVEL?.trim();
+  if (!privacyLevel) {
+    privacyLevel = supportedPrivacy.includes('PUBLIC_TO_EVERYONE') ? 'PUBLIC_TO_EVERYONE' : 'SELF_ONLY';
+  } else if (supportedPrivacy.length > 0 && !supportedPrivacy.includes(privacyLevel)) {
+    privacyLevel = supportedPrivacy.includes('PUBLIC_TO_EVERYONE') ? 'PUBLIC_TO_EVERYONE' : (supportedPrivacy[0] || 'SELF_ONLY');
+  }
 
   let mode = 'DIRECT_POST';
   let initUrl = 'https://open.tiktokapis.com/v2/post/publish/video/init/';
@@ -306,7 +318,7 @@ async function publishVideoToTikTok(videoFilePath, options = {}) {
 /**
  * Consulta el estado de procesamiento del video.
  */
-async function pollPublishStatus(accessToken, publishId, mode, maxAttempts = 15, delayMs = 3000) {
+async function pollPublishStatus(accessToken, publishId, mode, maxAttempts = 25, delayMs = 3000) {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     await new Promise(r => setTimeout(r, delayMs));
 

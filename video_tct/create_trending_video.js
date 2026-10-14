@@ -235,20 +235,25 @@ Devuelve ÚNICAMENTE el objeto JSON con formato: {"scenes": [...]}.`;
   // 2. Probar con Gemini si está configurado
   const genAI = getGenAI();
   if (genAI) {
-    try {
-      console.log('🧠 Intentando generar guion de Top 10 con Gemini...');
-      const model = genAI.getGenerativeModel({
-        model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-        generationConfig: { responseMimeType: 'application/json' }
-      });
-      const result = await model.generateContent(prompt);
-      const rawJson = JSON.parse(result.response.text());
-      sanitizeSceneLengths(rawJson);
-      const validated = validateScript(rawJson);
-      console.log('✅ Guion de Top 10 generado exitosamente con Gemini.');
-      return validated;
-    } catch (e) {
-      console.warn('⚠️ Falló generación con Gemini:', e.message);
+    const geminiModels = process.env.GEMINI_MODEL
+      ? [process.env.GEMINI_MODEL, 'gemini-2.5-flash-lite', 'gemini-2.0-flash']
+      : ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+    for (const modelName of geminiModels) {
+      try {
+        console.log(`🧠 Intentando generar guion de Top 10 con Gemini (${modelName})...`);
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: { responseMimeType: 'application/json' }
+        });
+        const result = await model.generateContent(prompt);
+        const rawJson = JSON.parse(result.response.text());
+        sanitizeSceneLengths(rawJson);
+        const validated = validateScript(rawJson);
+        console.log(`✅ Guion de Top 10 generado exitosamente con Gemini (${modelName}).`);
+        return validated;
+      } catch (e) {
+        console.warn(`⚠️ Falló generación con Gemini (${modelName}):`, e.message);
+      }
     }
   }
 
@@ -356,17 +361,35 @@ async function generateVoice(scenes) {
   }
   const timeline = createTimeline(scenes, durations);
 
-  // Mezcla de la pista completa para TikTok y archivo general
+  // Mezcla de la pista completa para el render y TikTok
+  const finalAudioPath = path.join(__dirname, 'public', 'news_voice.mp3');
   const args = ['-y'];
   timeline.scenes.forEach(s => args.push('-i', path.join(__dirname, s.audio)));
   const delays = timeline.scenes.map((s, i) => `[${i}:a]adelay=${Math.round(s.start * 1000)}:all=1[a${i}]`);
   const mix = timeline.scenes.map((s, i) => `[a${i}]`).join('') + `amix=inputs=${scenes.length}:normalize=0,apad,atrim=duration=${timeline.total_duration_sec}[voice]`;
-  args.push('-filter_complex', delays.concat(mix).join(';'), '-map', '[voice]', '-c:a', 'libmp3lame', '-b:a', '192k', path.join(__dirname, 'public/news_voice.mp3'));
+  args.push('-filter_complex', delays.concat(mix).join(';'), '-map', '[voice]', '-c:a', 'libmp3lame', '-b:a', '192k', finalAudioPath);
   
   try {
     require('child_process').execFileSync(process.env.FFMPEG_PATH || 'ffmpeg', args, { stdio: 'pipe', timeout: 120000 });
   } catch (err) {
     console.warn('⚠️ No se pudo generar news_voice.mp3 con ffmpeg:', err.message);
+  }
+
+  // Aplicar Sidechain Audio Ducking a la música temática
+  const musicSrc = path.join(__dirname, 'public', 'music_shiny_tech.mp3');
+  const duckedMusic = path.join(__dirname, 'public', 'tct_music.mp3');
+  if (fs.existsSync(musicSrc) && fs.existsSync(finalAudioPath)) {
+    try {
+      const duckingFilter = `[1:a]aformat=channel_layouts=stereo:sample_rates=48000[sc];[0:a]atrim=0:${timeline.total_duration_sec},aformat=channel_layouts=stereo:sample_rates=48000[music];[music][sc]sidechaincompress=threshold=0.03:ratio=6:attack=40:release=350,volume=0.36[final_music]`;
+      require('child_process').execFileSync(
+        process.env.FFMPEG_PATH || 'ffmpeg',
+        ['-y', '-i', musicSrc, '-i', finalAudioPath, '-filter_complex', duckingFilter, '-map', '[final_music]', '-c:a', 'libmp3lame', '-b:a', '192k', duckedMusic],
+        { stdio: 'pipe', timeout: 120000 }
+      );
+      console.log('✅ Música con Sidechain Ducking generada exitosamente.');
+    } catch (duckErr) {
+      console.warn('⚠️ Error en sidechain ducking:', duckErr.message);
+    }
   }
 
   return { totalFrames: timeline.total_frames, totalDurationSec: timeline.total_duration_sec, timelineScenes: timeline.scenes };
@@ -473,13 +496,17 @@ async function main() {
   // Paso 4: Descargar e integrar imágenes reales
   await prepareTrendingImages(timelineScenes, trendingData);
 
-  // Paso 5: Armar estructura para HyperFrames
+  // Paso 5: Armar estructura para HyperFrames con la misma identidad de marca Neo-Brutalista
+  const dateStamp = (trendingData.date || new Date().toISOString()).slice(0, 10);
   const newsData = {
+    preview_only: false,
+    topic: `Top 10 IA de la Semana (${dateStamp}): Hugging Face & GitHub`,
+    script: timelineScenes.map(s => s.voice_text).filter(Boolean).join(' '),
     visual_mode: process.env.VIDEO_VISUAL_MODE === 'graphics' ? 'graphics' : 'hybrid',
     schema_version: 2,
-    theme_color: '#00e5ff', // Cian neón tecnológico
-    layout_type: 'cinematic',
-    source_url: 'https://huggingface.co/models | https://github.com/trending',
+    theme_color: '#CCFF00',
+    layout_type: 'neo_brutalist',
+    source_url: `https://huggingface.co/models?trending_date=${dateStamp}`,
     scenes: timelineScenes,
     total_duration_sec: totalDurationSec,
     total_frames: totalFrames
@@ -487,10 +514,29 @@ async function main() {
 
   const newsDataPath = path.join(__dirname, 'src', 'news_data.json');
   fs.writeFileSync(newsDataPath, JSON.stringify(newsData, null, 2));
+  fs.writeFileSync(path.join(__dirname, 'news_data.js'), `window.NEWS_DATA = ${JSON.stringify(newsData, null, 2)};\n`);
   console.log(`💾 Composición escrita en ${newsDataPath}`);
 
-  // Paso 6: Componer HTML/GSAP/CCTV
-  compose(newsData);
+  // Paso 6: Sincronizar duración en hyperframes.json e index.html (o usar compose si se pide CCTV explícito)
+  if (process.env.VIDEO_LAYOUT === 'cctv') {
+    compose(newsData);
+  } else {
+    const hfConfigPath = path.join(__dirname, 'hyperframes.json');
+    if (fs.existsSync(hfConfigPath)) {
+      const hfConfig = JSON.parse(fs.readFileSync(hfConfigPath, 'utf-8'));
+      hfConfig.compositions[0].duration = totalDurationSec;
+      fs.writeFileSync(hfConfigPath, JSON.stringify(hfConfig, null, 2));
+    }
+    const indexPath = path.join(__dirname, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      let indexHtml = fs.readFileSync(indexPath, 'utf-8');
+      indexHtml = indexHtml
+        .replace(/(<div\s+id="root"[^>]*?\bdata-duration=")[\d.]+(")/, `$1${totalDurationSec}$2`)
+        .replace(/(<audio\s+id="bgm"[^>]*?\bdata-duration=")[\d.]+(")/, `$1${totalDurationSec}$2`)
+        .replace(/(<audio\s+id="vo"[^>]*?\bdata-duration=")[\d.]+(")/, `$1${totalDurationSec}$2`);
+      fs.writeFileSync(indexPath, indexHtml);
+    }
+  }
 
   console.log('\n✅ Composición completada con éxito.');
   console.log('🚀 Puedes ejecutar HyperFrames para previsualizar o renderizar:');

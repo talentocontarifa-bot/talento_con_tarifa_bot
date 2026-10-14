@@ -1,230 +1,329 @@
 /**
  * publish_video.js
- * Orquestador Multi-Plataforma: Publica el video renderizado en:
- *   1. TikTok (API v2 oficial)
+ * Orquestador Multi-Plataforma unificado para Talento con Tarifa:
+ *   1. Facebook Reels (Meta Graph API v21.0 - video_reels con fallback a videos)
  *   2. Instagram Reels (Meta Graph API v21.0 - Resumable Upload)
- *   3. YouTube Shorts (YouTube Data API v3 - Resumable Upload)
- *   4. Facebook Video (Meta Graph API)
- * 
- * Cada red social se ejecuta de manera independiente y tolerante a fallos.
+ *   3. TikTok (API v2 oficial - Video completo con audio masterizado y SFX)
+ *   4. YouTube Shorts (YouTube Data API v3 - Resumable Upload)
+ *
+ * Incluye:
+ *   - Soporte para `--check-config` (valida credenciales sin publicar).
+ *   - Soporte para `--dry-run` (simulación sin llamadas externas ni escritura de estado).
+ *   - Verificación criptográfica SHA-256 contra `out/render-manifest.json`.
+ *   - Persistencia por plataforma en `publication-state.json` (evita dobles publicaciones).
  */
 
-const fs = require('fs');
-const path = require('path');
+'use strict';
+
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const { execFileSync } = require('node:child_process');
 const FormData = require('form-data');
+
 let axios;
 try {
   axios = require('axios');
 } catch (e) {
-  try {
-    axios = require(path.join(__dirname, 'node_modules', 'axios'));
-  } catch (e2) {
-    throw e;
-  }
+  axios = require(path.join(__dirname, 'node_modules', 'axios'));
 }
+
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
+const { settings, createMetaClient } = require('./lib/meta');
+const { publishTargets } = require('./lib/publication');
 const { publishVideoToTikTok } = require('../tiktok_publisher');
-const { publishReelToInstagram } = require('../instagram_publisher');
+const { publishReelToInstagram, getInstagramAccountId } = require('../instagram_publisher');
 const { publishVideoToYouTube } = require('../youtube_publisher');
 
-const PAGE_ID = process.env.META_PAGE_ID;
-const ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN || process.env.META_USER_ACCESS_TOKEN;
-
-let VIDEO_PATH = path.join(__dirname, 'out', 'video_final_tct.mp4');
-if (!fs.existsSync(VIDEO_PATH)) {
-  VIDEO_PATH = path.join(__dirname, 'public', 'video_final_tct.mp4');
-}
+const VIDEO_PATH = path.join(__dirname, 'out', 'video_final_tct.mp4');
+const MANIFEST_PATH = path.join(__dirname, 'out', 'render-manifest.json');
 const NEWS_DATA_PATH = path.join(__dirname, 'src', 'news_data.json');
+const STATE_PATH = path.join(__dirname, 'publication-state.json');
+const HISTORY_PATH = path.join(__dirname, 'used_video_news.json');
 
-if (!fs.existsSync(VIDEO_PATH)) {
-  console.error('❌ No se encontró el video en out/ ni en public/:', VIDEO_PATH);
-  process.exit(1);
-}
-
-// ─────────────────────────────────────────
-// Construir títulos y descripciones optimizados por plataforma
-// ─────────────────────────────────────────
-function getMediaContent() {
-  let title = 'IA para Emprendedores — Talento con Tarifa';
-  let script = '';
-  let keyPoints = '';
-
-  try {
-    if (fs.existsSync(NEWS_DATA_PATH)) {
-      const data = JSON.parse(fs.readFileSync(NEWS_DATA_PATH, 'utf-8'));
-      if (data.topic) title = `${data.topic} — Talento con Tarifa`;
-      script = data.script || '';
-
-      if (Array.isArray(data.scenes)) {
-        keyPoints = data.scenes
-          .filter(s => s.type === 'image_text' && s.key_points)
-          .flatMap(s => s.key_points)
-          .slice(0, 4)
-          .map(p => `✅ ${p}`)
-          .join('\n');
-      }
+/**
+ * Construye títulos, descripción y caption unificados a partir de src/news_data.json
+ */
+function getMediaContent(rawData = null) {
+  let data = rawData;
+  if (!data && fs.existsSync(NEWS_DATA_PATH)) {
+    try {
+      data = JSON.parse(fs.readFileSync(NEWS_DATA_PATH, 'utf-8'));
+    } catch (e) {
+      console.warn('⚠️ No se pudo parsear src/news_data.json:', e.message);
     }
-  } catch (e) {
-    console.warn('⚠️ No se pudo leer news_data.json, usando valores por defecto.');
   }
+  data = data || {};
 
-  const baseCaption =
-    (script ? `${script}\n\n` : '') +
-    (keyPoints ? `${keyPoints}\n\n` : '') +
-    `─────────────────────────\n` +
-    `🤖 Este video fue creado y publicado de manera completamente automática por Inteligencia Artificial.\n` +
-    `👉 Conéctate con nosotros: https://talentocontarifa.lat\n\n` +
-    `#TalentoConTarifa #InteligenciaArtificial #IAparaEmprendedores #Automatización #MarketingDigital #Shorts #Reels`;
+  const scenes = Array.isArray(data.scenes) ? data.scenes : [];
+  const hook = [scenes[0]?.text1, scenes[0]?.text2].filter(Boolean).join(' — ').trim();
+  const topic = (data.topic || hook || 'IA para Emprendedores').trim();
+  const title = topic.toLowerCase().includes('talento con tarifa')
+    ? topic
+    : `${topic} | Talento con Tarifa`;
+  const shortTitle = title.length > 90 ? title.substring(0, 87) + '...' : title;
+
+  const narration = (
+    data.script ||
+    scenes.map(s => s.voice_text).filter(Boolean).join(' ')
+  ).trim();
+
+  const keyPoints = scenes
+    .filter(s => s.type === 'image_text' && Array.isArray(s.key_points))
+    .flatMap(s => s.key_points)
+    .slice(0, 6)
+    .map(p => `✅ ${String(p).replace(/^\s*\d+[.)-]\s*/, '').trim()}`)
+    .join('\n');
+
+  const hasValidSourceUrl =
+    typeof data.source_url === 'string' &&
+    /^https?:\/\//.test(data.source_url) &&
+    !data.source_url.includes(' | ');
+
+  const blocks = [
+    hook ? `🔥 ${hook}` : `🔥 ${topic}`,
+    narration || null,
+    keyPoints || null,
+    hasValidSourceUrl ? `🔗 Fuente: ${data.source_url}` : null,
+    '─────────────────────────',
+    '🤖 Este video fue creado y publicado de manera automática con Inteligencia Artificial.',
+    '👉 Conéctate con nosotros: https://talentocontarifa.lat',
+    '#TalentoConTarifa #InteligenciaArtificial #IAparaEmprendedores #Automatizacion #MarketingDigital #Shorts #Reels'
+  ].filter(Boolean);
+
+  const caption = blocks.join('\n\n').slice(0, 2200);
 
   return {
-    title: title,
-    caption: baseCaption,
-    shortTitle: title.length > 90 ? title.substring(0, 87) + '...' : title
+    title,
+    shortTitle,
+    caption,
+    hook: hook || topic
   };
 }
 
-// ─────────────────────────────────────────
-// Publicar en Facebook Page (Videos)
-// ─────────────────────────────────────────
-async function publishToFacebook(caption, title) {
-  if (!PAGE_ID || !ACCESS_TOKEN) {
-    console.log('ℹ️ [Facebook] Omitido: No se configuró META_PAGE_ID o META_PAGE_ACCESS_TOKEN');
-    return { status: 'SKIPPED', message: 'Credenciales ausentes' };
+/**
+ * Fallback de subida a Facebook Videos si el endpoint de Reels falla por permisos/formato
+ */
+async function publishFacebookVideoFallback(target, file, caption, title) {
+  const form = new FormData();
+  form.append('access_token', target.token);
+  form.append('description', caption);
+  form.append('title', title);
+  form.append('file', fs.createReadStream(file), {
+    filename: 'video_tct.mp4',
+    contentType: 'video/mp4'
+  });
+
+  const version = process.env.META_GRAPH_VERSION || 'v21.0';
+  const url = `https://graph.facebook.com/${version}/${target.account}/videos`;
+  const response = await axios.post(url, form, {
+    headers: form.getHeaders(),
+    timeout: 300000,
+    maxBodyLength: Infinity,
+    maxContentLength: Infinity,
+    validateStatus: () => true
+  });
+
+  if (response.data?.error || !response.data?.id) {
+    throw new Error(response.data?.error?.message || 'Facebook no devolvió ID de video.');
   }
-
-  try {
-    console.log('\n📘 Publicando video en Facebook Page...');
-    const form = new FormData();
-    form.append('access_token', ACCESS_TOKEN);
-    form.append('description', caption);
-    form.append('title', title);
-    form.append('file', fs.createReadStream(VIDEO_PATH), {
-      filename: 'video_tct.mp4',
-      contentType: 'video/mp4',
-    });
-
-    const url = `https://graph.facebook.com/v21.0/${PAGE_ID}/videos`;
-    const response = await axios.post(url, form, {
-      headers: form.getHeaders(),
-      validateStatus: () => true
-    });
-
-    if (response.data?.error) {
-      console.error('❌ [Facebook] Error:', response.data.error.message);
-      return { status: 'FAILED', error: response.data.error.message };
-    }
-
-    console.log(`✅ [Facebook] Video publicado exitosamente! ID: ${response.data.id}`);
-    return { status: 'SUCCESS', id: response.data.id };
-  } catch (err) {
-    console.error('❌ [Facebook] Error:', err.message);
-    return { status: 'FAILED', error: err.message };
-  }
+  return { id: response.data.id };
 }
 
-// ─────────────────────────────────────────
-// Orquestador Principal Multi-Redes
-// ─────────────────────────────────────────
+/**
+ * Orquestador Principal Multi-Redes
+ */
 async function publishAll() {
-  const content = getMediaContent();
-  const videoSizeKB = Math.round(fs.statSync(VIDEO_PATH).size / 1024);
+  if (!process.env.INSTAGRAM_ACCOUNT_ID && !process.env.INSTAGRAM_USER_ID) {
+    const foundIgId = await getInstagramAccountId(
+      process.env.META_PAGE_ID,
+      process.env.META_PAGE_ACCESS_TOKEN || process.env.META_USER_ACCESS_TOKEN
+    );
+    if (foundIgId) process.env.INSTAGRAM_ACCOUNT_ID = foundIgId;
+  }
+
+  const config = settings(process.env);
+  if (process.argv.includes('--check-config')) {
+    console.log('✅ Configuración presente y validada para:', config.targets.map(t => t.platform).join(', '));
+    return { checked: true, platforms: config.targets.map(t => t.platform) };
+  }
+
+  const dryRun = process.argv.includes('--dry-run');
+
+  if (!fs.existsSync(NEWS_DATA_PATH)) {
+    throw new Error(`No se encontró el archivo de datos del video: ${NEWS_DATA_PATH}`);
+  }
+  const rawData = JSON.parse(fs.readFileSync(NEWS_DATA_PATH, 'utf-8'));
+  if (!Array.isArray(rawData.scenes) || rawData.scenes.length === 0) {
+    throw new Error('src/news_data.json no contiene escenas válidas.');
+  }
+
+  if (!dryRun) {
+    if (!fs.existsSync(VIDEO_PATH) || fs.statSync(VIDEO_PATH).size < 1000) {
+      throw new Error(`Falta un render válido en ${VIDEO_PATH}. Ejecuta primero el paso de renderizado.`);
+    }
+
+    if (fs.existsSync(MANIFEST_PATH)) {
+      const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf-8'));
+      const sha256 = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+      if (manifest.video_sha256 !== sha256(VIDEO_PATH) || manifest.data_sha256 !== sha256(NEWS_DATA_PATH)) {
+        throw new Error('El video en out/video_final_tct.mp4 no coincide con el guion sellado en render-manifest.json.');
+      }
+    }
+  }
+
+  // Asegurar que exista un source_url determinista para el registro de estado (incluso en guion de contingencia)
+  const effectiveSourceUrl =
+    rawData.source_url ||
+    `tct-reel:${crypto.createHash('sha256').update(JSON.stringify(rawData.scenes.map(s => s.voice_text))).digest('hex').slice(0, 24)}`;
+
+  const dataForState = {
+    ...rawData,
+    preview_only: Boolean(rawData.preview_only),
+    source_url: effectiveSourceUrl
+  };
+
+  const content = getMediaContent(rawData);
+  const videoSizeKB = fs.existsSync(VIDEO_PATH) ? Math.round(fs.statSync(VIDEO_PATH).size / 1024) : 0;
 
   console.log('====================================================');
   console.log('🚀 ORQUESTADOR MULTI-PLATAFORMA DE CONTENIDO');
   console.log(`📁 Video: ${VIDEO_PATH} (${videoSizeKB} KB)`);
   console.log(`📌 Título: "${content.shortTitle}"`);
+  console.log(`🔗 Fuente: ${effectiveSourceUrl}`);
+  console.log(`🌐 Redes objetivo: ${config.targets.map(t => t.platform).join(', ')}`);
   console.log('====================================================');
 
-  const results = {
-    tiktok: null,
-    instagram: null,
-    youtube: null,
-    facebook: null
-  };
+  const metaClient = createMetaClient({ axios, version: config.version });
 
-  // 1. PUBLICAR EN TIKTOK (VERSIÓN SOLO VOZ PARA AÑADIR MÚSICA EN TIKTOK STUDIO)
-  try {
-    console.log('\n--- 1/4: TIKTOK ---');
-    let tiktokVideoPath = VIDEO_PATH;
-    const voicePath = path.join(__dirname, 'public', 'news_voice.mp3');
-
-    if (fs.existsSync(voicePath)) {
-      try {
-        const voiceOnlyVideo = path.join(path.dirname(VIDEO_PATH), 'video_tiktok_voiceonly.mp4');
-        const { execSync } = require('child_process');
-        console.log('🎙️ Generando versión con SOLO VOZ (sin música) para TikTok...');
-        execSync(`ffmpeg -y -i "${VIDEO_PATH}" -i "${voicePath}" -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 192k -shortest "${voiceOnlyVideo}"`, { stdio: 'pipe' });
-        if (fs.existsSync(voiceOnlyVideo) && fs.statSync(voiceOnlyVideo).size > 1000) {
-          tiktokVideoPath = voiceOnlyVideo;
-          console.log(`✅ Video limpio (Solo Locución) generado para TikTok: ${Math.round(fs.statSync(tiktokVideoPath).size / 1024)} KB`);
+  const report = await publishTargets({
+    data: dataForState,
+    targets: config.targets,
+    stateFile: STATE_PATH,
+    historyFile: HISTORY_PATH,
+    dryRun,
+    publish: async (target, checkpoint) => {
+      // 1. FACEBOOK REELS (con fallback a Facebook Videos)
+      if (target.platform === 'facebook') {
+        console.log('\n--- FACEBOOK REELS ---');
+        try {
+          const fbRes = await metaClient.publish(target, {
+            file: VIDEO_PATH,
+            caption: content.caption,
+            checkpoint
+          });
+          console.log(`✅ [Facebook Reel] Publicado exitosamente! ID: ${fbRes.id}`);
+          return fbRes;
+        } catch (reelErr) {
+          console.warn(`⚠️ [Facebook Reel] Falló subida como Reel (${reelErr.message}), intentando subida estándar a /videos...`);
+          const fbFallback = await publishFacebookVideoFallback(target, VIDEO_PATH, content.caption, content.title);
+          console.log(`✅ [Facebook Video] Publicado exitosamente! ID: ${fbFallback.id}`);
+          return fbFallback;
         }
-      } catch (ffmpegErr) {
-        console.warn('⚠️ No se pudo aislar la voz para TikTok, usando video estándar:', ffmpegErr.message);
       }
+
+      // 2. INSTAGRAM REELS
+      if (target.platform === 'instagram') {
+        console.log('\n--- INSTAGRAM REELS ---');
+        const igRes = await publishReelToInstagram(VIDEO_PATH, {
+          caption: content.caption,
+          share_to_feed: true,
+          checkpoint
+        });
+        return { id: igRes.mediaId };
+      }
+
+      // 3. YOUTUBE SHORTS
+      if (target.platform === 'youtube') {
+        console.log('\n--- YOUTUBE SHORTS ---');
+        const ytRes = await publishVideoToYouTube(VIDEO_PATH, {
+          title: content.shortTitle,
+          description: content.caption,
+          tags: ['TalentoConTarifa', 'Inteligencia Artificial', 'Emprendimiento', 'Automatización', 'Shorts']
+        });
+        if (!ytRes.success || !ytRes.videoId) {
+          throw new Error('YouTube no confirmó la carga del Short.');
+        }
+        return { id: ytRes.videoId };
+      }
+
+      // 4. TIKTOK (envía el mismo video completo con música/SFX salvo que TIKTOK_VOICE_ONLY=true)
+      if (target.platform === 'tiktok') {
+        console.log('\n--- TIKTOK ---');
+        let tiktokVideoPath = VIDEO_PATH;
+        const voicePath = path.join(__dirname, 'public', 'news_voice.mp3');
+
+        if (process.env.TIKTOK_VOICE_ONLY === 'true' && fs.existsSync(voicePath)) {
+          try {
+            const voiceOnlyVideo = path.join(path.dirname(VIDEO_PATH), 'video_tiktok_voiceonly.mp4');
+            console.log('🎙️ TIKTOK_VOICE_ONLY=true: Generando versión solo voz para TikTok...');
+            execFileSync(
+              process.env.FFMPEG_PATH || 'ffmpeg',
+              ['-y', '-i', VIDEO_PATH, '-i', voicePath, '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', voiceOnlyVideo],
+              { stdio: 'pipe', timeout: 120000 }
+            );
+            if (fs.existsSync(voiceOnlyVideo) && fs.statSync(voiceOnlyVideo).size > 1000) {
+              tiktokVideoPath = voiceOnlyVideo;
+            }
+          } catch (ffmpegErr) {
+            console.warn('⚠️ No se pudo aislar la voz para TikTok, usando video completo:', ffmpegErr.message);
+          }
+        }
+
+        const tiktokTitle = `${content.shortTitle} — ${content.caption}`.slice(0, 2000);
+        const ttRes = await publishVideoToTikTok(tiktokVideoPath, {
+          title: tiktokTitle
+        });
+        if (ttRes.publishId) {
+          checkpoint({ id: ttRes.publishId, mode: ttRes.mode });
+        }
+        if (!ttRes.success || !ttRes.publishId) {
+          throw new Error(ttRes.reason || 'TikTok no confirmó la recepción del video.');
+        }
+        const isInboxOrProcessing = ttRes.status === 'SEND_TO_USER_INBOX' || ttRes.status === 'PROCESSING';
+        return {
+          id: ttRes.publishId,
+          status: isInboxOrProcessing ? 'submitted' : 'published'
+        };
+      }
+
+      throw new Error(`Plataforma no soportada: ${target.platform}`);
     }
+  });
 
-    const tiktokTitle = `${content.title.substring(0, 150)} #TalentoConTarifa #InteligenciaArtificial #Emprendedores`;
-    results.tiktok = await publishVideoToTikTok(tiktokVideoPath, {
-      title: tiktokTitle
-    });
-  } catch (err) {
-    console.error('❌ Error en TikTok:', err.message);
-    results.tiktok = { success: false, error: err.message };
+  if (!dryRun) {
+    fs.mkdirSync(path.dirname(VIDEO_PATH), { recursive: true });
+    fs.writeFileSync(
+      path.join(path.dirname(VIDEO_PATH), 'publication-report.json'),
+      JSON.stringify(report, null, 2)
+    );
   }
 
-  // 2. PUBLICAR EN INSTAGRAM REELS
-  try {
-    console.log('\n--- 2/4: INSTAGRAM REELS ---');
-    results.instagram = await publishReelToInstagram(VIDEO_PATH, {
-      caption: content.caption,
-      share_to_feed: true
-    });
-  } catch (err) {
-    const errorDetails = err.response?.data ? JSON.stringify(err.response.data) : err.message;
-    console.error('❌ Error en Instagram Reels:', errorDetails);
-    results.instagram = { success: false, error: errorDetails };
-  }
-
-  // 3. PUBLICAR EN YOUTUBE SHORTS
-  try {
-    console.log('\n--- 3/4: YOUTUBE SHORTS ---');
-    results.youtube = await publishVideoToYouTube(VIDEO_PATH, {
-      title: content.shortTitle,
-      description: content.caption,
-      tags: ['TalentoConTarifa', 'Inteligencia Artificial', 'Emprendimiento', 'Automatización', 'Shorts']
-    });
-  } catch (err) {
-    console.error('❌ Error en YouTube Shorts:', err.message);
-    results.youtube = { success: false, error: err.message };
-  }
-
-  // 4. PUBLICAR EN FACEBOOK
-  try {
-    console.log('\n--- 4/4: FACEBOOK PAGE ---');
-    results.facebook = await publishToFacebook(content.caption, content.title);
-  } catch (err) {
-    console.error('❌ Error en Facebook:', err.message);
-    results.facebook = { success: false, error: err.message };
-  }
-
-  // ─────────────────────────────────────────
-  // Resumen Final
-  // ─────────────────────────────────────────
   console.log('\n====================================================');
   console.log('📊 REPORTE DE PUBLICACIÓN FINAL');
   console.log('====================================================');
-  console.log(`🎵 TikTok:          ${results.tiktok?.success ? '✅ PUBLICADO' : (results.tiktok?.error ? `❌ ERROR (${results.tiktok.error})` : '⚠️ OMITIDO')}`);
-  console.log(`📸 Instagram Reels:  ${results.instagram?.success ? '✅ PUBLICADO' : (results.instagram?.error ? `❌ ERROR (${results.instagram.error})` : '⚠️ OMITIDO')}`);
-  console.log(`▶️  YouTube Shorts:   ${results.youtube?.success ? `✅ PUBLICADO (${results.youtube.shortUrl})` : (results.youtube?.error ? `❌ ERROR (${results.youtube.error})` : '⚠️ OMITIDO')}`);
-  console.log(`📘 Facebook Page:    ${results.facebook?.status === 'SUCCESS' ? '✅ PUBLICADO' : (results.facebook?.status === 'FAILED' ? `❌ ERROR (${results.facebook.error})` : '⚠️ OMITIDO')}`);
+  for (const [platform, res] of Object.entries(report.results)) {
+    const icon = ['published', 'submitted'].includes(res.status) ? '✅' : (res.status === 'preview' ? '🧪' : '❌');
+    const detail = res.id ? ` (ID: ${res.id})` : '';
+    const skipped = res.skipped ? ' [YA PUBLICADO - OMITIDO]' : '';
+    const errText = res.error ? ` — ${res.error}` : '';
+    console.log(`${icon} ${platform.toUpperCase().padEnd(12)}: ${res.status}${detail}${skipped}${errText}`);
+  }
   console.log('====================================================\n');
+
+  const succeededCount = Object.values(report.results).filter(r => ['published', 'submitted', 'preview'].includes(r.status)).length;
+  if (succeededCount === 0 && !dryRun) {
+    process.exitCode = 1;
+  }
+
+  return report;
 }
 
-// Ejecutar si es llamado directamente
 if (require.main === module) {
   publishAll().catch(e => {
-    console.error('Error fatal en el publicador:', e);
+    console.error('❌ Error fatal en el publicador:', e.message);
+    process.exitCode = 1;
   });
 }
 

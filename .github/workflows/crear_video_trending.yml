@@ -74,7 +74,7 @@ jobs:
         run: npm test --prefix video_tct
 
       - name: 1. Obtener Top 10 (Hugging Face & GitHub)
-        run: node trending_top10.js
+        run: node trending_top10.js --json-only
 
       - name: Validar configuración de publicación
         if: github.event_name == 'schedule' || inputs.publish
@@ -112,13 +112,4 @@ jobs:
 
       - name: Persistir estado de entrega
         if: always() && (github.event_name == 'schedule' || inputs.publish)
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          if [ -f video_tct/publication-state.json ]; then
-            git add video_tct/publication-state.json trending_top10.json
-            if ! git diff --cached --quiet; then
-              git commit -m "chore: persist trending top 10 video publication state [skip ci]"
-              git push origin "HEAD:${GITHUB_REF_NAME}"
-            fi
-          fi
+        run: bash .github/scripts/persist_state.sh "chore: persist trending top 10 video publication state [skip ci]" video_tct/publication-state.json video_tct/used_video_news.json published_news.json

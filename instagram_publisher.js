@@ -23,7 +23,13 @@ try {
     throw e;
   }
 }
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+try {
+  require('dotenv').config({ path: path.join(__dirname, '.env') });
+} catch (e) {
+  try {
+    require(path.join(__dirname, 'video_tct', 'node_modules', 'dotenv')).config({ path: path.join(__dirname, '.env') });
+  } catch (e2) {}
+}
 
 const GRAPH_API_VERSION = process.env.META_GRAPH_VERSION || 'v21.0';
 

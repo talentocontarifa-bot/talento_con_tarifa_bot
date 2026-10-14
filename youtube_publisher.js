@@ -24,7 +24,13 @@ try {
     throw e;
   }
 }
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+try {
+  require('dotenv').config({ path: path.join(__dirname, '.env') });
+} catch (e) {
+  try {
+    require(path.join(__dirname, 'video_tct', 'node_modules', 'dotenv')).config({ path: path.join(__dirname, '.env') });
+  } catch (e2) {}
+}
 
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const UPLOAD_URL = 'https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status';
@@ -33,9 +39,9 @@ const UPLOAD_URL = 'https://www.googleapis.com/upload/youtube/v3/videos?uploadTy
  * Renueva el token de acceso de Google usando el Refresh Token
  */
 async function getValidGoogleAccessToken() {
-  const clientId = process.env.YOUTUBE_CLIENT_ID;
-  const clientSecret = process.env.YOUTUBE_CLIENT_SECRET;
-  const refreshToken = process.env.YOUTUBE_REFRESH_TOKEN;
+  const clientId = process.env.YOUTUBE_CLIENT_ID?.trim();
+  const clientSecret = process.env.YOUTUBE_CLIENT_SECRET?.trim();
+  const refreshToken = process.env.YOUTUBE_REFRESH_TOKEN?.trim();
 
   if (!clientId || !clientSecret || !refreshToken) {
     throw new Error('Faltan credenciales de YouTube (YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN) en el entorno.');
@@ -60,7 +66,10 @@ async function getValidGoogleAccessToken() {
     return res.data.access_token;
   } catch (err) {
     const errorDetails = err.response?.data ? JSON.stringify(err.response.data) : err.message;
-    throw new Error(`Error al renovar access_token de YouTube: ${errorDetails}`);
+    const hint = errorDetails.includes('invalid_grant')
+      ? ' (El YOUTUBE_REFRESH_TOKEN expiró o fue revocado; si la app OAuth en Google Cloud está en modo "Testing", los tokens caducan cada 7 días. Cámbiala a "In Production" y ejecuta `node get_youtube_token.js` para actualizar el secret YOUTUBE_REFRESH_TOKEN).'
+      : '';
+    throw new Error(`Error al renovar access_token de YouTube: ${errorDetails}${hint}`);
   }
 }
 

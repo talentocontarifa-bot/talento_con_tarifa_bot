@@ -198,7 +198,8 @@ async function publishToFacebook(text) {
   if (!PAGE_ID || !PAGE_ACCESS_TOKEN) return;
   try {
     const cleanText = text.replace(/<[^>]*>?/gm, '');
-    const url = `https://graph.facebook.com/v19.0/${PAGE_ID}/feed`;
+    const version = process.env.META_GRAPH_VERSION || 'v21.0';
+    const url = `https://graph.facebook.com/${version}/${PAGE_ID}/feed`;
     await axios.post(url, null, {
       params: { message: cleanText, access_token: PAGE_ACCESS_TOKEN }
     });

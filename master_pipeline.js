@@ -211,6 +211,9 @@ INSTRUCCIÓN DEL JEFE: "${customInstruction}"`;
                 } catch (e) {
                     attempts++;
                     console.log(`⚠️ Intento ${attempts} con Groq (${model}) fallido: ${e.message}`);
+                    if (/does not exist|do not have access|decommissioned/i.test(e.message)) {
+                        break;
+                    }
                     await new Promise(r => setTimeout(r, 2000));
                 }
             }
@@ -219,13 +222,23 @@ INSTRUCCIÓN DEL JEFE: "${customInstruction}"`;
     }
 
     console.log("🧠 3. Procesando con Gemini... Aplicando tono Neo-Brutalista.");
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    
-    const result = await callGeminiWithRetry(model, [
-        { text: systemPrompt },
-        { text: userPrompt }
-    ]);
-    return result.response.text();
+    const geminiModels = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
+    let lastError = null;
+    for (const modelName of geminiModels) {
+        try {
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await callGeminiWithRetry(model, [
+                { text: systemPrompt },
+                { text: userPrompt }
+            ]);
+            console.log(`✅ Copy generado exitosamente con Gemini (${modelName})`);
+            return result.response.text();
+        } catch (err) {
+            lastError = err;
+            console.warn(`⚠️ Modelo Gemini ${modelName} agotado/no disponible: ${err.message}`);
+        }
+    }
+    throw lastError;
 }
 
 /**

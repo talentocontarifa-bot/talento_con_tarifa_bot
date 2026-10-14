@@ -340,7 +340,7 @@ Responde ÚNICAMENTE con JSON válido:
   // 1. Intentar con Groq si está disponible
   if (process.env.GROQ_API_KEY) {
       console.log("🧠 Intentando generar guion con Groq...");
-      const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"];
+      const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
       for (const modelName of models) {
           let attempts = 0;
           while (attempts < 2) {
@@ -374,7 +374,7 @@ Responde ÚNICAMENTE con JSON válido:
               } catch (e) {
                   attempts++;
                   console.log(`⚠️ Intento ${attempts} con Groq (${modelName}) fallido: ${e.message}`);
-                  if (e.message.includes("does not exist") || e.message.includes("do not have access")) {
+                  if (e.message.includes("does not exist") || e.message.includes("do not have access") || e.message.includes("decommissioned")) {
                       break;
                   }
                   await new Promise(r => setTimeout(r, 2000));
@@ -389,7 +389,7 @@ Responde ÚNICAMENTE con JSON válido:
       throw new Error("No hay API Key de Groq ni de Gemini disponible.");
   }
   
-  const geminiModels = ["gemini-3.8-flash", "gemini-3.1-pro-preview", "gemini-2.5-flash"];
+  const geminiModels = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-3.8-flash", "gemini-3.1-pro-preview"];
   let lastGeminiError = null;
 
   for (const modelName of geminiModels) {
@@ -632,9 +632,12 @@ async function generateVoice(scenes) {
   if (fs.existsSync(indexPath)) {
     try {
       let indexHtml = fs.readFileSync(indexPath, 'utf-8');
-      indexHtml = indexHtml.replace(/data-duration="[\d.]+"/g, `data-duration="${totalDurationSec}"`);
+      indexHtml = indexHtml
+        .replace(/(<div\s+id="root"[^>]*?\bdata-duration=")[\d.]+(")/, `$1${totalDurationSec}$2`)
+        .replace(/(<audio\s+id="bgm"[^>]*?\bdata-duration=")[\d.]+(")/, `$1${totalDurationSec}$2`)
+        .replace(/(<audio\s+id="vo"[^>]*?\bdata-duration=")[\d.]+(")/, `$1${totalDurationSec}$2`);
       fs.writeFileSync(indexPath, indexHtml);
-      console.log(`✅ index.html sincronizado con data-duration="${totalDurationSec}"`);
+      console.log(`✅ index.html sincronizado con data-duration="${totalDurationSec}" (conservando duración de SFX)`);
     } catch (e) {
       console.warn(`⚠️ Error actualizando index.html:`, e.message);
     }
@@ -715,7 +718,12 @@ async function main() {
     const { totalFrames, timelineScenes, totalDurationSec } = await generateVoice(data.scenes);
 
     // PASO 3: Guardar el JSON final para Remotion y news_data.js para HyperFrames
+    const defaultHook = [timelineScenes[0]?.text1, timelineScenes[0]?.text2].filter(Boolean).join(' — ');
     const newsData = {
+      preview_only: false,
+      topic: processedNewsTitle || defaultHook || 'IA para Emprendedores',
+      source_url: processedNewsLink || null,
+      script: timelineScenes.map(s => s.voice_text).filter(Boolean).join(' '),
       theme_color: BRAND_COLOR,
       layout_type: data.layout_type || 'neo_brutalist',
       scenes: timelineScenes,
