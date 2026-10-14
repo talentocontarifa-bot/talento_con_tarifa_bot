@@ -68,5 +68,29 @@
         "status": "requires_review"
       }
     }
+  },
+  "9e3bcbf4a8b182134d9631c6e2ccc7320f5cb8cd8a5d3da020b69bcbb0358fcb": {
+    "source_url": "https://spanish.entrepreneur.com/tecnologia/cuando-la-inteligencia-artificial-decida-como-pagar-que-lugar-ocuparan-los-bancos",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2315156425907483",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18124709893807797",
+        "phase": "publishing",
+        "id": "18339141346274108"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7696601990163417096",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
