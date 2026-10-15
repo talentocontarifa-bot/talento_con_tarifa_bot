@@ -23,7 +23,7 @@ async function scheduleVideo() {
     tomorrow.setHours(8, 0, 0, 0);
     const scheduledTimeUnix = Math.floor(tomorrow.getTime() / 1000);
 
-    const message = "🚀 ¡La Inteligencia Artificial ya no es para jugar!\n\nConoce cómo los Agentes Autónomos están reduciendo hasta el 50% de los costos operativos en las startups latinas. No busques verte moderno, busca ser rentable.\n\n#InteligenciaArtificial #Startups #Negocios #TalentoConTarifa";
+    const message = "🚀 ¡La Inteligencia Artificial ya no es para jugar!\n\nConoce cómo los Agentes Autónomos están reduciendo hasta el 50% de los costos operativos en las startups latinas. No busques verte moderno, busca ser rentable.\n\n👉 Lleva este superpoder a tu local o negocio: https://talentocontarifa.lat\n\n#InteligenciaArtificial #Startups #Negocios #TalentoConTarifa";
 
     console.log("📅 Programando video para:", tomorrow.toLocaleString());
     console.log("Subiendo el video... esto puede tardar unos minutos dependiendo de tu conexión.");

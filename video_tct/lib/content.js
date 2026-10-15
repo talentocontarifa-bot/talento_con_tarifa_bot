@@ -31,7 +31,7 @@ function buildCaption(data) {
   const hook = data.scenes[0].text1 + ' ' + data.scenes[0].text2;
   const script = data.scenes.map(s=>s.voice_text).join(' ');
   const source = data.source_url ? `\n\nFuente: ${data.source_url}` : '';
-  const footer = '\n\nTalento con Tarifa · IA y negocios con criterio.\n#TalentoConTarifa #InteligenciaArtificial #Automatizacion';
+  const footer = '\n\nTalento con Tarifa · IA y automatización para tu negocio.\n👉 Visítanos en: https://talentocontarifa.lat\n#TalentoConTarifa #InteligenciaArtificial #Automatizacion';
   const available = 2200 - hook.length - source.length - footer.length - 2;
   return `${hook}\n\n${script.slice(0,available)}${source}${footer}`;
 }

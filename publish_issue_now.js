@@ -22,7 +22,7 @@ async function run() {
         return console.log('❌ No se encontró URL.');
     }
 
-    const message = `🤖 [PRUEBA DE AUTOMATIZACIÓN]\n\nEsta publicación fue generada de forma 100% autónoma leyendo directamente un Issue de GitHub enviado desde un celular.\n\nAquí está el recurso compartido:\n${url}\n\n#TalentoConTarifa #InteligenciaArtificial #Startups`;
+    const message = `🤖 [PRUEBA DE AUTOMATIZACIÓN]\n\nEsta publicación fue generada de forma 100% autónoma leyendo directamente un Issue de GitHub enviado desde un celular.\n\nAquí está el recurso compartido:\n${url}\n\n👉 Descubre más en: https://talentocontarifa.lat\n\n#TalentoConTarifa #InteligenciaArtificial #Startups`;
 
     console.log("🌐 Publicando Inmediatamente en la página de Talento con Tarifa...");
 

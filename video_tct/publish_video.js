@@ -56,6 +56,7 @@ function getMediaContent(rawData = null) {
   }
   data = data || {};
 
+<<<<<<< HEAD
   const scenes = Array.isArray(data.scenes) ? data.scenes : [];
   const hook = [scenes[0]?.text1, scenes[0]?.text2].filter(Boolean).join(' — ').trim();
   const topic = (data.topic || hook || 'IA para Emprendedores').trim();
@@ -87,9 +88,10 @@ function getMediaContent(rawData = null) {
     keyPoints || null,
     hasValidSourceUrl ? `🔗 Fuente: ${data.source_url}` : null,
     '─────────────────────────',
-    '🤖 Este video fue creado y publicado de manera automática con Inteligencia Artificial.',
+    '🤖 Este contenido fue creado y publicado de manera automática con Inteligencia Artificial.',
+    '⚡ Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento.',
     '👉 Conéctate con nosotros: https://talentocontarifa.lat',
-    '#TalentoConTarifa #InteligenciaArtificial #IAparaEmprendedores #Automatizacion #MarketingDigital #Shorts #Reels'
+    '#TalentoConTarifa #InteligenciaArtificial #IAparaEmprendedores #Automatizacion #NegociosLocales #MarketingDigital #Shorts #Reels'
   ].filter(Boolean);
 
   const caption = blocks.join('\n\n').slice(0, 2200);

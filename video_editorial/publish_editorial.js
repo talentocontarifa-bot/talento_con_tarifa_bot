@@ -10,7 +10,7 @@ function loadAxios(){try{return require('axios');}catch{return require('../video
 function buildMetadata(data){
  if(!data?.title||!Array.isArray(data.timeline)||!data.timeline.length)throw new Error('Faltan los metadatos editoriales.');
  const fullSpeech=data.timeline.map(scene=>scene.voice_text).join(' ');
- return {title:data.title,shortTitle:data.title.slice(0,90),caption:`${data.title}\n\n${fullSpeech.slice(0,1600)}\n\nTalento con Tarifa · Ideas y contexto.\n#TalentoConTarifa #Reflexion #Reels`};
+ return {title:data.title,shortTitle:data.title.slice(0,90),caption:`${data.title}\n\n${fullSpeech.slice(0,1500)}\n\nTalento con Tarifa · Ideas y contexto.\n👉 Conoce más en: https://talentocontarifa.lat\n#TalentoConTarifa #Reflexion #Reels`};
 }
 async function publishAll(){
  const {publishReelToInstagram,getInstagramAccountId}=require('../instagram_publisher');

@@ -6,6 +6,7 @@ const { getAudioDurationInSeconds } = require('get-audio-duration');
 const axios = require('axios');
 const googleTTS = require('google-tts-api');
 const news = require('../news_sources');
+const { restoreContactEnding, CONTACT_ENDING } = require('./lib/ending');
 
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -314,11 +315,11 @@ Tienes 4 tipos de escena (debes crear exactamente 5 escenas en este orden):
    - 'voice_text': frase hablada exacta de reflexión o estrategia (12-16 palabras).
    - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
 5. "cta": Cierre y llamado a la acción. Requiere:
-   - 'headline': titular de cierre (ej: "¿LISTO PARA DOMINAR?").
-   - 'sub': bajada explicativa (ej: "Tu talento amplificado con agentes de IA.").
+   - 'headline': titular de cierre ("¿LISTO PARA DOMINAR?").
+   - 'sub': bajada explicativa ("El superpoder de la IA para tu local o negocio.").
    - 'btn': "TALENTOCONTARIFA.LAT".
-   - 'voice_text': frase de cierre invitando a visitar talentocontarifa.lat (12-16 palabras).
-   - 'subtitle': subtítulo corto (ej: "Visita hoy talentocontarifa.lat y transforma tu futuro.").
+   - 'voice_text': "Este contenido fue creado y publicado de manera automática con inteligencia artificial. Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento. Conéctate con nosotros en talentocontarifa punto lat."
+   - 'subtitle': "Visita talentocontarifa.lat y escala tu negocio."
 
 Reglas Obligatorias:
 1. La identidad visual es fija (Limón #CCFF00 / Negro / Off-White): NO elijas colores.
@@ -333,7 +334,7 @@ Responde ÚNICAMENTE con JSON válido:
     { "type": "image_text", "title": "AUTOMATIZACIÓN EXTREMA", "key_points": ["Multiplican tu alcance", "Operan 24 horas continuas", "Reducen costos operativos"], "voice_text": "Automatización extrema: multiplican tu alcance, operan veinticuatro siete y reducen tus costos operativos.", "subtitle": "Automatización extrema: multiplican tu alcance y operan 24/7." },
     { "type": "big_percentage", "number": 85, "label": "Empresas Adaptadas", "voice_text": "El ochenta y cinco por ciento de las empresas líderes en el mercado ya integraron agentes autónomos a sus equipos.", "subtitle": "El 85% de las empresas líderes ya integraron agentes autónomos." },
     { "type": "image_text", "title": "COBRA POR TU VALOR", "voice_text": "Quienes dominan esta tecnología no compiten por precio: cobran por el verdadero valor de su talento.", "subtitle": "No compitas por precio: cobra por el valor de tu talento." },
-    { "type": "cta", "headline": "¿LISTO PARA DOMINAR?", "sub": "Tu talento amplificado con agentes de IA.", "btn": "TALENTOCONTARIFA.LAT", "voice_text": "¿Listo para escalar tu negocio? Visita hoy mismo talento con tarifa punto lat y transforma tu futuro.", "subtitle": "Visita hoy talentocontarifa.lat y transforma tu futuro." }
+    { "type": "cta", "headline": "¿LISTO PARA DOMINAR?", "sub": "El superpoder de la IA para tu local o negocio.", "btn": "TALENTOCONTARIFA.LAT", "voice_text": "Este contenido fue creado y publicado de manera automática con inteligencia artificial. Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento. Conéctate con nosotros en talentocontarifa punto lat.", "subtitle": "Visita talentocontarifa.lat y escala tu negocio." }
   ]
 }`;
 
@@ -468,11 +469,11 @@ Responde ÚNICAMENTE con JSON válido:
       },
       {
         type: "cta",
-        headline: "¿LISTO PARA ESCALAR?",
-        sub: "Tu talento amplificado con agentes de IA.",
+        headline: "¿LISTO PARA DOMINAR?",
+        sub: "El superpoder de la IA para tu local o negocio.",
         btn: "TALENTOCONTARIFA.LAT",
-        voice_text: "¿Listo para transformar tu futuro profesional? Visita hoy talento con tarifa punto lat y domina la nueva era.",
-        subtitle: "Visita hoy talentocontarifa.lat y domina la nueva era."
+        voice_text: "Este contenido fue creado y publicado de manera automática con inteligencia artificial. Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento. Conéctate con nosotros en talentocontarifa punto lat.",
+        subtitle: "Visita talentocontarifa.lat y escala tu negocio."
       }
     ]
   };
@@ -484,9 +485,9 @@ Responde ÚNICAMENTE con JSON válido:
 // ─────────────────────────────────────────
 // Firma de audio fija que se añade al final de CADA video
 const AI_SIGNATURE_AUDIO =
-  'Este video fue creado y publicado de manera completamente automática por inteligencia artificial. ' +
-  'Imagina el impacto que este superpoder podría tener en tu negocio. ' +
-  'Conéctate con nosotros en Talento con Tarifa punto lat.';
+  'Este contenido fue creado y publicado de manera automática con inteligencia artificial. ' +
+  'Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento. ' +
+  'Conéctate con nosotros en talentocontarifa punto lat.';
 
 function sanitizeTtsText(text) {
   return text
@@ -711,8 +712,9 @@ async function generateImages(scenes) {
 // ─────────────────────────────────────────
 async function main() {
   try {
-    // PASO 1: Gemini genera el contenido
-    const data = await generateScriptAndScenes();
+    // PASO 1: Gemini genera el contenido y se restaura el cierre oficial de marca
+    const rawData = await generateScriptAndScenes();
+    const data = restoreContactEnding(rawData);
 
     // PASO 2: Generar voz sincronizada por escenas y medir timestamps exactos
     const { totalFrames, timelineScenes, totalDurationSec } = await generateVoice(data.scenes);

@@ -144,9 +144,9 @@ function buildFallbackTrendingScenes(data) {
       {
         type: 'cta',
         headline: '¿LISTO PARA DOMINAR?',
-        sub: 'Tu talento amplificado con agentes de IA.',
+        sub: 'El superpoder de la IA para tu local o negocio.',
         btn: 'TALENTOCONTARIFA.LAT',
-        voice_text: 'Este video fue creado y publicado de manera completamente automática por inteligencia artificial. Imagina el impacto que este superpoder podría tener en tu negocio. Conéctate con nosotros en Talento con Tarifa punto lat.'
+        voice_text: 'Este contenido fue creado y publicado de manera automática con inteligencia artificial. Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento. Conéctate con nosotros en talentocontarifa punto lat.'
       }
     ]
   };
@@ -193,10 +193,10 @@ Devuelve solo JSON con exactamente 5 escenas en este orden:
    - "key_points": Lista de exactamente 3 strings. CADA STRING MÁXIMO 35 CARACTERES (ej: ["1. holaOS (Agentic)", "2. Sphere SDK (Wallet)", "3. Awesome AI (Curated)"])
    - "voice_text": Locución de 12 a 20 palabras sobre los repositorios más prometedores.
 5. type "cta":
-   - "headline": "DOMINA LAS HERRAMIENTAS"
-   - "sub": "Tu talento amplificado con agentes de IA."
+   - "headline": "¿LISTO PARA DOMINAR?"
+   - "sub": "El superpoder de la IA para tu local o negocio."
    - "btn": "TALENTOCONTARIFA.LAT"
-   - "voice_text": "Conéctate con nosotros en talento con tarifa punto lat."
+   - "voice_text": "Este contenido fue creado y publicado de manera automática con inteligencia artificial. Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento. Conéctate con nosotros en talentocontarifa punto lat."
 
 Devuelve ÚNICAMENTE el objeto JSON con formato: {"scenes": [...]}.`;
 

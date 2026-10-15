@@ -246,9 +246,8 @@ INSTRUCCIÓN DEL JEFE: "${customInstruction}"`;
  */
 async function publishToMeta(message, url) {
     console.log("🌐 4. Publicando en Facebook...");
-    // La URL va solo en `link` (genera la vista previa); no se repite en el texto del mensaje
     const response = await axios.post(`https://graph.facebook.com/v21.0/${PAGE_ID}/feed`, {
-        message: `${message}\n\n#TalentoConTarifa #Automatizacion #IA #Startups`,
+        message: `${message}\n\n👉 Descubre el superpoder de la IA para tu local o negocio en https://talentocontarifa.lat\n#TalentoConTarifa #Automatizacion #IA #Startups`,
         link: url,
         access_token: ACCESS_TOKEN
     }, { timeout: 30000 });

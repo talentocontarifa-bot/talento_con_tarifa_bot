@@ -906,10 +906,10 @@ const CtaScene: React.FC<{ dur: number }> = ({ dur }) => {
           {LAYOUT === 'neo_brutalist' ? (
             <>
               <h1 style={{ fontSize: 76, margin: 0, color: '#FFF', fontFamily: 'Impact, sans-serif', textTransform: 'uppercase', lineHeight: 1, textShadow: `6px 6px 0 ${TC}` }}>
-                ESTE VIDEO FUE CREADO
+                ESTE CONTENIDO FUE CREADO
               </h1>
               <h1 style={{ fontSize: 76, margin: 0, color: TC, fontFamily: 'Impact, sans-serif', textTransform: 'uppercase', lineHeight: 1, textShadow: `6px 6px 0 #FFF` }}>
-                100% CON IA. AUTOMÁTICO.
+                100% AUTOMÁTICO CON IA
               </h1>
             </>
           ) : (
@@ -920,7 +920,7 @@ const CtaScene: React.FC<{ dur: number }> = ({ dur }) => {
                 textTransform: 'uppercase', lineHeight: 1.1,
                 textShadow: LAYOUT === 'glassmorphism' ? `0 0 15px rgba(255,255,255,0.4)` : 'none',
               }}>
-                ESTE VIDEO FUE CREADO
+                ESTE CONTENIDO FUE CREADO
               </h1>
               <h1 style={{
                 fontSize: 54, margin: 0, color: TC,
@@ -928,7 +928,7 @@ const CtaScene: React.FC<{ dur: number }> = ({ dur }) => {
                 textTransform: 'uppercase', lineHeight: 1.1,
                 textShadow: LAYOUT === 'glassmorphism' ? `0 0 25px ${TC}80` : 'none',
               }}>
-                100% CON IA Y AUTOMÁTICO
+                100% AUTOMÁTICO CON IA
               </h1>
             </>
           )}
@@ -937,11 +937,11 @@ const CtaScene: React.FC<{ dur: number }> = ({ dur }) => {
         {/* SUBTEXTO */}
         <div style={{ transform: `translateY(${subY}px)`, marginBottom: 32, maxWidth: 900 }}>
           <p style={{
-            fontSize: LAYOUT === 'neo_brutalist' ? 40 : 34, margin: 0, color: '#CCC',
+            fontSize: LAYOUT === 'neo_brutalist' ? 38 : 32, margin: 0, color: '#CCC',
             fontFamily: LAYOUT === 'neo_brutalist' ? 'Arial, sans-serif' : 'system-ui, sans-serif',
             lineHeight: 1.3, fontStyle: 'italic',
           }}>
-            Imagina lo que <span style={{ color: TC, fontStyle: 'normal', fontWeight: 900 }}>tu negocio</span> podría hacer con este superpoder.
+            Imagina lo que este <span style={{ color: TC, fontStyle: 'normal', fontWeight: 900 }}>superpoder</span> puede hacer por tu local, negocio o emprendimiento.
           </p>
         </div>
 

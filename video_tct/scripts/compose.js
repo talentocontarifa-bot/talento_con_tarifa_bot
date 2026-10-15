@@ -27,7 +27,7 @@ function compose(data) {
   const graphic=data.visual_mode==='graphics'||!s.image||s.type==='insight'||s.type==='cta';
   const design=motionScene({index:i,id:`scene-${i}`,duration:s.end-s.start,headline,body:s.body||s.sub,key_points:s.key_points,type:s.type});
   const img = !graphic && s.image ? mediaPath(s.image) : null;
-  const visual = s.type==='cta' ? '<div class="ending-mark"><img src="public/tct_logo.svg" alt="Talento con Tarifa"><span>HECHO CON IA · CONECTA CON NOSOTROS</span></div>' : graphic ? design.art : `<div class="picture"><img id="photo-${i}" data-layout-allow-overflow src="${esc(img)}" alt="" /></div>`;
+  const visual = s.type==='cta' ? '<div class="ending-mark"><img src="public/tct_logo.svg" alt="Talento con Tarifa"><span>HECHO CON IA · TALENTOCONTARIFA.LAT</span></div>' : graphic ? design.art : `<div class="picture"><img id="photo-${i}" data-layout-allow-overflow src="${esc(img)}" alt="" /></div>`;
   const body = s.body || s.sub || '';
   const bullets = (s.key_points||[]).map((p,k)=>`<li><span>0${k+1}</span>${esc(p)}</li>`).join('');
   const markup = `<section id="scene-${i}" data-composition-id="scene-${i}" data-duration="${s.end-s.start}" data-width="1080" data-height="1920" class="scene scene-${s.type} motion-scene ${design.palette} role-${design.role} ${headline.length>55?'long-title':''}"><div class="scene-inner" id="inner-${i}">${visual}<div class="top-shade"></div><div class="bottom-shade"></div><div class="editorial"><p class="eyebrow">${labels[i]} <span>0${i+1} / 05</span></p><h1>${design.headline}</h1>${body?`<p class="body-copy">${esc(body)}</p>`:''}${bullets?`<ul>${bullets}</ul>`:''}${s.type==='cta'?`<div class="action">${esc(s.btn)} <span>↗</span></div>`:''}</div><div class="image-note" style="${graphic?'display:none':''}">${s.image_kind==='article'?'IMAGEN DE LA FUENTE':'IMAGEN ILUSTRATIVA'}</div>${design.decoration}</div></section>`;
@@ -35,7 +35,7 @@ function compose(data) {
   fs.writeFileSync(path.join(root,`compositions/scene-${i}.html`),`<!doctype html><html><body><template><style>#scene-${i}{position:absolute;inset:0;width:100%;height:100%;}</style>${markup}<script>${motion}</script></template></body></html>`);
   return `<div id="host-${i}" class="clip" data-composition-id="scene-${i}" data-composition-src="compositions/scene-${i}.html" data-start="${s.start}" data-duration="${s.end-s.start}" data-width="1080" data-height="1920" data-track-index="0"></div>`;
  }).join('\n');
- const captions=data.scenes.map((s,i)=>`<p id="caption-${i}" class="clip caption" data-start="${s.start}" data-duration="${s.audio_duration}" data-track-index="2">${esc(s.type==='cta'?'Conéctate con nosotros en talentocontarifa.lat':s.voice_text)}</p>`).join('\n');
+ const captions=data.scenes.map((s,i)=>`<p id="caption-${i}" class="clip caption" data-start="${s.start}" data-duration="${s.audio_duration}" data-track-index="2">${esc(s.voice_text)}</p>`).join('\n');
  const audio=data.scenes.filter(s=>s.audio).map((s,i)=>`<audio id="voice-${i}" class="clip" src="${esc(mediaPath(s.audio))}" data-start="${s.start}" data-duration="${s.audio_duration}" data-track-index="3" data-volume="1"></audio>`).join('\n');
  const music = data.preview_only ? '' : `<audio id="music" class="clip" src="public/music_shiny_tech.mp3" data-start="0" data-duration="${duration}" data-track-index="4" data-volume="0.12" data-automation="${esc(JSON.stringify({version:1,lanes:[{target:'volume',points:[{t:0,v:0},{t:1,v:.12},{t:duration-1,v:.12},{t:duration,v:0}]}]}))}"></audio>`;
  const effects=data.scenes.flatMap((s,i)=>{
