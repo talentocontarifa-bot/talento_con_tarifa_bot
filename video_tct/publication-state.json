@@ -113,5 +113,29 @@
         "status": "requires_review"
       }
     }
+  },
+  "ae9f2bafe84613a62c16d8f2f73aa30d1de735b549809e53473f8dad9838e99c": {
+    "source_url": "https://wwwhatsnew.com/2026/10/17/ocho-estados-demandan-openai-chatgpt-seguridad-automejora/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "3085787674944681",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18125539663807797",
+        "phase": "publishing",
+        "id": "18117959612049161"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7697648122906658824",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
