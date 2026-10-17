@@ -66,7 +66,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-          pip install edge-tts
+          pip install edge-tts opencv-python-headless numpy pillow
           npm ci
           npm ci --prefix video_tct
 
@@ -83,12 +83,11 @@ jobs:
       - name: 2. Generar guion de video, audio e imágenes para Top 10
         run: npm run generate:trending --prefix video_tct
 
-      - name: 3. Validar composición y renderizar Video Reel
+      - name: 3. Validar composición y renderizar Video Reel con Toon Maker (Personaje 01)
         working-directory: video_tct
         run: |
-          npx hyperframes check
           mkdir -p out
-          npx hyperframes render -o out/render.mp4
+          python render_toon_tct.py --output out/render.mp4
           ffmpeg -y -i out/render.mp4 -c:v libx264 -pix_fmt yuv420p -r 30 -c:a aac -b:a 128k -ar 48000 -movflags +faststart out/video_final_tct.mp4
           node scripts/seal-render.js
 

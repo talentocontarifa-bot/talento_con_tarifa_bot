@@ -50,7 +50,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-          pip install edge-tts
+          pip install edge-tts opencv-python-headless numpy pillow
           # Scrapling modo ligero (último recurso de extracción, sin navegadores)
           pip install -r requirements-scraper.txt
           npm ci
@@ -70,12 +70,11 @@ jobs:
           ELEVENLABS_MODEL_ID: ${{ vars.ELEVENLABS_MODEL_ID || 'eleven_v4_turbo' }}
           JINA_API_KEY: ${{ secrets.JINA_API_KEY }} # Opcional: más cuota en Jina Reader
         run: npm run generate --prefix video_tct
-      - name: Validar composición y renderizar
+      - name: Validar composición y renderizar con Toon Maker (Personaje 01)
         working-directory: video_tct
         run: |
-          npx hyperframes check
           mkdir -p out
-          npx hyperframes render -o out/render.mp4
+          python render_toon_tct.py --output out/render.mp4
           ffmpeg -y -i out/render.mp4 -c:v libx264 -pix_fmt yuv420p -r 30 -c:a aac -b:a 128k -ar 48000 -movflags +faststart out/video_final_tct.mp4
           node scripts/seal-render.js
       - name: Publicar en Facebook e Instagram

@@ -4,6 +4,9 @@ tiktok_tokens.json
 *.token.json
 video_tct/out/
 *.mp4
+!toon_host/01/*.mp4
+toon_host/01/demo_*.mp4
+toon_host/01/voice_cache/
 trending_top10.json
 video_tct/temp_voice/
 video_editorial/out/

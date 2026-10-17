@@ -1,0 +1,60 @@
+{
+  "character_id": "char_01",
+  "display_name": "TALENTO CON TARIFA",
+  "tagline": "NOTICIAS IA LATAM // HOST VIRTUAL",
+  "closing_signature": "TALENTOCONTARIFA.LAT",
+  "default_script": "Hola a todos. Estamos probando el nuevo motor Toon Maker en versión limpia con la voz oficial de ElevenLabs y sincronización labial de fonemas puros. Observa cómo cada vocal, cada consonante y cada parpadeo responden en tiempo real al espectro de la voz.",
+  "secondary_script": "Además, el auto-director alterna suavemente entre plano general, close-up y plano medio, sin banners ni cajas de texto por defecto, dejando la música y los textos como opciones que puedes activar cuando quieras.",
+  "assets": {
+    "source_video": "Character_speaking_on_green_screen_20261016231544.mp4",
+    "background_image": "tct_studio_bg.jpg",
+    "bgm_audio": "",
+    "lcd_font": "assets/VT323-Regular.ttf",
+    "hud_font": "assets/ShareTechMono-Regular.ttf"
+  },
+  "rig": {
+    "frame_ladder": [18, 15, 12, 13, 76, 87, 78, 85, 82, 83, 34, 38, 42, 43, 44, 46],
+    "phonetic_mode": true,
+    "blend_mode": "snap",
+    "focus_center": [360, 225],
+    "slew_up": 0.45,
+    "slew_down": 0.30,
+    "shots": {
+      "FULL": { "zoom": 1.00, "focus_y": 640 },
+      "MEDIUM": { "zoom": 1.38, "focus_y": 380 },
+      "CLOSE": { "zoom": 1.82, "focus_y": 235 }
+    }
+  },
+  "voice": {
+    "engine": "elevenlabs",
+    "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+    "model_id": "eleven_v4_turbo",
+    "voice_name": "es-MX-JorgeNeural",
+    "rate": "+3%",
+    "pitch": "-5Hz",
+    "dsp_preset": "studio_broadcast",
+    "bgm_volume": 0.16
+  },
+  "visual_fx": {
+    "theme_name": "talento_con_tarifa",
+    "brand_preset": "tct",
+    "glitch_fx": true,
+    "primary_bgr": [0, 255, 204],
+    "secondary_bgr": [240, 240, 240],
+    "bg_tint_bgr": [10, 10, 10],
+    "bg_tint_strength": 0.0,
+    "character_rgb_split_px": 0,
+    "show_hud": false,
+    "show_top_banner": false,
+    "show_subtitles_box": false,
+    "show_lower_thirds": true,
+    "show_outro_curtain": true,
+    "digital_dust": false,
+    "dust_count": 52,
+    "front_vignette": true,
+    "scanlines": true,
+    "hud_top_title": "TALENTO CON TARIFA // NOTICIAS IA",
+    "hud_bottom_prefix": "TALENTOCONTARIFA.LAT"
+  },
+  "content_plugin": "tct_plugin.py"
+}

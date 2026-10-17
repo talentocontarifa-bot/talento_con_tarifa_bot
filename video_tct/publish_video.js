@@ -56,7 +56,6 @@ function getMediaContent(rawData = null) {
   }
   data = data || {};
 
-<<<<<<< HEAD
   const scenes = Array.isArray(data.scenes) ? data.scenes : [];
   const hook = [scenes[0]?.text1, scenes[0]?.text2].filter(Boolean).join(' — ').trim();
   const topic = (data.topic || hook || 'IA para Emprendedores').trim();
