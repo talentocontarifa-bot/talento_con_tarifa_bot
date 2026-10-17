@@ -33,7 +33,8 @@ def main():
     parser.add_argument("--output", default=os.path.join(VIDEO_TCT_DIR, "out", "render.mp4"), help="Ruta MP4 de salida")
     parser.add_argument("--news-json", default=os.path.join(VIDEO_TCT_DIR, "src", "news_data.json"), help="Ruta a news_data.json")
     parser.add_argument("--voice", default=os.path.join(VIDEO_TCT_DIR, "public", "news_voice.mp3"), help="Ruta al audio de voz narrada")
-    parser.add_argument("--bgm", default="", help="Ruta opcional a música de fondo (desactivada por defecto en modo Clean)")
+    parser.add_argument("--bgm", default="", help="Ruta opcional a música de fondo (usa tct_music.mp3 por defecto)")
+    parser.add_argument("--no-bgm", action="store_true", help="Desactivar música de fondo")
     parser.add_argument("--no-lower-thirds", action="store_true", help="Ocultar apoyos visuales de texto extraído")
     parser.add_argument("--no-outro", action="store_true", help="Ocultar cortinilla de salida")
     parser.add_argument("--subtitles", action="store_true", help="Activar cuadro gigante de subtítulos opcional")
@@ -53,12 +54,19 @@ def main():
     bg_file = os.path.join(CHAR_01_DIR, assets.get("background_image", "tct_studio_bg.jpg"))
 
     bgm_path = None
-    if args.bgm and os.path.exists(args.bgm):
-        bgm_path = args.bgm
-    elif os.environ.get("TCT_ENABLE_BGM", "").strip() == "1":
-        candidate_bgm = os.path.join(VIDEO_TCT_DIR, "public", "tct_music.mp3")
-        if os.path.exists(candidate_bgm):
-            bgm_path = candidate_bgm
+    if not args.no_bgm and os.environ.get("TCT_ENABLE_BGM", "1").strip() != "0":
+        if args.bgm and os.path.exists(args.bgm):
+            bgm_path = args.bgm
+        else:
+            candidates = [
+                os.path.join(CHAR_01_DIR, assets.get("bgm_audio", "assets/tct_music.mp3")),
+                os.path.join(CHAR_01_DIR, "assets", "tct_music.mp3"),
+                os.path.join(VIDEO_TCT_DIR, "public", "tct_music.mp3"),
+            ]
+            for cand in candidates:
+                if cand and os.path.isfile(cand):
+                    bgm_path = cand
+                    break
 
     ladder = rig.get("frame_ladder", [18, 15, 12, 13, 76, 87, 78, 85, 82, 83, 34, 38, 42, 43, 44, 46])
     focus_center = tuple(rig.get("focus_center", [360, 225]))

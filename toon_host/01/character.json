@@ -8,7 +8,7 @@
   "assets": {
     "source_video": "Character_speaking_on_green_screen_20261016231544.mp4",
     "background_image": "tct_studio_bg.jpg",
-    "bgm_audio": "",
+    "bgm_audio": "assets/tct_music.mp3",
     "lcd_font": "assets/VT323-Regular.ttf",
     "hud_font": "assets/ShareTechMono-Regular.ttf"
   },
