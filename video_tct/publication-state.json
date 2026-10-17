@@ -137,5 +137,27 @@
         "status": "requires_review"
       }
     }
+  },
+  "b14aae202a19044fa7f8561e616a1189e00ae7d85b239d08cdb025bf6f3d31d1": {
+    "source_url": "https://www.xataka.com/robotica-e-ia/agentes-ia-estan-aprendiendo-a-mejorar-su-propio-software-clave-puede-estar-predecir-sus-errores-antes-cometerlos",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "28646983001634531",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18125584198807797",
+        "phase": "publishing",
+        "id": "18074986736573448"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
