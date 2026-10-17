@@ -159,5 +159,29 @@
         "status": "requires_review"
       }
     }
+  },
+  "5ed56d2a961f64d868c927b39d1ea30e255563579b7b05f65c23733a247e7b6b": {
+    "source_url": "https://www.genbeta.com/actualidad/google-primero-restringio-acceso-a-su-nuevo-modelo-ia-seguridad-despues-tardo-13-dias-abrirlo-al-publico",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1138571008692740",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18125624770807797",
+        "phase": "publishing",
+        "id": "18475949980119021"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7697757837200328705",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
