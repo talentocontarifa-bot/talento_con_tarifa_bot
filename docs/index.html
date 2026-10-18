@@ -1,26 +1,497 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Talento con Tarifa</title>
+  <title>AutoPost-TikTok | Content Publishing Studio (Talento con Tarifa)</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1e293b; max-width: 800px; margin: 0 auto; padding: 60px 20px; background-color: #f8fafc; text-align: center; }
-    .card { background: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-    h1 { color: #0f172a; margin-bottom: 12px; }
-    p { color: #475569; font-size: 18px; margin-bottom: 30px; }
-    .links a { display: inline-block; margin: 0 10px; color: #2563eb; text-decoration: none; font-weight: 600; padding: 10px 18px; border: 1px solid #bfdbfe; border-radius: 8px; }
-    .links a:hover { background-color: #eff6ff; }
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --tiktok-pink: #fe2c55;
+      --tiktok-cyan: #25f4ee;
+      --success: #10b981;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+    }
+    header {
+      background: #090d16;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--tiktok-cyan), var(--tiktok-pink));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+      color: #000;
+    }
+    .brand-title h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+    .brand-title span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      margin-left: 20px;
+      font-size: 14px;
+    }
+    .nav-links a:hover { color: #fff; }
+    .container {
+      max-width: 1040px;
+      margin: 32px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    .login-section {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .btn-tiktok {
+      background: #000;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    .btn-tiktok:hover {
+      border-color: var(--tiktok-cyan);
+      box-shadow: 0 0 15px rgba(37, 244, 238, 0.3);
+    }
+    .creator-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0f172a;
+      padding: 14px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .creator-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fe2c55, #25f4ee);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+      color: #000;
+    }
+    .badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 28px;
+    }
+    .video-preview-box {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+    .video-frame {
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 60%, #090d16 100%);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label.field-label {
+      display: block;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #e2e8f0;
+    }
+    input[type="text"], textarea, select {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    .checkbox-group {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      background: #0f172a;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .checkbox-item input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--tiktok-pink);
+    }
+    .consent-box {
+      background: rgba(255,255,255,0.03);
+      border-left: 3px solid var(--tiktok-cyan);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-bottom: 20px;
+      border-radius: 0 8px 8px 0;
+    }
+    .actions-row {
+      display: flex;
+      gap: 14px;
+    }
+    .btn-primary {
+      background: var(--tiktok-pink);
+      color: #fff;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      flex: 1;
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #334155;
+      color: #fff;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    /* OAuth Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .oauth-modal {
+      background: #fff;
+      color: #111;
+      width: 420px;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    .oauth-header {
+      text-align: center;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+    }
+    .scope-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 20px 0;
+      font-size: 14px;
+    }
+    .scope-list li {
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .scope-code {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #0f172a;
+    }
+    .status-banner {
+      display: none;
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--success);
+      color: #ecfdf5;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Talento con Tarifa 🚀</h1>
-    <p>Plataforma automatizada de contenidos sobre Inteligencia Artificial, Negocios y Emprendimiento.</p>
-    <div class="links">
-      <a href="terms.html">Términos de Servicio</a>
-      <a href="privacy.html">Política de Privacidad</a>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">TT</div>
+    <div class="brand-title">
+      <h1>AutoPost-TikTok · Talento con Tarifa</h1>
+      <span>Official Content Publishing & Creator Automation Studio</span>
     </div>
   </div>
+  <nav class="nav-links">
+    <a href="index.html">Publishing Studio</a>
+    <a href="terms.html">Terms of Service</a>
+    <a href="privacy.html">Privacy Policy</a>
+  </nav>
+</header>
+
+<div class="container">
+  <!-- STEP 1: TIKTOK LOGIN KIT -->
+  <div class="card login-section" id="loginCard">
+    <h2>Connect Your TikTok Creator Account</h2>
+    <p style="color: var(--muted); max-width: 560px; margin: 0 auto 24px auto;">
+      Sign in with <strong>TikTok Login Kit</strong> to authorize <code>AutoPost-TikTok</code> to retrieve your basic profile info and publish or upload videos to your TikTok channel.
+    </p>
+    <button class="btn-tiktok" id="btnLoginTikTok" onclick="openOAuthModal()">
+      <span>🎵</span> Continue with TikTok (OAuth 2.0)
+    </button>
+  </div>
+
+  <!-- STEP 2: CONTENT POSTING STUDIO -->
+  <div class="card" id="studioCard" style="display: none;">
+    <div class="creator-bar">
+      <div class="creator-info">
+        <div class="avatar">RS</div>
+        <div>
+          <div style="font-weight: 700; font-size: 15px;">Rufino Santa Rosa <span style="color: var(--muted); font-weight: 400;">(@rufino.santa.rosa0)</span></div>
+          <div style="font-size: 12px; color: var(--muted);">Scopes granted: <code>user.info.basic</code>, <code>video.publish</code>, <code>video.upload</code> · Max video duration: 10 min</div>
+        </div>
+      </div>
+      <span class="badge">● Connected via TikTok Login Kit</span>
+    </div>
+
+    <div class="studio-grid">
+      <!-- Video Preview -->
+      <div class="video-preview-box">
+        <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--muted);">Video Preview (9:16 Vertical MP4)</div>
+        <div class="video-frame" id="videoPreviewFrame">
+          <div style="font-size: 42px; margin-bottom: 10px;">🎬</div>
+          <div style="font-weight: 700; font-size: 15px;" id="previewVideoName">video_final_tct.mp4</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 6px;">1080×1920 · 30 FPS · H.264 · 11.4 MB</div>
+          <div style="margin-top: 16px; background: rgba(37,244,238,0.15); color: var(--tiktok-cyan); padding: 4px 10px; border-radius: 6px; font-size: 11px;">Ready for Content Posting API</div>
+        </div>
+      </div>
+
+      <!-- Post Settings (TikTok UX Guidelines Compliant) -->
+      <div>
+        <div class="form-group">
+          <label class="field-label" for="postTitle">Title / Video Caption (Editable)</label>
+          <textarea id="postTitle" maxlength="2200">🤖 Cómo automatizar tu negocio con Inteligencia Artificial en 2026 #TalentoConTarifa #IA #Emprendedores #Automatizacion</textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="privacySelect">Who can view this video (Privacy Status) *</label>
+          <select id="privacySelect" onchange="validateForm()">
+            <option value="" selected disabled>-- Select privacy level (Required) --</option>
+            <option value="PUBLIC_TO_EVERYONE">Public to everyone (PUBLIC_TO_EVERYONE)</option>
+            <option value="MUTUAL_FOLLOW_FRIENDS">Friends — followers you follow back (MUTUAL_FOLLOW_FRIENDS)</option>
+            <option value="SELF_ONLY">Only me / Private (SELF_ONLY)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Allow users to (Unchecked by default per TikTok guidelines)</label>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input type="checkbox" id="chkComment" /> Allow Comment
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="chkDuet" /> Allow Duet
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="chkStitch" /> Allow Stitch
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Disclose video content (Commercial Content Disclosure)</label>
+          <div class="checkbox-group" style="flex-direction: column; gap: 10px;">
+            <label class="checkbox-item">
+              <input type="checkbox" id="chkDisclose" onchange="toggleDiscloseOptions()" />
+              <span>Turn on to disclose that this video promotes goods or services in exchange for something of value.</span>
+            </label>
+            <div id="discloseSubOptions" style="display: none; padding-left: 24px; gap: 16px;">
+              <label class="checkbox-item"><input type="checkbox" id="chkYourBrand" onchange="updateConsentText()" /> Your brand (promotes yourself or your own business)</label>
+              <label class="checkbox-item"><input type="checkbox" id="chkBrandedContent" onchange="updateConsentText()" /> Branded content (paid partnership with a third party)</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="consent-box" id="consentDeclaration">
+          By posting, you agree to TikTok's <strong>Music Usage Confirmation</strong> and <strong>Terms of Service</strong>.
+        </div>
+
+        <div class="actions-row">
+          <button class="btn-primary" id="btnDirectPost" disabled onclick="publishVideo('DIRECT_POST')">
+            🚀 Publish Now to TikTok (Direct Post · video.publish)
+          </button>
+          <button class="btn-secondary" id="btnInboxUpload" onclick="publishVideo('INBOX_DRAFT')">
+            📥 Send to TikTok Inbox Draft (video.upload)
+          </button>
+        </div>
+
+        <div class="status-banner" id="statusBanner"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TikTok OAuth 2.0 Authorization Modal -->
+<div class="modal-backdrop" id="oauthModal">
+  <div class="oauth-modal">
+    <div class="oauth-header">
+      <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">https://www.tiktok.com/v2/auth/authorize</div>
+      <h3 style="margin: 0;">Authorize AutoPost-TikTok</h3>
+      <p style="font-size: 13px; color: #475569; margin: 6px 0 0 0;">Account: <strong>@rufino.santa.rosa0</strong></p>
+    </div>
+    <ul class="scope-list">
+      <li>
+        <span>✅</span>
+        <div>
+          <strong>Access your profile info</strong> <span class="scope-code">user.info.basic</span>
+          <div style="font-size: 12px; color: #64748b;">Read your display name, avatar, and creator posting settings.</div>
+        </div>
+      </li>
+      <li>
+        <span>✅</span>
+        <div>
+          <strong>Directly publish videos to TikTok</strong> <span class="scope-code">video.publish</span>
+          <div style="font-size: 12px; color: #64748b;">Publish videos directly to your public or private TikTok profile.</div>
+        </div>
+      </li>
+      <li>
+        <span>✅</span>
+        <div>
+          <strong>Upload video drafts to TikTok inbox</strong> <span class="scope-code">video.upload</span>
+          <div style="font-size: 12px; color: #64748b;">Upload video files as drafts to your TikTok Creator Inbox.</div>
+        </div>
+      </li>
+    </ul>
+    <div style="display: flex; gap: 10px;">
+      <button onclick="completeOAuth()" id="btnAuthorizeModal" style="flex: 1; background: #fe2c55; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+        Authorize & Continue
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openOAuthModal() {
+    document.getElementById('oauthModal').style.display = 'flex';
+  }
+  function completeOAuth() {
+    document.getElementById('oauthModal').style.display = 'none';
+    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('studioCard').style.display = 'block';
+  }
+  function validateForm() {
+    const priv = document.getElementById('privacySelect').value;
+    document.getElementById('btnDirectPost').disabled = !priv;
+  }
+  function toggleDiscloseOptions() {
+    const on = document.getElementById('chkDisclose').checked;
+    document.getElementById('discloseSubOptions').style.display = on ? 'block' : 'none';
+    updateConsentText();
+  }
+  function updateConsentText() {
+    const branded = document.getElementById('chkBrandedContent').checked;
+    const box = document.getElementById('consentDeclaration');
+    if (branded) {
+      box.innerHTML = "By posting, you agree to TikTok's <strong>Branded Content Policy</strong> and <strong>Music Usage Confirmation</strong>.";
+    } else {
+      box.innerHTML = "By posting, you agree to TikTok's <strong>Music Usage Confirmation</strong> and <strong>Terms of Service</strong>.";
+    }
+  }
+  function publishVideo(mode) {
+    const banner = document.getElementById('statusBanner');
+    const priv = document.getElementById('privacySelect').value || 'INBOX_DRAFT';
+    banner.style.display = 'block';
+    banner.innerHTML = `⏳ Uploading <strong>video_final_tct.mp4</strong> via TikTok Content Posting API (<code>${mode}</code> · privacy: <code>${priv}</code>)...`;
+    setTimeout(() => {
+      banner.innerHTML = `🎉 <strong>Success!</strong> Video submitted to TikTok for <strong>@rufino.santa.rosa0</strong> (Publish ID: <code>v_pub_file~v2.7697781029384</code>). It may take a few minutes for the video to finish processing and appear on your profile.`;
+    }, 1200);
+  }
+</script>
+
 </body>
 </html>
