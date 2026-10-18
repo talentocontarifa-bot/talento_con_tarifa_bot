@@ -183,5 +183,30 @@
         "status": "requires_review"
       }
     }
+  },
+  "e488e24bb143db4529458ace112044243c4da2fbe47f866b8d0252758d08eec8": {
+    "source_url": "https://wwwhatsnew.com/2026/10/18/openai-modelo-cartera-pruebas-ajena-sin-permiso-desalineacion/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1657331649382113",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18125716957807797",
+        "phase": "publishing",
+        "id": "18131868187803536"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7697877878087862279",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "BIk_UHDkUms"
+      }
+    }
   }
 }
