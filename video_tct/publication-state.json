@@ -208,5 +208,28 @@
         "id": "BIk_UHDkUms"
       }
     }
+  },
+  "a2a812fe28e60bbbbc4875b34d365347ae84147cd594a85245b360bd7c410c7a": {
+    "source_url": "https://www.genbeta.com/actualidad/openai-despide-a-tres-trabajadores-manejar-manera-inapropiada-informacion-sensible",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1138393835428010",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18125871733807797",
+        "phase": "publishing",
+        "id": "18034950824664754"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "dcJIBIj0Zfc"
+      }
+    }
   }
 }
