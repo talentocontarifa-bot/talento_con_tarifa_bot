@@ -897,8 +897,8 @@ wingGeoL.computeVertexNormals();
 
 const leftWingGroup = new THREE.Group();
 leftWingGroup.position.set(-1.36, 0.02, 0.25);
-leftWingGroup.rotation.y = -1.18; // Rotación original exacta en el lado izquierdo
-const leftWingMesh = new THREE.Mesh(wingGeoR, matJvcCrimson);
+leftWingGroup.rotation.y = 1.18; // Abierta ligeramente hacia afuera (simétrica)
+const leftWingMesh = new THREE.Mesh(wingGeoL, matJvcCrimson);
 leftWingMesh.castShadow = true;
 leftWingMesh.receiveShadow = true;
 leftWingGroup.add(leftWingMesh);
@@ -906,8 +906,8 @@ tvRig.add(leftWingGroup);
 
 const rightWingGroup = new THREE.Group();
 rightWingGroup.position.set(1.36, 0.02, 0.25);
-rightWingGroup.rotation.y = 1.18; // Espejo matemático exacto de la rotación original en el lado derecho
-const rightWingMesh = new THREE.Mesh(wingGeoL, matJvcCrimson);
+rightWingGroup.rotation.y = -1.18; // Abierta ligeramente hacia afuera (espejo exacto)
+const rightWingMesh = new THREE.Mesh(wingGeoR, matJvcCrimson);
 rightWingMesh.castShadow = true;
 rightWingMesh.receiveShadow = true;
 rightWingGroup.add(rightWingMesh);
