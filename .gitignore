@@ -7,6 +7,11 @@ video_tct/out/
 !toon_host/01/*.mp4
 toon_host/01/demo_*.mp4
 toon_host/01/voice_cache/
+toon_host/01/demo_*.wav
+toon_host/01/latest_tct_scenes.json
+toon_host/01/*_realtime_studio.html
+video_tct/public/voice_cache/
+video_tct/public/*.pcm24k.wav
 trending_top10.json
 video_tct/temp_voice/
 video_editorial/out/

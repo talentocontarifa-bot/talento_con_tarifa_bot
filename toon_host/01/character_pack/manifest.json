@@ -1,0 +1,56 @@
+{
+  "character_name": "char_01",
+  "alias": "TALENTO CON TARIFA // NOTICIAS IA",
+  "signature": "TALENTOCONTARIFA.LAT",
+  "mode": "phonetic_ladder_16",
+  "blend_mode": "snap",
+  "voice_engine": {
+    "provider": "edge-tts",
+    "voice": "es-MX-JorgeNeural"
+  },
+  "resolution": {
+    "width": 720,
+    "height": 1280,
+    "fps": 24
+  },
+  "focus_center": {
+    "x": 360,
+    "y": 225
+  },
+  "frame_ladder": [
+    18,
+    15,
+    12,
+    13,
+    76,
+    87,
+    78,
+    85,
+    82,
+    83,
+    34,
+    38,
+    42,
+    43,
+    44,
+    46
+  ],
+  "sprite_keys": [
+    "S00_F18",
+    "S01_F15",
+    "S02_F12",
+    "S03_F13",
+    "S04_F76",
+    "S05_F87",
+    "S06_F78",
+    "S07_F85",
+    "S08_F82",
+    "S09_F83",
+    "S10_F34",
+    "S11_F38",
+    "S12_F42",
+    "S13_F43",
+    "S14_F44",
+    "S15_F46"
+  ]
+}

@@ -65,8 +65,12 @@ jobs:
       - name: Instalar herramientas del sistema
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
-          pip install edge-tts opencv-python-headless numpy pillow
+          sudo apt-get install -y ffmpeg unzip curl
+          pip install edge-tts opencv-python-headless numpy pillow playwright
+          playwright install --with-deps chromium
+          curl -fsSL https://github.com/DanielSWolf/rhubarb-lip-sync/releases/download/v1.13.0/Rhubarb-Lip-Sync-1.13.0-Linux.zip -o /tmp/rhubarb.zip
+          sudo unzip -q /tmp/rhubarb.zip -d /opt/rhubarb
+          sudo ln -sf /opt/rhubarb/Rhubarb-Lip-Sync-1.13.0-Linux/rhubarb /usr/local/bin/rhubarb
           npm ci
           npm ci --prefix video_tct
 

@@ -402,6 +402,12 @@ class ToonPackager:
             with open(svg_p, "rb") as sf:
                 self.tct_logo_svg_b64 = "data:image/svg+xml;base64," + base64.b64encode(sf.read()).decode("ascii")
 
+        diner_p = os.path.join(assets_dir, "cafe_80s_diner.jpg")
+        self.cafe_80s_diner_bgr = (
+            self.prepare_background_916(diner_p) if os.path.exists(diner_p) else self.bg_916.copy()
+        )
+        self.last_mouth_cues = []
+
         self.impact_font_path = os.path.join(assets_dir, "impact.ttf")
         self.bold_font_path = os.path.join(assets_dir, "arialbd.ttf")
         self._font_cache = {}
@@ -855,12 +861,99 @@ class ToonPackager:
         )
         return output_mixed_wav
 
+    def extract_rhubarb_cues(self, clean_voice_wav_path):
+        """
+        Ejecuta Rhubarb Lip Sync en modo fonético independiente del idioma (-r phonetic)
+        ideal para español, con caché automático por hash de audio.
+        Devuelve la lista de mouthCues: [{'start': float, 'end': float, 'value': 'X'|'A'..'H'}, ...]
+        """
+        import hashlib
+        import shutil
+
+        candidates = [
+            os.environ.get("RHUBARB_PATH", ""),
+            r"c:\Users\rufin\.gemini\antigravity\playground\astral-curie\tools\rhubarb\Rhubarb-Lip-Sync-1.13.0-Windows\rhubarb.exe",
+            os.path.abspath(
+                os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)),
+                    "..",
+                    "..",
+                    "tools",
+                    "rhubarb",
+                    "Rhubarb-Lip-Sync-1.13.0-Windows",
+                    "rhubarb.exe",
+                )
+            ),
+            shutil.which("rhubarb") or "",
+        ]
+        rhubarb_exe = next((p for p in candidates if p and os.path.exists(p)), None)
+        if not rhubarb_exe:
+            return []
+
+        try:
+            with open(clean_voice_wav_path, "rb") as rf:
+                audio_hash = hashlib.sha256(rf.read()).hexdigest()[:16]
+        except Exception:
+            return []
+
+        cache_dir = os.path.join(os.path.dirname(os.path.abspath(clean_voice_wav_path)), "voice_cache")
+        os.makedirs(cache_dir, exist_ok=True)
+        cues_json_path = os.path.join(cache_dir, f"rhubarb_{audio_hash}.json")
+
+        if not os.path.exists(cues_json_path):
+            wav_16k = os.path.join(cache_dir, f"temp_16k_{audio_hash}.wav")
+            try:
+                subprocess.run(
+                    [
+                        self.ffmpeg_path,
+                        "-y",
+                        "-i",
+                        clean_voice_wav_path,
+                        "-ac",
+                        "1",
+                        "-ar",
+                        "16000",
+                        "-c:a",
+                        "pcm_s16le",
+                        wav_16k,
+                    ],
+                    check=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                subprocess.run(
+                    [rhubarb_exe, "-r", "phonetic", "-f", "json", "-o", cues_json_path, wav_16k],
+                    check=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    timeout=45,
+                )
+            except Exception as e:
+                print(f"   (Aviso Rhubarb Lip-Sync: {e})")
+            finally:
+                if os.path.exists(wav_16k):
+                    try:
+                        os.remove(wav_16k)
+                    except Exception:
+                        pass
+
+        if os.path.exists(cues_json_path):
+            try:
+                with open(cues_json_path, "r", encoding="utf-8") as jf:
+                    cues = json.load(jf).get("mouthCues", [])
+                if cues:
+                    print(f"   👄 Rhubarb Lip-Sync activo: {len(cues)} fonemas extraídos (+40ms Pre-Roll).")
+                return cues
+            except Exception:
+                pass
+        return []
+
     def compute_smooth_ladder_trajectory(self, clean_voice_wav_path, fps=24):
         """
         Analiza SIEMPRE la pista de voz limpia (sin música de fondo):
-        - Modo estándar (Tipo A sin boca): escalera de energía con slew-rate.
-        - Modo fonético (Tipo B con boca visible): RMS + Centroide FFT + Formantes Graves (250-750Hz)
-          mapeados a los 16 visemas puros con histéresis de 1 frame y parpadeo natural.
+        - Incluye Pre-Roll óptico de +40ms (0.040s) para que el movimiento labial anticipe al sonido.
+        - En modo fonético (16 visemas): combina los fonemas exactos de Rhubarb Lip Sync (-r phonetic)
+          con la envolvente acústica (RMS + Centroide FFT + Formantes Graves).
         """
         pcm_wav = self.ensure_pcm_wav(clean_voice_wav_path)
         with wave.open(pcm_wav, "rb") as wf:
@@ -873,10 +966,14 @@ class ToonPackager:
 
         total_vframes = int((n_samples / sr) * fps)
         samples_per_frame = sr // fps
+        pre_roll_sec = 0.040
+        pre_roll_samples = int(pre_roll_sec * sr)
 
         rms_list, centroid_list, low_ratio_list = [], [], []
         for i in range(total_vframes):
-            seg = audio[i * samples_per_frame : (i + 1) * samples_per_frame]
+            # Ventana adelantada +40ms (Pre-roll fonético) para eliminar sensación de retraso labial
+            start_s = min(max(0, i * samples_per_frame + pre_roll_samples), max(0, len(audio) - samples_per_frame))
+            seg = audio[start_s : start_s + samples_per_frame]
             if len(seg) < samples_per_frame:
                 seg = np.pad(seg, (0, samples_per_frame - len(seg)))
             rms_list.append(np.sqrt(np.mean(seg**2)))
@@ -898,6 +995,9 @@ class ToonPackager:
         max_idx = float(n_states - 1)
         idle_idx = 2.0
 
+        rhubarb_cues = self.extract_rhubarb_cues(pcm_wav) if self.phonetic_mode else []
+        self.last_mouth_cues = rhubarb_cues
+
         if self.phonetic_mode and n_states >= 16:
             # Escalera Fonética de 16 Frames Puros:
             # 0:BLINK, 1:HALF, 2:IDLE, 3:PART, 4:UW_1, 5:EDT, 6:UW_2, 7:ISC,
@@ -915,6 +1015,7 @@ class ToonPackager:
                 cent = centroid_list[i]
                 lrat = low_ratio_list[i]
                 b_st = int(blink_seq[i])
+                t_lookup = (i / float(fps)) + pre_roll_sec
 
                 if b_st == 2 and vol < 0.38:
                     positions.append(0.0)
@@ -923,35 +1024,64 @@ class ToonPackager:
                     positions.append(1.0)
                     continue
 
-                if vol < 0.14:
-                    target = 2  # IDLE (M_BMP - boca cerrada)
-                elif vol < 0.25:
-                    target = 4 if lrat > 0.65 else 3  # UW_1 o PART
-                elif vol < 0.42:
-                    if cent > 1950:
-                        target = 7  # ISC (dientes / I, S, C)
-                    elif lrat > 0.67:
-                        target = 6  # UW_2 (U redonda cerrada)
-                    else:
-                        target = 5  # EDT (transición suave)
-                elif vol < 0.72:
-                    if lrat > 0.65:
-                        target = 11  # OH_1 (O redonda media)
-                    elif cent > 2100:
-                        target = 7 if vol < 0.54 else 8  # ISC o AE_1 brillante
-                    else:
-                        target = 9 if vol < 0.56 else 10  # AE_2 o AE_3 conversacional
-                else:
-                    if lrat > 0.63:
-                        target = 12  # OH_2 (O redonda abierta)
-                    elif vol < 0.85:
-                        target = 13  # AA_1
-                    elif vol < 0.98:
-                        target = 14  # AA_2
-                    else:
-                        target = 15  # AA_MAX
+                cue_val = None
+                if rhubarb_cues:
+                    for c in rhubarb_cues:
+                        if c["start"] <= t_lookup < c["end"]:
+                            cue_val = c["value"]
+                            break
 
-                # Histéresis de 1 frame entre vocales abiertas (cierre a IDLE=2 es instantáneo)
+                if cue_val is not None:
+                    if vol < 0.09 or cue_val == "X":
+                        target = 2  # Silencio -> boca cerrada
+                    elif cue_val == "A":
+                        target = 2  # M, B, P -> cierre bilabial exacto
+                    elif cue_val == "G":
+                        target = 3  # F, V -> labiodental
+                    elif cue_val == "F":
+                        target = 6 if vol > 0.42 else 4  # U, W -> redonda cerrada
+                    elif cue_val == "B":
+                        target = 7 if (cent > 1850 or vol > 0.36) else 5  # Dientes / S, T, I
+                    elif cue_val == "H":
+                        target = 9 if vol > 0.48 else 5  # L, R
+                    elif cue_val == "E":
+                        target = 12 if vol > 0.58 else 11  # O redonda abierta
+                    elif cue_val == "C":
+                        target = 8 if vol < 0.42 else (9 if vol < 0.68 else 10)  # E, AE media
+                    elif cue_val == "D":
+                        target = 13 if vol < 0.55 else (14 if vol < 0.82 else 15)  # A abierta
+                    else:
+                        target = 9
+                else:
+                    if vol < 0.14:
+                        target = 2  # IDLE (M_BMP - boca cerrada)
+                    elif vol < 0.25:
+                        target = 4 if lrat > 0.65 else 3  # UW_1 o PART
+                    elif vol < 0.42:
+                        if cent > 1950:
+                            target = 7  # ISC (dientes / I, S, C)
+                        elif lrat > 0.67:
+                            target = 6  # UW_2 (U redonda cerrada)
+                        else:
+                            target = 5  # EDT (transición suave)
+                    elif vol < 0.72:
+                        if lrat > 0.65:
+                            target = 11  # OH_1 (O redonda media)
+                        elif cent > 2100:
+                            target = 7 if vol < 0.54 else 8  # ISC o AE_1 brillante
+                        else:
+                            target = 9 if vol < 0.56 else 10  # AE_2 o AE_3 conversacional
+                    else:
+                        if lrat > 0.63:
+                            target = 12  # OH_2 (O redonda abierta)
+                        elif vol < 0.85:
+                            target = 13  # AA_1
+                        elif vol < 0.98:
+                            target = 14  # AA_2
+                        else:
+                            target = 15  # AA_MAX
+
+                # Histéresis de 1 frame entre vocales abiertas (cierre bilabial a IDLE=2 es instantáneo)
                 if target != prev_idx and hold_count < 1 and target != 2 and prev_idx != 2:
                     target = prev_idx
                     hold_count += 1
@@ -1987,6 +2117,45 @@ class ToonPackager:
         mixed_audio_wav = clean_voice_wav + ".mixed.wav"
         final_audio_for_mux = self.mix_voice_with_bgm(clean_voice_wav, mixed_audio_wav, bgm_vol=0.18)
 
+        # 3. Modo Tele 3D Café 80's (Three.js WebGL Real) para Talento con Tarifa
+        use_3d_tv = (brand_preset == "tct") and (os.environ.get("TCT_DISABLE_3D_TV", "").strip() != "1")
+        if use_3d_tv:
+            try:
+                import cafe80s_tv_3d
+
+                payload_3d = self._build_studio_payload_dict(
+                    demos_dict={},
+                    votd_info={"source": "Talento con Tarifa", "reference": votd_ref, "text": script_text},
+                    focus_center_x=focus_center_x,
+                    show_hud=show_hud,
+                    show_top_banner=show_top_banner,
+                    show_subtitles_box=show_subtitles_box,
+                    show_digital_dust=show_digital_dust,
+                    glitch_fx=glitch_fx,
+                    brand_preset=brand_preset,
+                    scenes_timeline=scenes_timeline,
+                    show_lower_thirds=show_lower_thirds,
+                    show_outro_curtain=show_outro_curtain,
+                    total_duration=duration_sec,
+                )
+                print("   📺 Renderizando Tele 3D Café 80's en Three.js WebGL (Movimiento 3D + Tubo CRT)...")
+                ok_3d = cafe80s_tv_3d.render_threejs_cafe80s_video(
+                    packager=self,
+                    payload_dict=payload_3d,
+                    positions=positions,
+                    norm_rms=norm_rms,
+                    total_vframes=total_vframes,
+                    fps=fps,
+                    final_audio_for_mux=final_audio_for_mux,
+                    output_mp4_path=output_mp4_path,
+                )
+                if ok_3d:
+                    if os.path.exists(mixed_audio_wav) and mixed_audio_wav != clean_voice_wav:
+                        os.remove(mixed_audio_wav)
+                    return output_mp4_path
+            except Exception as e:
+                print(f"   ⚠️ Aviso motor Three.js ({e}), continuando con respaldo 3D perspectiva...")
+
         bg_full = self.bg_916.copy()
 
         mw, mh = int(self.W / 1.08), int(self.H / 1.08)
@@ -2163,6 +2332,20 @@ class ToonPackager:
                     viseme_jump=viseme_jump,
                 )
 
+            # 3b. Si use_3d_tv está activo (respaldo sin navegador), meter el video del personaje dentro de la Tele 3D JVC
+            if use_3d_tv:
+                import cafe80s_tv_3d
+
+                comp = cafe80s_tv_3d.render_cafe80s_tv_frame_cv2_fallback(
+                    self.cafe_80s_diner_bgr,
+                    comp[60:780, :],
+                    i,
+                    t_sec,
+                    vol,
+                    active_scene_idx,
+                    is_cta_scene=is_cta_scene,
+                )
+
             # 4. Vignette frontal + capas opcionales
             comp = self.apply_digital_dust_and_front_vignette(
                 comp,
@@ -2238,29 +2421,22 @@ class ToonPackager:
                 os.remove(tmp)
         return output_mp4_path
 
-    def build_realtime_studio_html(
+    def _build_studio_payload_dict(
         self,
         demos_dict,
         votd_info,
-        output_html_path,
-        focus_center_x=315,
-        show_hud=False,
-        show_top_banner=None,
-        show_subtitles_box=None,
-        show_digital_dust=None,
-        glitch_fx=True,
-        brand_preset="tct",
-        scenes=None,
-        show_lower_thirds=True,
-        show_outro_curtain=True,
+        focus_center_x,
+        show_hud,
+        show_top_banner,
+        show_subtitles_box,
+        show_digital_dust,
+        glitch_fx,
+        brand_preset,
+        scenes_timeline,
+        show_lower_thirds,
+        show_outro_curtain,
+        total_duration=28.0,
     ):
-        if show_top_banner is None:
-            show_top_banner = bool(show_hud)
-        if show_subtitles_box is None:
-            show_subtitles_box = bool(show_hud)
-        if show_digital_dust is None:
-            show_digital_dust = bool(show_hud)
-
         sprites_b64 = []
         for key, rgba in zip(self.sprite_keys, self.rgba_ladder):
             ok, buf = cv2.imencode(".webp", rgba, [int(cv2.IMWRITE_WEBP_QUALITY), 88])
@@ -2273,12 +2449,9 @@ class ToonPackager:
         ok_bg, buf_bg = cv2.imencode(".jpg", self.bg_916, [int(cv2.IMWRITE_JPEG_QUALITY), 88])
         bg_b64 = "data:image/jpeg;base64," + base64.b64encode(buf_bg.tobytes()).decode("ascii")
 
-        lcd_font_b64 = ""
-        if os.path.exists(self.lcd_font_path):
-            with open(self.lcd_font_path, "rb") as ff:
-                lcd_font_b64 = base64.b64encode(ff.read()).decode("ascii")
+        ok_diner, buf_diner = cv2.imencode(".jpg", self.cafe_80s_diner_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+        diner_b64 = "data:image/jpeg;base64," + base64.b64encode(buf_diner.tobytes()).decode("ascii")
 
-        # Solo incrustar BGM si self.bgm_path está explícitamente definido
         bgm_b64 = ""
         if self.bgm_path and os.path.exists(self.bgm_path):
             temp_bgm_clip = self.bgm_path + ".clip.mp3"
@@ -2319,43 +2492,120 @@ class ToonPackager:
             tct_cerebro_b64 = "data:image/png;base64," + base64.b64encode(c_buf.tobytes()).decode("ascii")
 
         demos_payload = {}
-        for k, info in demos_dict.items():
-            with open(info["wav"], "rb") as f:
-                demos_payload[k] = {
-                    "audio": "data:audio/wav;base64," + base64.b64encode(f.read()).decode("ascii"),
-                    "text": info["text"],
-                    "ref": info["ref"],
-                }
+        for k, info in (demos_dict or {}).items():
+            if os.path.exists(info.get("wav", "")):
+                with open(info["wav"], "rb") as f:
+                    demos_payload[k] = {
+                        "audio": "data:audio/wav;base64," + base64.b64encode(f.read()).decode("ascii"),
+                        "text": info["text"],
+                        "ref": info["ref"],
+                    }
+
+        return {
+            "ladder": sprites_b64,
+            "default_bg": bg_b64,
+            "cafe80s_diner_bg": diner_b64,
+            "bgm": bgm_b64,
+            "tct_logo_black": tct_black_b64,
+            "tct_logo_lime": tct_lime_b64,
+            "tct_cerebro": tct_cerebro_b64,
+            "demos": demos_payload,
+            "scenes": scenes_timeline,
+            "mouth_cues": self.last_mouth_cues,
+            "total_duration": total_duration,
+            "votd": votd_info,
+            "focus_center_x": focus_center_x,
+            "phonetic_mode": self.phonetic_mode,
+            "blend_mode": self.blend_mode,
+            "glitch_fx": bool(glitch_fx),
+            "show_tct_brand": (brand_preset == "tct"),
+            "show_lower_thirds": bool(show_lower_thirds),
+            "show_outro_curtain": bool(show_outro_curtain),
+            "show_top_banner": show_top_banner,
+            "show_subtitles_box": show_subtitles_box,
+            "show_digital_dust": show_digital_dust,
+            "hud_top_title": self.hud_top_title,
+            "hud_bottom_prefix": self.hud_bottom_prefix,
+            "closing_signature": self.closing_signature,
+        }
+
+    def build_realtime_studio_html(
+        self,
+        demos_dict,
+        votd_info,
+        output_html_path,
+        focus_center_x=315,
+        show_hud=False,
+        show_top_banner=None,
+        show_subtitles_box=None,
+        show_digital_dust=None,
+        glitch_fx=True,
+        brand_preset="tct",
+        scenes=None,
+        show_lower_thirds=True,
+        show_outro_curtain=True,
+    ):
+        if show_top_banner is None:
+            show_top_banner = bool(show_hud)
+        if show_subtitles_box is None:
+            show_subtitles_box = bool(show_hud)
+        if show_digital_dust is None:
+            show_digital_dust = bool(show_hud)
 
         demo1_txt = demos_dict.get("demo1", {}).get("text", "")
-        scenes_timeline = self._ensure_tct_scenes_timeline(scenes, demo1_txt, 28.0)
+        demo1_wav = demos_dict.get("demo1", {}).get("wav", "")
+        dur_est = 28.0
+        if demo1_wav and os.path.exists(demo1_wav):
+            try:
+                with wave.open(demo1_wav, "rb") as wf:
+                    dur_est = wf.getnframes() / float(wf.getframerate())
+                if not self.last_mouth_cues and self.phonetic_mode:
+                    self.last_mouth_cues = self.extract_rhubarb_cues(demo1_wav)
+            except Exception:
+                pass
 
-        payload_json = json.dumps(
-            {
-                "ladder": sprites_b64,
-                "default_bg": bg_b64,
-                "bgm": bgm_b64,
-                "tct_logo_black": tct_black_b64,
-                "tct_logo_lime": tct_lime_b64,
-                "tct_cerebro": tct_cerebro_b64,
-                "demos": demos_payload,
-                "scenes": scenes_timeline,
-                "votd": votd_info,
-                "focus_center_x": focus_center_x,
-                "phonetic_mode": self.phonetic_mode,
-                "blend_mode": self.blend_mode,
-                "glitch_fx": bool(glitch_fx),
-                "show_tct_brand": (brand_preset == "tct"),
-                "show_lower_thirds": bool(show_lower_thirds),
-                "show_outro_curtain": bool(show_outro_curtain),
-                "show_top_banner": show_top_banner,
-                "show_subtitles_box": show_subtitles_box,
-                "show_digital_dust": show_digital_dust,
-                "hud_top_title": self.hud_top_title,
-                "hud_bottom_prefix": self.hud_bottom_prefix,
-                "closing_signature": self.closing_signature,
-            }
+        scenes_timeline = self._ensure_tct_scenes_timeline(scenes, demo1_txt, dur_est)
+
+        lcd_font_b64 = ""
+        if os.path.exists(self.lcd_font_path):
+            with open(self.lcd_font_path, "rb") as ff:
+                lcd_font_b64 = base64.b64encode(ff.read()).decode("ascii")
+
+        payload_dict = self._build_studio_payload_dict(
+            demos_dict=demos_dict,
+            votd_info=votd_info,
+            focus_center_x=focus_center_x,
+            show_hud=show_hud,
+            show_top_banner=show_top_banner,
+            show_subtitles_box=show_subtitles_box,
+            show_digital_dust=show_digital_dust,
+            glitch_fx=glitch_fx,
+            brand_preset=brand_preset,
+            scenes_timeline=scenes_timeline,
+            show_lower_thirds=show_lower_thirds,
+            show_outro_curtain=show_outro_curtain,
+            total_duration=dur_est,
         )
+
+        if brand_preset == "tct" and os.environ.get("TCT_DISABLE_3D_TV", "").strip() != "1":
+            import cafe80s_tv_3d
+
+            three_js_path = os.path.join(self.assets_dir, "three.min.js")
+            three_js_code = ""
+            if os.path.exists(three_js_path):
+                with open(three_js_path, "r", encoding="utf-8", errors="ignore") as tf:
+                    three_js_code = tf.read()
+            html_3d = cafe80s_tv_3d.build_cafe80s_threejs_html(
+                payload_dict,
+                three_js_code=three_js_code,
+                lcd_font_b64=lcd_font_b64,
+                offline_render_mode=False,
+            )
+            with open(output_html_path, "w", encoding="utf-8") as f:
+                f.write(html_3d)
+            return output_html_path
+
+        payload_json = json.dumps(payload_dict)
 
         html = f"""<!DOCTYPE html>
 <html lang="es">
