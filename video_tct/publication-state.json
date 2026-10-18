@@ -231,5 +231,30 @@
         "id": "dcJIBIj0Zfc"
       }
     }
+  },
+  "edca6b5764dfaeb16465aae9b1a7599ab3d96bc386c6ddd743a3d0f48a1283ca": {
+    "source_url": "https://wwwhatsnew.com/2026/10/19/cuanta-energia-agua-gasta-pregunta-ia/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1924663208887584",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18125911543807797",
+        "phase": "publishing",
+        "id": "18147613321548107"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7698132104366426133",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "djdIQ5b6twM"
+      }
+    }
   }
 }
