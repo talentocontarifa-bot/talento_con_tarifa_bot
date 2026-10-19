@@ -28,32 +28,31 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_REF_WAV = os.path.join(THIS_DIR, "goku_ref_10s.wav")
 CACHE_DIR = os.path.join(THIS_DIR, "voice_cache", "chatterbox_goku")
 
-# Parámetros de expresividad emocional de Chatterbox
-EMOTION_EXAGGERATION = float(os.environ.get("CHATTERBOX_EXAGGERATION", "0.84"))
-EMOTION_CFG_WEIGHT = float(os.environ.get("CHATTERBOX_CFG_WEIGHT", "0.36"))
-EMOTION_TEMPERATURE = float(os.environ.get("CHATTERBOX_TEMPERATURE", "0.78"))
+# Parámetros de expresividad emocional de Chatterbox (equilibrados para evitar forcing EOS / colas arrastradas)
+EMOTION_EXAGGERATION = float(os.environ.get("CHATTERBOX_EXAGGERATION", "0.56"))
+EMOTION_CFG_WEIGHT = float(os.environ.get("CHATTERBOX_CFG_WEIGHT", "0.50"))
+EMOTION_TEMPERATURE = float(os.environ.get("CHATTERBOX_TEMPERATURE", "0.68"))
 
 
 def master_audio(raw_wav, out_path, ffmpeg_bin="ffmpeg"):
     """
-    Cadena DSP de Locución de Radio FM Comercial (100% FFmpeg nativo en GitHub Actions):
-    1. Filtro subsónico 75Hz.
-    2. Efecto proximidad de cabina (115Hz +4.5dB) + limpieza de encajonamiento (320Hz -2.8dB).
-    3. Presencia frontal (3200Hz +4.5dB) + brillo de estudio (7500Hz +3.5dB).
-    4. Doble etapa de compresión en serie (Leveler rápido 4.5:1 + Compresor denso de radio 6.5:1).
-    5. Normalización broadcast agresiva (-12.5 LUFS, True Peak -0.8dB, LRA=4).
+    Cadena DSP de Estudio Suavizada (100% FFmpeg nativo en GitHub Actions):
+    1. Filtro subsónico suave a 70Hz.
+    2. Cuerpo cálido moderado (125Hz +2.0dB) + limpieza ligera de encajonamiento (320Hz -1.5dB).
+    3. Presencia natural (3200Hz +2.0dB) + aire suave (7500Hz +1.5dB, lowpass abierto a 16kHz).
+    4. Una sola etapa de compresión suave (3.2:1) para conservar dinámica natural sin aplastar la voz.
+    5. Normalización broadcast limpia (-14.0 LUFS, True Peak -1.0dB, LRA=6).
     """
     ext = os.path.splitext(out_path)[1].lower()
     af_chain = (
-        "highpass=f=75:poles=2,"
-        "equalizer=f=115:width_type=q:width=1.1:g=4.5,"
-        "equalizer=f=320:width_type=q:width=1.8:g=-2.8,"
-        "equalizer=f=3200:width_type=q:width=1.2:g=4.5,"
-        "treble=g=3.5:f=7500,"
-        "lowpass=f=12500,"
-        "acompressor=threshold=-24dB:ratio=4.5:attack=3:release=60:knee=4:makeup=4dB,"
-        "acompressor=threshold=-16dB:ratio=6.5:attack=8:release=110:knee=3:makeup=4.5dB,"
-        "loudnorm=I=-12.5:TP=-0.8:LRA=4"
+        "highpass=f=70:poles=2,"
+        "equalizer=f=125:width_type=q:width=1.2:g=2.0,"
+        "equalizer=f=320:width_type=q:width=1.8:g=-1.5,"
+        "equalizer=f=3200:width_type=q:width=1.2:g=2.0,"
+        "treble=g=1.5:f=7500,"
+        "lowpass=f=16000,"
+        "acompressor=threshold=-20dB:ratio=3.2:attack=8:release=100:knee=4:makeup=2.5dB,"
+        "loudnorm=I=-14.0:TP=-1.0:LRA=6"
     )
     cmd = [ffmpeg_bin, "-y", "-i", raw_wav, "-af", af_chain, "-ac", "1"]
     if ext == ".wav":
@@ -82,7 +81,7 @@ def synthesize_batch(items, ref_wav_path=DEFAULT_REF_WAV, ffmpeg_bin="ffmpeg"):
         ext = os.path.splitext(out_path)[1].lower() or ".mp3"
         ref_tag = os.path.basename(ref_wav_path)
         h_key = hashlib.sha256(
-            f"goku_radio_v1|{ref_tag}|ex={EMOTION_EXAGGERATION}|cfg={EMOTION_CFG_WEIGHT}|{text}".encode("utf-8")
+            f"goku_radio_v2|{ref_tag}|ex={EMOTION_EXAGGERATION}|cfg={EMOTION_CFG_WEIGHT}|{text}".encode("utf-8")
         ).hexdigest()[:16]
         cached_file = os.path.join(CACHE_DIR, f"cloned_{h_key}{ext}")
 

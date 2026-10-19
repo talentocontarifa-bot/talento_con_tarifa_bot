@@ -189,10 +189,11 @@ ${historySection}
 
 REGLAS ESTRICTAS DE REDACCIÓN (CON CARNITA):
 1. Extensión: 2 párrafos cortos y contundentes (separados por línea en blanco).
-2. Párrafo 1 (El Hecho Técnico/Negocio): Entra directo con el nombre de la herramienta, modelo, protocolo o jugada empresarial y el dato duro más importante del artículo. Explica QUÉ hace técnicamente o cómo cambia la operación.
-3. Párrafo 2 (La Jugada Práctica): Diles exactamente qué flujo de trabajo, integración, ahorro o arquitectura pueden implementar o qué trampa deben evitar.
-4. PROHIBIDO USAR ESTOS CLICHÉS QUEMADOS: ${news.BANNED_CLICHES.map(c => `"${c}"`).join(', ')}. Tampoco inventes porcentajes falsos como "el 85% de las empresas".
-5. Usa máximo 2 emojis en todo el post. NO pongas hashtags ni links (el sistema los agrega después).
+2. Tono y Persona: Habla SIEMPRE de "tú" (tuteo directo, ágil y natural para Latinoamérica; PROHIBIDO hablar de "usted" como "diseñe", "implemente", "no caiga").
+3. Párrafo 1 (El Hecho Técnico/Negocio): Entra directo con el nombre de la herramienta, modelo, protocolo o jugada empresarial (puedes resaltar 2 o 3 términos clave con **negritas**) y el dato duro más importante del artículo. Explica QUÉ hace técnicamente o cómo cambia la operación.
+4. Párrafo 2 (La Jugada Práctica): Dile al lector de tú a tú qué flujo de trabajo, integración, ahorro o arquitectura puede implementar hoy mismo o qué trampa técnica debe evitar.
+5. PROHIBIDO USAR ESTOS CLICHÉS QUEMADOS: ${news.BANNED_CLICHES.map(c => `"${c}"`).join(', ')}. Tampoco inventes porcentajes falsos como "el 85% de las empresas".
+6. Usa máximo 2 emojis en todo el post. NO pongas hashtags ni links (el sistema los agrega después).
 
 💥 INSTRUCCIÓN DEL JEFE: "${customInstruction}" (Si NO dice "Ninguna", obedécela con prioridad absoluta).`;
 
@@ -225,7 +226,7 @@ REGLAS ESTRICTAS DE REDACCIÓN (CON CARNITA):
                     const data = await response.json();
                     if (response.ok) {
                         console.log(`✅ Copy generado exitosamente con Groq (${model})`);
-                        return data.choices[0].message.content;
+                        return news.formatMarkdownForSocial(data.choices[0].message.content);
                     } else {
                         throw new Error(data.error?.message || "Error de Groq");
                     }
@@ -253,7 +254,7 @@ REGLAS ESTRICTAS DE REDACCIÓN (CON CARNITA):
                 { text: userPrompt }
             ]);
             console.log(`✅ Copy generado exitosamente con Gemini (${modelName})`);
-            return result.response.text();
+            return news.formatMarkdownForSocial(result.response.text());
         } catch (err) {
             lastError = err;
             console.warn(`⚠️ Modelo Gemini ${modelName} agotado/no disponible: ${err.message}`);
@@ -267,8 +268,9 @@ REGLAS ESTRICTAS DE REDACCIÓN (CON CARNITA):
  */
 async function publishToMeta(message, url) {
     console.log("🌐 4. Publicando en Facebook...");
+    const formattedMsg = news.formatMarkdownForSocial(message);
     const response = await axios.post(`https://graph.facebook.com/v21.0/${PAGE_ID}/feed`, {
-        message: `${message}\n\n👉 Descubre el superpoder de la IA para tu local o negocio en https://talentocontarifa.lat\n#TalentoConTarifa #Automatizacion #IA #Startups`,
+        message: `${formattedMsg}\n\n👉 Descubre el superpoder de la IA para tu local o negocio en https://talentocontarifa.lat\n#TalentoConTarifa #Automatizacion #IA #Startups`,
         link: url,
         access_token: ACCESS_TOKEN
     }, { timeout: 30000 });

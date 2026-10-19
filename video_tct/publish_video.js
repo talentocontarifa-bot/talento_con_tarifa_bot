@@ -35,6 +35,7 @@ const { publishTargets } = require('./lib/publication');
 const { publishVideoToTikTok } = require('../tiktok_publisher');
 const { publishReelToInstagram, getInstagramAccountId } = require('../instagram_publisher');
 const { publishVideoToYouTube } = require('../youtube_publisher');
+const { formatMarkdownForSocial, stripMarkdown } = require('../news_sources');
 
 const VIDEO_PATH = path.join(__dirname, 'out', 'video_final_tct.mp4');
 const MANIFEST_PATH = path.join(__dirname, 'out', 'render-manifest.json');
@@ -57,23 +58,23 @@ function getMediaContent(rawData = null) {
   data = data || {};
 
   const scenes = Array.isArray(data.scenes) ? data.scenes : [];
-  const hook = [scenes[0]?.text1, scenes[0]?.text2].filter(Boolean).join(' — ').trim();
-  const topic = (data.topic || hook || 'IA para Emprendedores').trim();
+  const hook = stripMarkdown([scenes[0]?.text1, scenes[0]?.text2].filter(Boolean).join(' — ').trim());
+  const topic = stripMarkdown((data.topic || hook || 'IA para Emprendedores').trim());
   const title = topic.toLowerCase().includes('talento con tarifa')
     ? topic
     : `${topic} | Talento con Tarifa`;
   const shortTitle = title.length > 90 ? title.substring(0, 87) + '...' : title;
 
-  const narration = (
+  const narration = formatMarkdownForSocial((
     data.script ||
     scenes.map(s => s.voice_text).filter(Boolean).join(' ')
-  ).trim();
+  ).trim());
 
   const keyPoints = scenes
     .filter(s => s.type === 'image_text' && Array.isArray(s.key_points))
     .flatMap(s => s.key_points)
     .slice(0, 6)
-    .map(p => `✅ ${String(p).replace(/^\s*\d+[.)-]\s*/, '').trim()}`)
+    .map(p => `✅ ${formatMarkdownForSocial(String(p).replace(/^\s*\d+[.)-]\s*/, '').trim())}`)
     .join('\n');
 
   const hasValidSourceUrl =
@@ -82,7 +83,7 @@ function getMediaContent(rawData = null) {
     !data.source_url.includes(' | ');
 
   const blocks = [
-    hook ? `🔥 ${hook}` : `🔥 ${topic}`,
+    hook ? `🔥 ${formatMarkdownForSocial(`**${hook}**`)}` : `🔥 ${formatMarkdownForSocial(`**${topic}**`)}`,
     narration || null,
     keyPoints || null,
     hasValidSourceUrl ? `🔗 Fuente: ${data.source_url}` : null,

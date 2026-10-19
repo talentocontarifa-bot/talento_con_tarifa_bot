@@ -911,6 +911,67 @@ function getRecentHistorySummary(history = [], limit = 6) {
   return (history || []).filter(h => h && h.title).slice(-limit).reverse().map(h => h.title);
 }
 
+/**
+ * Convierte texto plano en Unicode Sans-Serif Bold (ej: "Cairn" -> "𝗖𝗮𝗶𝗿𝗻") para Facebook/Instagram/TikTok/YouTube,
+ * preservando tildes y ñ mediante descomposición NFD.
+ */
+function toUnicodeBold(str) {
+  return Array.from(String(str || '').normalize('NFD')).map(ch => {
+    const code = ch.codePointAt(0);
+    if (code >= 65 && code <= 90) return String.fromCodePoint(0x1D5D4 + (code - 65)); // A-Z
+    if (code >= 97 && code <= 122) return String.fromCodePoint(0x1D5EE + (code - 97)); // a-z
+    if (code >= 48 && code <= 57) return String.fromCodePoint(0x1D7EC + (code - 48)); // 0-9
+    return ch;
+  }).join('');
+}
+
+/**
+ * Convierte texto plano en Unicode Sans-Serif Italic (ej: "sandboxed" -> "𝘴𝘢𝘯𝘥𝘣𝘰𝘹𝘦𝘥") para redes sociales.
+ */
+function toUnicodeItalic(str) {
+  return Array.from(String(str || '').normalize('NFD')).map(ch => {
+    const code = ch.codePointAt(0);
+    if (code >= 65 && code <= 90) return String.fromCodePoint(0x1D608 + (code - 65)); // A-Z
+    if (code >= 97 && code <= 122) return String.fromCodePoint(0x1D622 + (code - 97)); // a-z
+    return ch;
+  }).join('');
+}
+
+/**
+ * Intérprete de Markdown (**negrita** y *cursiva*) para publicaciones en redes sociales (Facebook, IG, TikTok, YouTube).
+ * Transforma **texto** -> 𝘁𝗲𝘅𝘁𝗼 y *texto* -> 𝘵𝘦𝘹𝘵𝘰, eliminando asteriscos huérfanos o encabezados #.
+ */
+function formatMarkdownForSocial(text) {
+  if (!text) return '';
+  return String(text)
+    // **negrita** o __negrita__ -> Unicode Sans-Serif Bold
+    .replace(/\*\*([^*\n]+?)\*\*/g, (_, inner) => toUnicodeBold(inner))
+    .replace(/__([^_\n]+?)__/g, (_, inner) => toUnicodeBold(inner))
+    // *cursiva* (sin afectar listas al inicio de línea "* item") -> Unicode Sans-Serif Italic
+    .replace(/(^|[^\w*])\*([^*\s][^*\n]*?)\*(?=$|[^\w*])/gm, (_, prefix, inner) => `${prefix}${toUnicodeItalic(inner)}`)
+    // `código` -> Unicode Bold limpio
+    .replace(/`([^`\n]+?)`/g, (_, inner) => toUnicodeBold(inner))
+    // Quitar encabezados markdown al inicio de línea (### Título -> Título en negrita)
+    .replace(/^\s*#{1,6}\s+(.+)$/gm, (_, heading) => toUnicodeBold(heading.trim()))
+    // Limpiar cualquier ** residual mal cerrado
+    .replace(/\*{2,}/g, '')
+    .trim();
+}
+
+/**
+ * Limpia marcas Markdown (**negrita**, *cursiva*, `código`) dejando texto plano puro para locución TTS y gráficos.
+ */
+function stripMarkdown(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/\*\*([^*\n]+?)\*\*/g, '$1')
+    .replace(/__([^_\n]+?)__/g, '$1')
+    .replace(/(^|[^\w*])\*([^*\s][^*\n]*?)\*(?=$|[^\w*])/gm, '$1$2')
+    .replace(/`([^`\n]+?)`/g, '$1')
+    .replace(/\*{2,}/g, '')
+    .trim();
+}
+
 module.exports = {
   HISTORY_PATH, HISTORY_MAX, DEFAULT_MAX_AGE_HOURS, USER_AGENT, JINA_REMOVE_SELECTOR,
   DEFAULT_FEEDS, AI_KEYWORDS, MEAT_KEYWORDS, FLUFF_KEYWORDS, BANNED_CLICHES, EDITORIAL_ANGLES,
@@ -922,7 +983,8 @@ module.exports = {
   detectGarbage, isUsefulImageUrl, dedupeImages, extractImagesFromHtml, extractOgImage, imagesFromMarkdown,
   extractArticleBodyHtml, getFullRssText, fetchJina, extractWithJina, extractArticleContent, pickArticle,
   isContentRequestIssue, issueInstruction,
-  extractHardFacts, selectEditorialAngle, getRecentHistorySummary
+  extractHardFacts, selectEditorialAngle, getRecentHistorySummary,
+  toUnicodeBold, toUnicodeItalic, formatMarkdownForSocial, stripMarkdown
 };
 
 // CLI: fusionar historiales (lo usa .github/scripts/persist_state.sh para resolver conflictos de rebase)

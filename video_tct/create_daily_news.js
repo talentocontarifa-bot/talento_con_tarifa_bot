@@ -305,8 +305,8 @@ Fuente: ${queueContext.link}
 
   console.log(`🎯 Ángulo de video: [${angle.name}] | Métrica detectada: ${hardFacts.primaryMetric.label}`);
 
-  const prompt = `Actúa como Director Técnico y Estratega B2B de "Talento con Tarifa".
-Tu misión: convertir la noticia del día en un guion de video vertical con sustancia técnica real ("con carnita"), datos concretos y aplicación práctica de negocio.
+  const prompt = `Actúa como Director Técnico y Locutor Estelar de "Talento con Tarifa".
+Tu misión: convertir la noticia del día en un guion de video vertical en ESPAÑOL con sustancia técnica real ("con carnita"), datos concretos y un ritmo oral conversacional, fluido y natural (como si se lo contaras de tú a tú a un colega builder o dueño de negocio, sin sonar a traducción robótica ni folleto corporativo).
 
 ÁNGULO EDITORIAL OBLIGATORIO: "${angle.name}"
 Directriz: ${angle.directive}
@@ -314,27 +314,27 @@ ${contextSection}${factsSection}${historySection}
 
 PROHIBIDO USAR ESTAS FRASES QUEMADAS (penalización crítica si aparecen):
 ${news.BANNED_CLICHES.map(c => `- "${c}"`).join('\n')}
-- Tampoco uses el porcentaje inventado "85%" ni cierres la escena 4 diciendo "cobra por tu valor / no compitas por precio".
+- Tampoco uses el porcentaje inventado "85%", ni hables de "usted" (usa SIEMPRE tuteo natural: "tú"), ni cierres la escena 4 diciendo "cobra por tu valor / no compitas por precio".
 
 Debes crear exactamente 5 escenas en este orden:
-1. "title": Gancho técnico/directo sobre la noticia real (entra directo con el nombre de la tecnología, empresa o hallazgo, sin saludos genéricos). Requiere:
-   - 'text1' y 'text2' (máximo 12 letras cada uno, MAYÚSCULAS, ej: nombre del modelo/empresa + acción clave).
+1. "title": Gancho técnico/directo sobre la noticia real (entra directo con el nombre de la tecnología, empresa o hallazgo, con ritmo hablado natural). Requiere:
+   - 'text1' y 'text2' (máximo 12 letras cada uno, MAYÚSCULAS, en español, ej: nombre del modelo/empresa + acción clave).
    - 'tag': categoría específica del ángulo (ej: "${angle.tag}").
-   - 'voice_text': frase hablada exacta con el hecho central de la noticia (13-18 palabras en español neutro).
+   - 'voice_text': frase hablada fluida y directa con el hecho central de la noticia (13-18 palabras en español neutro).
    - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
 2. "image_text": Desglose técnico / mecánico de la noticia. Requiere:
    - 'title': titular de lo que hace o cambia (máx 22 letras, MAYÚSCULAS).
    - 'key_points': array de EXACTAMENTE 3 datos o mecanismos concretos del artículo (máx 5 palabras cada uno, sin clichés).
-   - 'voice_text': frase hablada exacta explicando cómo funciona o qué resuelve (15-22 palabras).
+   - 'voice_text': frase hablada natural explicando cómo funciona o qué resuelve (15-22 palabras).
    - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
 3. "big_percentage": El DATO DURO o MÉTRICA REAL del artículo. Requiere:
    - 'metric': string corto (máx 6 caracteres) con la cifra o insignia real del artículo (ej: "${hardFacts.primaryMetric.label}", "3.5X", "$20/M", "OPEN", "API", "66%"). Si hay un porcentaje real en la nota, pon también 'number' con el entero; si NO es porcentaje, pon 'number': null y usa 'metric'.
    - 'label': qué significa esa cifra o hallazgo en el artículo (máx 22 letras).
-   - 'voice_text': frase hablada exacta explicando el dato duro real del artículo (13-18 palabras).
+   - 'voice_text': frase hablada natural explicando el dato duro real del artículo (13-18 palabras).
    - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
 4. "image_text": La Jugada Práctica / Arquitectura aplicable. Requiere:
    - 'title': titular táctico específico al tema de hoy (máx 22 letras, MAYÚSCULAS; PROHIBIDO poner "COBRA POR TU VALOR").
-   - 'voice_text': recomendación accionable y específica derivada de esta noticia para quien construye o dirige un negocio (14-20 palabras).
+   - 'voice_text': recomendación accionable y directa (hablando de "tú") derivada de esta noticia para quien construye o dirige un negocio (14-20 palabras).
    - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
 5. "cta": Cierre y llamado a la acción fijo de marca. Requiere:
    - 'headline': "¿LISTO PARA DOMINAR?"
@@ -344,10 +344,11 @@ Debes crear exactamente 5 escenas en este orden:
    - 'subtitle': "Visita talentocontarifa.lat y escala tu negocio."
 
 Reglas de Formato:
-1. Todos los números que deban leerse en 'voice_text' escríbelos de forma natural para locución en español (pero en 'subtitle', 'key_points' y 'metric' usa dígitos cortos).
-2. 'text1', 'text2' y los 'title' van en MAYÚSCULAS y respetan estrictamente el límite de caracteres.
+1. Incluye en la raíz del JSON el campo "topic" con el titular de la noticia SIEMPRE traducido o redactado en ESPAÑOL atractivo (máx 80 caracteres, sin inglés crudo).
+2. Todos los números o siglas de unidades que deban leerse en 'voice_text' escríbelos en palabras para locución fluida en español (ej: "ciento veintiocho gigas", " veinte dólares", "tres punto cinco veces"), pero en 'subtitle', 'key_points' y 'metric' usa dígitos cortos.
+3. No pongas asteriscos (**) dentro de 'voice_text', 'subtitle', 'title' ni 'key_points'.
 
-Responde ÚNICAMENTE con un objeto JSON válido con las claves "layout_type": "neo_brutalist" y "scenes": [ ...5 escenas... ].`;
+Responde ÚNICAMENTE con un objeto JSON válido con las claves "topic": "Titular en español", "layout_type": "neo_brutalist" y "scenes": [ ...5 escenas... ].`;
 
   // 1. Intentar con Groq si está disponible
   if (process.env.GROQ_API_KEY) {
@@ -759,6 +760,17 @@ async function main() {
   try {
     // PASO 1: Gemini genera el contenido y se restaura el cierre oficial de marca
     const rawData = await generateScriptAndScenes();
+    if (Array.isArray(rawData?.scenes)) {
+      rawData.scenes = rawData.scenes.map(s => ({
+        ...s,
+        text1: s.text1 ? news.stripMarkdown(s.text1) : s.text1,
+        text2: s.text2 ? news.stripMarkdown(s.text2) : s.text2,
+        title: s.title ? news.stripMarkdown(s.title) : s.title,
+        voice_text: s.voice_text ? news.stripMarkdown(s.voice_text) : s.voice_text,
+        subtitle: s.subtitle ? news.stripMarkdown(s.subtitle) : s.subtitle,
+        key_points: Array.isArray(s.key_points) ? s.key_points.map(k => news.stripMarkdown(k)) : s.key_points
+      }));
+    }
     const data = restoreContactEnding(rawData);
 
     // PASO 2: Generar voz sincronizada por escenas y medir timestamps exactos
@@ -766,9 +778,10 @@ async function main() {
 
     // PASO 3: Guardar el JSON final para Remotion y news_data.js para HyperFrames
     const defaultHook = [timelineScenes[0]?.text1, timelineScenes[0]?.text2].filter(Boolean).join(' — ');
+    const resolvedTopic = news.stripMarkdown(rawData?.topic || defaultHook || processedNewsTitle || 'IA para Emprendedores');
     const newsData = {
       preview_only: false,
-      topic: processedNewsTitle || defaultHook || 'IA para Emprendedores',
+      topic: resolvedTopic,
       source_url: processedNewsLink || null,
       script: timelineScenes.map(s => s.voice_text).filter(Boolean).join(' '),
       theme_color: BRAND_COLOR,

@@ -237,3 +237,16 @@ test('meatScore premia sustancia técnica/B2B y penaliza chisme/policiales; extr
   assert.equal(angle1.id, 'tactical_tool');
 });
 
+test('formatMarkdownForSocial interpreta **negritas** y *cursivas* a Unicode y stripMarkdown limpia texto TTS', () => {
+  const raw = 'Un atacante usó **Cairn** en entornos *sandboxed* durante **23 horas**.';
+  const formatted = ns.formatMarkdownForSocial(raw);
+  assert.ok(!formatted.includes('**'), 'No debe dejar ** crudos');
+  assert.ok(!formatted.includes('*sandboxed*'), 'No debe dejar *cursiva* cruda');
+  assert.ok(formatted.includes('𝗖𝗮𝗶𝗿𝗻'), 'Debe convertir **Cairn** a Unicode Sans-Serif Bold');
+  assert.ok(formatted.includes('𝟮𝟯 𝗵𝗼𝗿𝗮𝘀'), 'Debe convertir **23 horas** a Unicode Sans-Serif Bold');
+  assert.ok(formatted.includes('𝘴𝘢𝘯𝘥𝘣𝘰𝘹𝘦𝘥'), 'Debe convertir *sandboxed* a Unicode Sans-Serif Italic');
+
+  const plain = ns.stripMarkdown(raw);
+  assert.equal(plain, 'Un atacante usó Cairn en entornos sandboxed durante 23 horas.');
+});
+
