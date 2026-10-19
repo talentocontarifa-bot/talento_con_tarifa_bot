@@ -37,7 +37,7 @@ for attempt in 1 2 3 4 5; do
     exit 0
   fi
   echo "⚠️ Push rechazado (intento $attempt). Rebase contra origin/${branch}..."
-  if ! git pull --rebase origin "$branch"; then
+  if ! git pull --rebase --autostash origin "$branch"; then
     conflicted="$(git diff --name-only --diff-filter=U)"
     if [ "$conflicted" = "published_news.json" ] && [ -f "$ours_history" ]; then
       # Durante un rebase, --ours es la versión remota: le fusionamos nuestras entradas
