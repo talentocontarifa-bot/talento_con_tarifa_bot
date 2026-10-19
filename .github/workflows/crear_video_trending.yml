@@ -62,11 +62,24 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Instalar herramientas del sistema
+      - name: Caché de pesos locales Chatterbox Multilingual TTS (~2.1 GB)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface/hub
+            toon_host/01/voice_cache/chatterbox_goku
+          key: chatterbox-goku-v1-${{ hashFiles('toon_host/01/clone_voice_tct.py') }}
+          restore-keys: |
+            chatterbox-goku-v1-
+
+      - name: Instalar herramientas del sistema y Chatterbox TTS Local
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg unzip curl
-          pip install edge-tts opencv-python-headless numpy pillow playwright
+          pip install --upgrade pip
+          pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install --no-deps chatterbox-tts
+          pip install edge-tts opencv-python-headless numpy pillow playwright librosa s3tokenizer resemble-perth conformer==0.3.2 safetensors pyloudnorm omegaconf pykakasi==2.3.0 diffusers==0.29.0 transformers huggingface-hub
           playwright install --with-deps chromium
           curl -fsSL https://github.com/DanielSWolf/rhubarb-lip-sync/releases/download/v1.13.0/Rhubarb-Lip-Sync-1.13.0-Linux.zip -o /tmp/rhubarb.zip
           sudo unzip -q /tmp/rhubarb.zip -d /opt/rhubarb

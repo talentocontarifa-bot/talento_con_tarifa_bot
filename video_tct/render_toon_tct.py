@@ -108,20 +108,62 @@ def main():
 
     os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
 
-    # 2. Preparar el audio de voz limpia (reutilizar public/news_voice.mp3 si create_daily_news.js ya lo creó, o sintetizar por escena)
+    # 2. Preparar el audio de voz limpia (reutilizar public/news_voice.mp3 si create_daily_news.js ya lo creó, o clonar con Chatterbox Local)
     if os.path.exists(args.voice) and os.path.getsize(args.voice) > 1000:
         print(f"🎙️ Usando narración existente de Talento con Tarifa: {args.voice}")
         clean_wav = packager.ensure_pcm_wav(args.voice)
     else:
-        print("🎙️ Sintetizando narración por escena con ElevenLabs...")
+        print("🎙️ Clonando narración por escena con Chatterbox Local (Rufino_1)...")
         clean_wav = os.path.join(VIDEO_TCT_DIR, "out", "toon_voice.wav")
-        scenes = packager.synthesize_scenes_voice(
-            scenes,
-            clean_wav,
-            voice_id=os.environ.get("ELEVENLABS_VOICE_ID", voice_cfg.get("voice_id", "TX3LPaxmHKxFdv7VOQHJ")),
-            model_id=os.environ.get("ELEVENLABS_MODEL_ID", voice_cfg.get("model_id", "eleven_v4_turbo")),
-            dsp_preset=voice_cfg.get("dsp_preset", "studio_broadcast"),
-        )
+        try:
+            import wave
+            import numpy as np
+            import clone_voice_tct
+
+            temp_dir = os.path.join(VIDEO_TCT_DIR, "temp_voice")
+            os.makedirs(temp_dir, exist_ok=True)
+            batch_items = []
+            for idx, sc in enumerate(scenes):
+                txt = sc.get("voice_text") or sc.get("text") or ""
+                out_w = os.path.join(temp_dir, f"toon_sc_{idx+1}.wav")
+                batch_items.append({"text": txt, "output": out_w})
+
+            clone_voice_tct.synthesize_batch(batch_items)
+            sr = 24000
+            pause_samples = np.zeros(int(0.40 * sr), dtype=np.int16)
+            tail_samples = np.zeros(int(1.50 * sr), dtype=np.int16)
+            all_pcm = []
+            cur_time = 0.0
+            for idx, sc in enumerate(scenes):
+                out_w = batch_items[idx]["output"]
+                with wave.open(out_w, "rb") as wf:
+                    pcm = np.frombuffer(wf.readframes(wf.getnframes()), dtype=np.int16)
+                dur = len(pcm) / float(sr)
+                sc["start"] = round(cur_time, 3)
+                sc["audio_duration"] = round(dur, 3)
+                sc["end"] = round(cur_time + dur, 3)
+                all_pcm.append(pcm)
+                if idx < len(scenes) - 1:
+                    all_pcm.append(pause_samples)
+                    cur_time += dur + 0.40
+                else:
+                    all_pcm.append(tail_samples)
+                    cur_time += dur + 1.50
+            full_pcm = np.concatenate(all_pcm)
+            with wave.open(clean_wav, "wb") as wf_out:
+                wf_out.setnchannels(1)
+                wf_out.setsampwidth(2)
+                wf_out.setframerate(sr)
+                wf_out.writeframes(full_pcm.tobytes())
+        except Exception as e:
+            print(f"⚠️ Aviso Chatterbox Local ({e}), usando fallback ToonPackager...")
+            scenes = packager.synthesize_scenes_voice(
+                scenes,
+                clean_wav,
+                voice_id=os.environ.get("ELEVENLABS_VOICE_ID", voice_cfg.get("voice_id", "TX3LPaxmHKxFdv7VOQHJ")),
+                model_id=os.environ.get("ELEVENLABS_MODEL_ID", voice_cfg.get("model_id", "eleven_v4_turbo")),
+                dsp_preset=voice_cfg.get("dsp_preset", "studio_broadcast"),
+            )
 
     show_lower_thirds = not args.no_lower_thirds
     show_outro_curtain = not args.no_outro

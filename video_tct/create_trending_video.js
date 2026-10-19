@@ -353,10 +353,35 @@ async function synthesizeSnippet(text, targetPath) {
 }
 
 async function generateVoice(scenes) {
+  const cloneScript = path.join(__dirname, '..', 'toon_host', '01', 'clone_voice_tct.py');
+  if (process.env.DISABLE_CHATTERBOX !== '1' && fs.existsSync(cloneScript)) {
+    try {
+      const { execFileSync } = require('child_process');
+      const tempDir = path.join(__dirname, 'temp_voice');
+      if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+      const batchItems = scenes.map((sc, i) => {
+        const target = path.join(__dirname, 'public', `voice_scene_${i + 1}.mp3`);
+        try { if (fs.existsSync(target)) fs.unlinkSync(target); } catch (e) {}
+        return { text: sanitizeTtsText(sc.voice_text || ''), output: target };
+      });
+      const batchJsonPath = path.join(tempDir, 'chatterbox_trending_batch.json');
+      fs.writeFileSync(batchJsonPath, JSON.stringify(batchItems, null, 2));
+      const pythonBin = process.env.PYTHON_PATH || 'python';
+      execFileSync(pythonBin, [cloneScript, '--batch-json', batchJsonPath], {
+        stdio: 'inherit',
+        timeout: 900000
+      });
+    } catch (cloneErr) {
+      console.warn(`⚠️ Chatterbox local no disponible o falló (${cloneErr.message}), usando fallback TTS...`);
+    }
+  }
+
   const durations = [];
   for (let i = 0; i < scenes.length; i++) {
     const target = path.join(__dirname, 'public', `voice_scene_${i + 1}.mp3`);
-    await synthesizeSnippet(scenes[i].voice_text, target);
+    if (!fs.existsSync(target) || fs.statSync(target).size <= 1000) {
+      await synthesizeSnippet(scenes[i].voice_text, target);
+    }
     durations.push(await getAudioDuration(target));
   }
   const timeline = createTimeline(scenes, durations);

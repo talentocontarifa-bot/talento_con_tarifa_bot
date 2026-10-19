@@ -18,13 +18,7 @@ const ELEVENLABS_MODEL_ID = process.env.ELEVENLABS_MODEL_ID || 'eleven_v4_turbo'
 const FPS = 30;
 const BRAND_COLOR = '#CCFF00'; // Limón TCT (identidad Neo-Brutalista bloqueada)
 
-const FEEDS = [
-  'https://www.xataka.com/tag/inteligencia-artificial/rss2.xml',
-  'https://www.entrepreneur.com/es/feed',
-  'https://feeds.weblogssl.com/xataka2',
-  'https://feeds.weblogssl.com/genbeta',
-  'https://wwwhatsnew.com/feed/'
-];
+const FEEDS = news.DEFAULT_FEEDS;
 const HISTORY_CHANNEL = 'video_news';
 
 // Variables globales para la noticia procesada y sus imágenes reales
@@ -271,72 +265,89 @@ function extractWithScrapling(url) {
 // 1. GEMINI — Genera guion + estructura de escenas
 // ─────────────────────────────────────────
 async function generateScriptAndScenes() {
-  console.log("🤖 [1/4] Consultando a Gemini para guion y estructura de escenas...");
+  console.log("🤖 [1/4] Consultando a Gemini/Groq para guion y estructura de escenas...");
 
   const queueContext = await getTodaysContext();
+  const rawMessage = queueContext?.message || '';
+  const sharedHistory = news.loadHistory();
+  const angle = news.selectEditorialAngle({ title: processedNewsTitle }, rawMessage, sharedHistory);
+  const hardFacts = news.extractHardFacts(`${processedNewsTitle}. ${rawMessage}`);
+  const recentTitles = news.getRecentHistorySummary(sharedHistory, 5);
+
   if (DRY_RUN) {
     console.log('\n🧪 DRY_RUN: deteniendo antes del LLM.');
     console.log(`   Título: ${processedNewsTitle}`);
     console.log(`   URL: ${queueContext?.link || '(fallback genérico)'}`);
+    console.log(`   Ángulo editorial: [${angle.id}] ${angle.name}`);
+    console.log(`   Métrica/Dato primario: ${hardFacts.primaryMetric.label} — "${hardFacts.primaryMetric.context}"`);
     console.log(`   Imágenes: ${extractedArticleImages.length}`);
-    console.log(`   Texto (primeros 500):\n-----------------\n${(queueContext?.message || '').substring(0, 500)}\n-----------------`);
+    console.log(`   Texto (primeros 500):\n-----------------\n${rawMessage.substring(0, 500)}\n-----------------`);
     process.exit(0);
   }
   const contextSection = queueContext
-    ? `\nCONTEXTO DEL DÍA (úsalo como base del video — adapta el tono y la idea central):
+    ? `\nNOTICIA DEL DÍA (puede estar en inglés o español; tu guion SIEMPRE va en español):
+Título: ${processedNewsTitle}
+Contenido:
 """
 ${queueContext.message}
 """
 Fuente: ${queueContext.link}
 `
-    : `\nCONTEXTO DEL DÍA: No hay posts programados. Usa una tendencia real y verificable de IA 2025 para emprendedores latinoamericanos.\n`;
+    : `\nCONTEXTO DEL DÍA: Usa un caso técnico real de agentes autónomos con MCP (Model Context Protocol) y automatización con n8n para operaciones B2B.\n`;
 
-  const prompt = `Actúa como director de arte y curador de "Talento con Tarifa".
-Tu misión: convertir el contexto del día en un video narrativo de impacto para emprendedores latinoamericanos.
-${contextSection}
-Tienes 4 tipos de escena (debes crear exactamente 5 escenas en este orden):
-1. "title": Inicio impactante. Requiere:
-   - 'text1' y 'text2' (máximo 12 letras cada uno, mayúsculas).
-   - 'tag': frase corta de contexto (ej: "✦ INTELIGENCIA ARTIFICIAL ✦").
-   - 'voice_text': frase hablada exacta (12-16 palabras en español neutro de locutor profesional).
+  const factsSection = hardFacts.facts.length > 0
+    ? `\nDATOS DUROS REALES EXTRAÍDOS DEL ARTÍCULO (DEBES usarlos en las escenas 2 y 3; NO inventes porcentajes):\n- ${hardFacts.facts.join('\n- ')}\nMétrica sugerida para Escena 3: "${hardFacts.primaryMetric.label}" (${hardFacts.primaryMetric.context})`
+    : `\nREGLA DE DATOS: Usa únicamente los hechos, herramientas y cifras reales mencionados en el artículo. PROHIBIDO inventar "85%".`;
+
+  const historySection = recentTitles.length > 0
+    ? `\nTEMAS RECIENTES YA CUBIERTOS (NO repitas las mismas frases de entrada ni el mismo enfoque):\n- ${recentTitles.join('\n- ')}`
+    : '';
+
+  console.log(`🎯 Ángulo de video: [${angle.name}] | Métrica detectada: ${hardFacts.primaryMetric.label}`);
+
+  const prompt = `Actúa como Director Técnico y Estratega B2B de "Talento con Tarifa".
+Tu misión: convertir la noticia del día en un guion de video vertical con sustancia técnica real ("con carnita"), datos concretos y aplicación práctica de negocio.
+
+ÁNGULO EDITORIAL OBLIGATORIO: "${angle.name}"
+Directriz: ${angle.directive}
+${contextSection}${factsSection}${historySection}
+
+PROHIBIDO USAR ESTAS FRASES QUEMADAS (penalización crítica si aparecen):
+${news.BANNED_CLICHES.map(c => `- "${c}"`).join('\n')}
+- Tampoco uses el porcentaje inventado "85%" ni cierres la escena 4 diciendo "cobra por tu valor / no compitas por precio".
+
+Debes crear exactamente 5 escenas en este orden:
+1. "title": Gancho técnico/directo sobre la noticia real (entra directo con el nombre de la tecnología, empresa o hallazgo, sin saludos genéricos). Requiere:
+   - 'text1' y 'text2' (máximo 12 letras cada uno, MAYÚSCULAS, ej: nombre del modelo/empresa + acción clave).
+   - 'tag': categoría específica del ángulo (ej: "${angle.tag}").
+   - 'voice_text': frase hablada exacta con el hecho central de la noticia (13-18 palabras en español neutro).
    - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
-2. "image_text": Imagen del artículo con IDEAS CLAVE superpuestas. Requiere:
-   - 'title': titular de la escena (máx 22 letras, mayúsculas).
-   - 'key_points': array de EXACTAMENTE 3 frases de impacto (máx 5 palabras cada una).
-   - 'voice_text': frase hablada exacta que menciona los 3 puntos (15-20 palabras).
+2. "image_text": Desglose técnico / mecánico de la noticia. Requiere:
+   - 'title': titular de lo que hace o cambia (máx 22 letras, MAYÚSCULAS).
+   - 'key_points': array de EXACTAMENTE 3 datos o mecanismos concretos del artículo (máx 5 palabras cada uno, sin clichés).
+   - 'voice_text': frase hablada exacta explicando cómo funciona o qué resuelve (15-22 palabras).
    - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
-3. "big_percentage": Estadística gigante del mercado. Requiere:
-   - 'number': porcentaje numérico real (1-99).
-   - 'label': texto descriptivo de la cifra (máx 20 letras).
-   - 'voice_text': frase hablada exacta explicando la estadística (12-16 palabras).
+3. "big_percentage": El DATO DURO o MÉTRICA REAL del artículo. Requiere:
+   - 'metric': string corto (máx 6 caracteres) con la cifra o insignia real del artículo (ej: "${hardFacts.primaryMetric.label}", "3.5X", "$20/M", "OPEN", "API", "66%"). Si hay un porcentaje real en la nota, pon también 'number' con el entero; si NO es porcentaje, pon 'number': null y usa 'metric'.
+   - 'label': qué significa esa cifra o hallazgo en el artículo (máx 22 letras).
+   - 'voice_text': frase hablada exacta explicando el dato duro real del artículo (13-18 palabras).
    - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
-4. "image_text": Segunda imagen / revelación estratégica. Requiere:
-   - 'title': titular de impacto (máx 22 letras, mayúsculas).
-   - 'voice_text': frase hablada exacta de reflexión o estrategia (12-16 palabras).
+4. "image_text": La Jugada Práctica / Arquitectura aplicable. Requiere:
+   - 'title': titular táctico específico al tema de hoy (máx 22 letras, MAYÚSCULAS; PROHIBIDO poner "COBRA POR TU VALOR").
+   - 'voice_text': recomendación accionable y específica derivada de esta noticia para quien construye o dirige un negocio (14-20 palabras).
    - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
-5. "cta": Cierre y llamado a la acción. Requiere:
-   - 'headline': titular de cierre ("¿LISTO PARA DOMINAR?").
-   - 'sub': bajada explicativa ("El superpoder de la IA para tu local o negocio.").
-   - 'btn': "TALENTOCONTARIFA.LAT".
+5. "cta": Cierre y llamado a la acción fijo de marca. Requiere:
+   - 'headline': "¿LISTO PARA DOMINAR?"
+   - 'sub': "El superpoder de la IA para tu local o negocio."
+   - 'btn': "TALENTOCONTARIFA.LAT"
    - 'voice_text': "Este contenido fue creado y publicado de manera automática con inteligencia artificial. Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento. Conéctate con nosotros en talentocontarifa punto lat."
    - 'subtitle': "Visita talentocontarifa.lat y escala tu negocio."
 
-Reglas Obligatorias:
-1. La identidad visual es fija (Limón #CCFF00 / Negro / Off-White): NO elijas colores.
-2. Cada escena DEBE tener su propio 'voice_text' sincronizado con el contenido visual mostrado.
-3. 'text1', 'text2' y los 'title' van en MAYÚSCULAS y respetan los límites de letras (se leen en un celular).
+Reglas de Formato:
+1. Todos los números que deban leerse en 'voice_text' escríbelos de forma natural para locución en español (pero en 'subtitle', 'key_points' y 'metric' usa dígitos cortos).
+2. 'text1', 'text2' y los 'title' van en MAYÚSCULAS y respetan estrictamente el límite de caracteres.
 
-Responde ÚNICAMENTE con JSON válido:
-{
-  "layout_type": "neo_brutalist",
-  "scenes": [
-    { "type": "title", "text1": "AGENTES IA", "text2": "NUEVA ERA", "tag": "✦ REVOLUCIÓN TECNOLÓGICA ✦", "voice_text": "¡Atención emprendedor! Los agentes de inteligencia artificial llegaron para cambiar todas las reglas del juego.", "subtitle": "¡Atención emprendedor! Los agentes de IA cambiaron las reglas." },
-    { "type": "image_text", "title": "AUTOMATIZACIÓN EXTREMA", "key_points": ["Multiplican tu alcance", "Operan 24 horas continuas", "Reducen costos operativos"], "voice_text": "Automatización extrema: multiplican tu alcance, operan veinticuatro siete y reducen tus costos operativos.", "subtitle": "Automatización extrema: multiplican tu alcance y operan 24/7." },
-    { "type": "big_percentage", "number": 85, "label": "Empresas Adaptadas", "voice_text": "El ochenta y cinco por ciento de las empresas líderes en el mercado ya integraron agentes autónomos a sus equipos.", "subtitle": "El 85% de las empresas líderes ya integraron agentes autónomos." },
-    { "type": "image_text", "title": "COBRA POR TU VALOR", "voice_text": "Quienes dominan esta tecnología no compiten por precio: cobran por el verdadero valor de su talento.", "subtitle": "No compitas por precio: cobra por el valor de tu talento." },
-    { "type": "cta", "headline": "¿LISTO PARA DOMINAR?", "sub": "El superpoder de la IA para tu local o negocio.", "btn": "TALENTOCONTARIFA.LAT", "voice_text": "Este contenido fue creado y publicado de manera automática con inteligencia artificial. Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento. Conéctate con nosotros en talentocontarifa punto lat.", "subtitle": "Visita talentocontarifa.lat y escala tu negocio." }
-  ]
-}`;
+Responde ÚNICAMENTE con un objeto JSON válido con las claves "layout_type": "neo_brutalist" y "scenes": [ ...5 escenas... ].`;
 
   // 1. Intentar con Groq si está disponible
   if (process.env.GROQ_API_KEY) {
@@ -358,7 +369,7 @@ Responde ÚNICAMENTE con JSON válido:
                           messages: [
                               { role: "user", content: prompt }
                           ],
-                          temperature: 0.7
+                          temperature: 0.65
                       })
                   });
                   const data = await response.json();
@@ -434,38 +445,47 @@ Responde ÚNICAMENTE con JSON válido:
     }
   }
 
-  console.warn(`⚠️ Todos los modelos de IA fallaron (${lastGeminiError?.message}). Activando guion de contingencia para asegurar la generación del video.`);
+  console.warn(`⚠️ Todos los modelos de IA fallaron (${lastGeminiError?.message}). Construyendo guion extractivo real desde la noticia.`);
+  const titleWords = (processedNewsTitle || 'ARQUITECTURA IA').toUpperCase().replace(/[^A-ZÁÉÍÓÚÑ0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2);
+  const t1 = (titleWords.slice(0, 2).join(' ') || 'SISTEMA IA').substring(0, 12);
+  const t2 = (titleWords.slice(2, 4).join(' ') || 'EN PRODUCCIÓN').substring(0, 12);
+  const fact1 = hardFacts.facts[0] || processedNewsTitle || 'Nuevas herramientas de automatización e integración por API redefinen la operación técnica.';
   return {
     theme_color: BRAND_COLOR,
     layout_type: "neo_brutalist",
     scenes: [
       {
         type: "title",
-        text1: "NOTICIA IA",
-        text2: "NUEVA ERA",
-        tag: "✦ TALENTO CON TARIFA ✦",
-        voice_text: "¡Atención emprendedor! La inteligencia artificial y la automatización están redefiniendo el mercado hoy.",
-        subtitle: "La inteligencia artificial está redefiniendo el mercado."
+        text1: t1,
+        text2: t2,
+        tag: angle.tag,
+        voice_text: (processedNewsTitle || "Nueva actualización técnica en el ecosistema de inteligencia artificial aplicada.").substring(0, 140),
+        subtitle: (processedNewsTitle || "Actualización clave en arquitectura de IA.").substring(0, 70)
       },
       {
         type: "image_text",
-        title: "CLAVES DE IMPACTO",
-        key_points: ["Multiplican alcance", "Operan veinticuatro siete", "Reducen costos"],
-        voice_text: "Automatización extrema: multiplican tu alcance, operan veinticuatro siete y reducen costos en tu negocio.",
-        subtitle: "Automatización extrema: multiplican tu alcance y operan 24/7."
+        title: "DESGLOSE TÉCNICO",
+        key_points: [
+          "Integración vía API",
+          "Flujos automatizados",
+          "Control de latencia"
+        ],
+        voice_text: fact1.substring(0, 160),
+        subtitle: fact1.substring(0, 75)
       },
       {
         type: "big_percentage",
-        number: 85,
-        label: "Empresas Adaptadas",
-        voice_text: "El ochenta y cinco por ciento de las empresas líderes en la región ya integran herramientas inteligentes.",
-        subtitle: "El 85% de las empresas líderes integran herramientas inteligentes."
+        number: hardFacts.primaryMetric.number || 100,
+        metric: hardFacts.primaryMetric.label || "DATO",
+        label: "Métrica del Reporte",
+        voice_text: (hardFacts.primaryMetric.context || fact1).substring(0, 150),
+        subtitle: (hardFacts.primaryMetric.context || fact1).substring(0, 75)
       },
       {
         type: "image_text",
-        title: "COBRA TU VALOR",
-        voice_text: "Quienes dominan esta tecnología no compiten por precio: cobran por el verdadero valor de su trabajo.",
-        subtitle: "No compitas por precio: cobra por el valor de tu talento."
+        title: "JUGADA OPERATIVA",
+        voice_text: "Evalúa cómo conectar esta capacidad en tus flujos actuales antes de escalar infraestructura o licencias.",
+        subtitle: "Conecta esta capacidad en tus flujos antes de escalar costos."
       },
       {
         type: "cta",
@@ -568,11 +588,36 @@ async function generateVoice(scenes) {
 
   console.log(`\n🎙️ [2/4] Generando locución sincronizada escena por escena...`);
 
+  // 0. Intentar clonación en lote con ChatterboxMultilingualTTS local (voz Rufino_1)
+  const cloneScript = path.join(__dirname, '..', 'toon_host', '01', 'clone_voice_tct.py');
+  if (process.env.DISABLE_CHATTERBOX !== '1' && fs.existsSync(cloneScript)) {
+    try {
+      const { execFileSync } = require('child_process');
+      const batchItems = scenes.map((sc, idx) => {
+        const rawText = sc.voice_text || sc.text || `${sc.text1 || ''} ${sc.text2 || ''}`;
+        const snipPath = path.join(tempDir, `scene_${idx + 1}.mp3`);
+        try { if (fs.existsSync(snipPath)) fs.unlinkSync(snipPath); } catch (e) {}
+        return { text: sanitizeTtsText(rawText), output: snipPath };
+      });
+      const batchJsonPath = path.join(tempDir, 'chatterbox_batch.json');
+      fs.writeFileSync(batchJsonPath, JSON.stringify(batchItems, null, 2));
+      const pythonBin = process.env.PYTHON_PATH || 'python';
+      execFileSync(pythonBin, [cloneScript, '--batch-json', batchJsonPath], {
+        stdio: 'inherit',
+        timeout: 900000
+      });
+    } catch (cloneErr) {
+      console.warn(`⚠️ Chatterbox local no disponible o falló (${cloneErr.message}), usando fallback TTS...`);
+    }
+  }
+
   for (let idx = 0; idx < scenes.length; idx++) {
     const sc = scenes[idx];
     const textToSpeak = sc.voice_text || sc.text || `${sc.text1 || ''} ${sc.text2 || ''}`;
     const snipPath = path.join(tempDir, `scene_${idx + 1}.mp3`);
-    await synthesizeSnippet(textToSpeak, snipPath);
+    if (!fs.existsSync(snipPath) || fs.statSync(snipPath).size <= 1000) {
+      await synthesizeSnippet(textToSpeak, snipPath);
+    }
     const dur = await getAudioDurationInSeconds(snipPath);
     sceneFiles.push(snipPath);
 
