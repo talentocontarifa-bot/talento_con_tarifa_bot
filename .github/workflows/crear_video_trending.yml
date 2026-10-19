@@ -7,6 +7,8 @@ on:
         description: 'Publicar el video en las redes configuradas (Facebook, Instagram, TikTok, YouTube)'
         type: boolean
         default: false
+  repository_dispatch:
+    types: [trigger-video-trending]
   schedule:
     - cron: '0 15 * * 1,5'  # Lunes y Viernes a las 09:00 CDMX (15:00 UTC)
 
@@ -94,7 +96,7 @@ jobs:
         run: node trending_top10.js --json-only
 
       - name: Validar configuración de publicación
-        if: github.event_name == 'schedule' || inputs.publish
+        if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || inputs.publish
         run: node video_tct/publish_video.js --check-config
 
       - name: 2. Generar guion de video, audio e imágenes para Top 10
@@ -109,7 +111,7 @@ jobs:
           node scripts/seal-render.js
 
       - name: 4. Publicar Reel en Redes (Instagram, Facebook, TikTok, YouTube)
-        if: github.event_name == 'schedule' || inputs.publish
+        if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || inputs.publish
         run: npm run publish --prefix video_tct
 
       - name: Guardar artefactos (Video y Estado)
@@ -127,5 +129,10 @@ jobs:
             video_tct/public/scene_*.png
 
       - name: Persistir estado de entrega
-        if: always() && (github.event_name == 'schedule' || inputs.publish)
-        run: bash .github/scripts/persist_state.sh "chore: persist trending top 10 video publication state [skip ci]" video_tct/publication-state.json video_tct/used_video_news.json published_news.json
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || inputs.publish)
+        run: |
+          if [ -f video_tct/publication-state.json ]; then
+            bash .github/scripts/persist_state.sh "chore: persist trending top 10 video publication state [skip ci]" \
+              video_tct/publication-state.json video_tct/used_video_news.json published_news.json
+          fi
+

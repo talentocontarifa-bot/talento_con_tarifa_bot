@@ -6,6 +6,8 @@ on:
         description: Publicar el video en las redes configuradas
         type: boolean
         default: false
+  repository_dispatch:
+    types: [trigger-video-tct]
   schedule:
     - cron: '0 15 * * *'  # 09:00 CDMX
     - cron: '0 20 * * *'  # 14:00 CDMX
@@ -74,7 +76,7 @@ jobs:
       - name: Pruebas sin servicios externos
         run: npm test --prefix video_tct
       - name: Validar configuración de publicación
-        if: github.event_name == 'schedule' || inputs.publish
+        if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || inputs.publish
         run: node video_tct/publish_video.js --check-config
       - name: Generar guion, gráficos y narración
         env:
@@ -94,7 +96,7 @@ jobs:
           ffmpeg -y -i out/render.mp4 -c:v libx264 -pix_fmt yuv420p -r 30 -c:a aac -b:a 128k -ar 48000 -movflags +faststart out/video_final_tct.mp4
           node scripts/seal-render.js
       - name: Publicar en Facebook e Instagram
-        if: github.event_name == 'schedule' || inputs.publish
+        if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || inputs.publish
         run: npm run publish --prefix video_tct
       - name: Guardar video, fuentes y estado incluso si una red falla
         if: always()
@@ -110,9 +112,10 @@ jobs:
             published_news.json
             video_tct/public/voice_scene_*.mp3
       - name: Persistir resultados por red
-        if: always() && (github.event_name == 'schedule' || inputs.publish)
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || inputs.publish)
         run: |
           if [ -f video_tct/publication-state.json ]; then
             bash .github/scripts/persist_state.sh "chore: persist video publication state [skip ci]" \
               video_tct/publication-state.json video_tct/used_video_news.json published_news.json
           fi
+
