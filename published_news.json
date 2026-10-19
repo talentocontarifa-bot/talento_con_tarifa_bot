@@ -369,5 +369,12 @@
     "title": "50 muertos o 1.000 millones de dólares en daños: el listón que Anthropic quiere fijar para que el Gobierno pueda frenar un modelo de IA",
     "date": "2026-10-19T13:00:58.822Z",
     "channel": "fb_article"
+  },
+  {
+    "url": "blog.n8n.io/n8n-nvidia-dgx-spark",
+    "link": "https://blog.n8n.io/n8n-nvidia-dgx-spark/",
+    "title": "Run your n8n AI workflows on NVIDIA DGX Spark, with no cloud API",
+    "date": "2026-10-19T17:41:31.630Z",
+    "channel": "video_news"
   }
 ]

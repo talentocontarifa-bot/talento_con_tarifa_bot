@@ -281,5 +281,27 @@
         "id": "oOlYUDp4tms"
       }
     }
+  },
+  "b7371e3f8e2ddfe93a01fd3697bb9fd89519b2ee280083dc15a6b0628e7e7a19": {
+    "source_url": "https://blog.n8n.io/n8n-nvidia-dgx-spark/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2192027518011678",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18126150196807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "Siage0EAd1M"
+      }
+    }
   }
 }
