@@ -326,5 +326,29 @@
         "id": "TM3lTcx7i8s"
       }
     }
+  },
+  "e6f1ae44f641af38a03dee8195f80d91d90799d3ff0dddc3f0279785102d67ea": {
+    "source_url": "https://techcrunch.com/2026/10/19/embedded-ai-evaluators-wont-be-an-easy-solution-hugging-faces-policy-chief-says/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1916183072678436",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18126200140807797",
+        "phase": "publishing",
+        "id": "18117274582953797"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7698522864496117780",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
