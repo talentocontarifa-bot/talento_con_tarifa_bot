@@ -25,8 +25,8 @@ if sys.platform == "win32":
         pass
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_REF_WAV = os.path.join(THIS_DIR, "goku_ref_10s.wav")
-CACHE_DIR = os.path.join(THIS_DIR, "voice_cache", "chatterbox_goku")
+DEFAULT_REF_WAV = os.path.join(THIS_DIR, "rufino_ref_10s.wav")
+CACHE_DIR = os.path.join(THIS_DIR, "voice_cache", "chatterbox_rufino")
 
 # Parámetros de expresividad emocional de Chatterbox (equilibrados para evitar forcing EOS / colas arrastradas)
 EMOTION_EXAGGERATION = float(os.environ.get("CHATTERBOX_EXAGGERATION", "0.56"))
@@ -81,7 +81,7 @@ def synthesize_batch(items, ref_wav_path=DEFAULT_REF_WAV, ffmpeg_bin="ffmpeg"):
         ext = os.path.splitext(out_path)[1].lower() or ".mp3"
         ref_tag = os.path.basename(ref_wav_path)
         h_key = hashlib.sha256(
-            f"goku_radio_v2|{ref_tag}|ex={EMOTION_EXAGGERATION}|cfg={EMOTION_CFG_WEIGHT}|{text}".encode("utf-8")
+            f"rufino_radio_v2|{ref_tag}|ex={EMOTION_EXAGGERATION}|cfg={EMOTION_CFG_WEIGHT}|{text}".encode("utf-8")
         ).hexdigest()[:16]
         cached_file = os.path.join(CACHE_DIR, f"cloned_{h_key}{ext}")
 

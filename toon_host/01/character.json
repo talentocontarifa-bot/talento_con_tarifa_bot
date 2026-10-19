@@ -27,7 +27,7 @@
   },
   "voice": {
     "engine": "chatterbox_local",
-    "reference_audio": "goku_ref_10s.wav",
+    "reference_audio": "rufino_ref_10s.wav",
     "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
     "model_id": "eleven_v4_turbo",
     "voice_name": "es-MX-JorgeNeural",
