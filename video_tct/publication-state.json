@@ -303,5 +303,28 @@
         "id": "Siage0EAd1M"
       }
     }
+  },
+  "f649037fa8e9c17ec2101444da28b8bf341e583c8df4a0aa871a064c16dc81e8": {
+    "source_url": "https://techcrunch.com/2026/10/19/hackers-hit-ai-coding-tool-opencode-running-up-charges-on-users-ai-accounts/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1126451469886007",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18126179956807797",
+        "phase": "publishing",
+        "id": "18112315379601349"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "TM3lTcx7i8s"
+      }
+    }
   }
 }
