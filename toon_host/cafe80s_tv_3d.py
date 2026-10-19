@@ -1459,24 +1459,26 @@ function drawTctSceneLowerThirds(targetCtx, tSec, totalDur) {{
     }});
   }} else if ((scType === 'big_percentage' || scType === 'insight') && !isCta) {{
     const baseY = 850 + slideY;
-    const pctTarget = Math.max(1, Math.min(99, parseInt(sc.number || 85, 10)));
+    const hasNum = sc.number !== null && sc.number !== undefined && !isNaN(parseInt(sc.number, 10));
+    const pctTarget = Math.max(1, Math.min(99, hasNum ? parseInt(sc.number, 10) : 88));
     const animRatio = Math.min(1.0, localT / Math.min(1.1, scDur * 0.55));
     const animPct = Math.round(pctTarget * (1 - Math.pow(1 - animRatio, 3)));
+    const customMetric = String(sc.metric || '').trim().toUpperCase().slice(0, 6);
 
     drawBrutalistBoxJs(targetCtx, 28, baseY + 22, 664, 240, '#0A0A0A', '#CCFF00', '#F0F0F0', 4, 8);
     drawBrutalistBoxJs(targetCtx, 46, baseY, 270, 38, '#CCFF00', '#0A0A0A', '#F0F0F0', 3, 4);
     targetCtx.fillStyle = '#0A0A0A';
     targetCtx.font = '900 18px Inter, Arial, sans-serif';
-    targetCtx.fillText('// DATO CLAVE IA //', 62, baseY + 25);
+    targetCtx.fillText('// DATO DURO IA //', 62, baseY + 25);
 
-    const numVal = sc.number ? (animPct + '%') : '10X';
+    const numVal = (customMetric && !customMetric.endsWith('%')) ? customMetric : (hasNum ? (animPct + '%') : (customMetric || 'DATO'));
     targetCtx.fillStyle = '#CCFF00';
     targetCtx.font = '900 72px Impact, Inter, sans-serif';
     targetCtx.fillText(numVal, 48, baseY + 122);
 
     targetCtx.fillStyle = '#F0F0F0';
     targetCtx.font = '900 24px Impact, Inter, sans-serif';
-    targetCtx.fillText(String(sc.label || sc.title || 'IMPACTO EN NEGOCIOS').toUpperCase().slice(0, 26), 255, baseY + 86);
+    targetCtx.fillText(String(sc.label || sc.title || 'MÉTRICA DEL REPORTE').toUpperCase().slice(0, 26), 255, baseY + 86);
     drawBrutalistBoxJs(targetCtx, 255, baseY + 104, 410, 24, '#181818', '#F0F0F0', null, 2, 0);
     targetCtx.fillStyle = '#CCFF00';
     targetCtx.fillRect(257, baseY + 106, Math.round(406 * (animPct / 100)), 20);
@@ -1497,7 +1499,7 @@ function drawTctSceneLowerThirds(targetCtx, tSec, totalDur) {{
     drawBrutalistBoxJs(targetCtx, 28, baseY + 48, 664, 72, '#CCFF00', '#0A0A0A', '#F0F0F0', 4, 7);
     targetCtx.fillStyle = '#0A0A0A';
     targetCtx.font = '900 36px Impact, Inter, sans-serif';
-    targetCtx.fillText(String(sc.title || 'COBRA POR TU VALOR').toUpperCase().slice(0, 26), 46, baseY + 98);
+    targetCtx.fillText(String(sc.title || 'JUGADA OPERATIVA').toUpperCase().slice(0, 26), 46, baseY + 98);
 
     const sub = String(sc.subtitle || sc.voice_text || '').trim();
     targetCtx.font = '700 20px Inter, Arial, sans-serif';

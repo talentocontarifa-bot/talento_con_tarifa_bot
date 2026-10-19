@@ -1942,13 +1942,16 @@ class ToonPackager:
 
         # ─── ESCENA 3: ESTADÍSTICA GIGANTE / INSIGHT CLAVE ───
         elif sc_type in ("big_percentage", "insight") and not is_cta:
-            is_insight = (sc_type == "insight") and not sc.get("number")
-            pct_target = int(np.clip(int(sc.get("number") or 85), 1, 99))
+            raw_num = sc.get("number")
+            has_num = raw_num is not None and str(raw_num).strip() != "" and str(raw_num).strip().isdigit()
+            custom_metric = str(sc.get("metric") or "").strip().upper()[:6]
+            is_insight = (sc_type == "insight") or (not has_num)
+            pct_target = int(np.clip(int(raw_num) if has_num else 88, 1, 99))
             anim_ratio = float(np.clip(local_t / min(1.1, sc_dur * 0.55), 0.0, 1.0))
             anim_pct = int(round(pct_target * (1.0 - (1.0 - anim_ratio) ** 3)))
 
-            sticker_txt = clean_tag(f"// {str(sc.get('title') or ('INSIGHT CLAVE' if is_insight else 'DATO CLAVE')).upper()} //")
-            label_txt = str(sc.get("label") or sc.get("body") or sc.get("title") or "IMPACTO EN NEGOCIOS").upper()
+            sticker_txt = clean_tag(f"// {str(sc.get('title') or ('INSIGHT CLAVE' if is_insight else 'DATO DURO IA')).upper()} //")
+            label_txt = str(sc.get("label") or sc.get("body") or sc.get("title") or "MÉTRICA DEL REPORTE").upper()
             sub_txt = str(sc.get("subtitle") or sc.get("voice_text") or "").strip()
 
             base_y = 850 + slide_y
@@ -1959,7 +1962,12 @@ class ToonPackager:
             draw_brutalist_box(46, base_y, 46 + tw, base_y + 38, c_lime, c_ink, c_paper, border_w=3, shadow_off=4)
             draw.text((60, base_y + 8), sticker_txt, font=f_bold_sm, fill=c_ink)
 
-            big_str = "10X" if is_insight else f"{anim_pct}%"
+            if custom_metric and not custom_metric.endswith("%"):
+                big_str = custom_metric
+            elif has_num:
+                big_str = f"{anim_pct}%"
+            else:
+                big_str = custom_metric or "DATO"
             draw.text((52, base_y + 52), big_str, font=f_impact_xl, fill=(45, 65, 10))
             draw.text((48, base_y + 48), big_str, font=f_impact_xl, fill=c_lime)
 
@@ -1983,7 +1991,7 @@ class ToonPackager:
 
         # ─── ESCENA 4: LA JUGADA / REVELACIÓN ESTRATÉGICA ───
         elif not is_cta:
-            title_txt = str(sc.get("title") or "COBRA POR TU VALOR").upper()
+            title_txt = str(sc.get("title") or "JUGADA OPERATIVA").upper()
             sub_txt = str(sc.get("subtitle") or sc.get("body") or sc.get("voice_text") or "").strip()
 
             base_y = 852 + slide_y

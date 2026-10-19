@@ -214,3 +214,26 @@ test('isContentRequestIssue solo acepta solicitudes de artículo', () => {
   assert.equal(ns.issueInstruction('[POST] Hazlo corto'), 'Hazlo corto');
   assert.equal(ns.issueInstruction('Tono serio'), 'Tono serio');
 });
+
+test('meatScore premia sustancia técnica/B2B y penaliza chisme/policiales; extractHardFacts extrae métricas reales', () => {
+  const techScore = ns.meatScore(
+    'Cómo conectar un agente MCP con n8n y API de Postgres reduciendo 62% el costo de tokens',
+    'El flujo open source en producción baja la latencia a 120ms y ahorra $4,500 USD al mes.'
+  );
+  const fluffScore = ns.meatScore(
+    'Policía investiga demanda y polémica de famoso por usar ChatGPT en un juicio',
+    'El escándalo viral en redes sociales generó controversia y arresto.'
+  );
+  assert.ok(techScore >= 10, `techScore esperado alto, fue ${techScore}`);
+  assert.ok(fluffScore < 0, `fluffScore esperado negativo, fue ${fluffScore}`);
+
+  const facts = ns.extractHardFacts('El nuevo servidor MCP procesa 450 requests por segundo y reduce el gasto de inferencia en 62% ($12k mensuales) frente al pipeline anterior.');
+  assert.ok(facts.facts.length >= 1);
+  assert.equal(facts.primaryMetric.type, 'percentage');
+  assert.equal(facts.primaryMetric.number, 62);
+  assert.equal(facts.primaryMetric.label, '62%');
+
+  const angle1 = ns.selectEditorialAngle({ title: 'Nuevo SDK open source para agentes' }, 'Código en GitHub con API REST', []);
+  assert.equal(angle1.id, 'tactical_tool');
+});
+

@@ -109,7 +109,26 @@ function normalizeText(str) {
 }
 
 // ─────────────────────────────────────────
-// Relevancia IA
+// Feeds Curados (Español + Fuentes Primarias Técnicas/B2B en Inglés)
+// ─────────────────────────────────────────
+const DEFAULT_FEEDS = [
+  // Fuentes primarias técnicas, agentes, automatización y B2B (alta densidad de "carnita")
+  'https://blog.n8n.io/rss/',
+  'https://simonwillison.net/atom/everything/',
+  'https://huggingface.co/blog/feed.xml',
+  'https://techcrunch.com/category/artificial-intelligence/feed/',
+  'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml',
+  'https://hnrss.org/newest?q=AI+OR+LLM+OR+agent&points=80',
+  // Medios en español filtrados por IA y tecnología práctica
+  'https://www.xataka.com/tag/inteligencia-artificial/rss2.xml',
+  'https://wwwhatsnew.com/feed/',
+  'https://feeds.weblogssl.com/genbeta',
+  'https://feeds.weblogssl.com/xataka2',
+  'https://www.entrepreneur.com/es/feed'
+];
+
+// ─────────────────────────────────────────
+// Relevancia IA y Densidad Práctica ("Carnita")
 // ─────────────────────────────────────────
 // term: texto normalizado (sin acentos). prefix: true => coincide como prefijo (automatiz -> automatización).
 const AI_KEYWORDS = [
@@ -127,18 +146,57 @@ const AI_KEYWORDS = [
   { term: 'modelo de lenguaje', weight: 3 }, { term: 'modelos de lenguaje', weight: 3 },
   { term: 'agente de ia', weight: 3 }, { term: 'agentes de ia', weight: 3 },
   { term: 'ai agent', weight: 3, prefix: true },
+  { term: 'mcp', weight: 3 }, { term: 'model context protocol', weight: 3 },
+  { term: 'n8n', weight: 3 }, { term: 'langchain', weight: 3 }, { term: 'llamaindex', weight: 3 },
+  { term: 'ollama', weight: 3 }, { term: 'vllm', weight: 3 }, { term: 'fine tuning', weight: 3 },
   { term: 'ia', weight: 2 }, { term: 'ai', weight: 2 }, { term: 'nvidia', weight: 2 },
   { term: 'agente', weight: 2 }, { term: 'agentes', weight: 2 }, { term: 'agentic', weight: 2 },
   { term: 'automatiz', weight: 2, prefix: true }, { term: 'automation', weight: 2 },
+  { term: 'open source', weight: 2 }, { term: 'codigo abierto', weight: 2 }, { term: 'open weights', weight: 2 },
+  { term: 'rag', weight: 2 }, { term: 'workflow', weight: 2, prefix: true },
   { term: 'modelo', weight: 1 }, { term: 'modelos', weight: 1 }, { term: 'algoritmo', weight: 1, prefix: true },
   { term: 'robot', weight: 1, prefix: true }, { term: 'gpu', weight: 1 }, { term: 'gpus', weight: 1 }
 ];
 
+// Términos que indican "carnita" práctica (herramientas, costos, benchmarks, APIs, casos de uso reales)
+const MEAT_KEYWORDS = [
+  { term: 'api', weight: 2 }, { term: 'apis', weight: 2 }, { term: 'sdk', weight: 2 },
+  { term: 'open source', weight: 2.5 }, { term: 'codigo abierto', weight: 2.5 }, { term: 'open weights', weight: 2.5 },
+  { term: 'benchmark', weight: 2, prefix: true }, { term: 'workflow', weight: 2.5, prefix: true },
+  { term: 'flujo de trabajo', weight: 2.5 }, { term: 'flujos de trabajo', weight: 2.5 },
+  { term: 'caso de uso', weight: 2.5 }, { term: 'casos de uso', weight: 2.5 }, { term: 'use case', weight: 2, prefix: true },
+  { term: 'mcp', weight: 2.5 }, { term: 'rag', weight: 2 }, { term: 'n8n', weight: 3 },
+  { term: 'precio', weight: 1.5, prefix: true }, { term: 'pricing', weight: 2 }, { term: 'cost', weight: 1.5, prefix: true },
+  { term: 'ahorr', weight: 1.5, prefix: true }, { term: 'produccion', weight: 1.5 }, { term: 'postgres', weight: 1.5 },
+  { term: 'token', weight: 1.5, prefix: true }, { term: 'latencia', weight: 2 }, { term: 'latency', weight: 2 },
+  { term: 'productividad', weight: 1.5 }, { term: 'herramienta', weight: 1.5, prefix: true },
+  { term: 'github', weight: 1.5 }, { term: 'repositorio', weight: 1.5, prefix: true },
+  { term: 'b2b', weight: 2 }, { term: 'saas', weight: 2 }, { term: 'enterprise', weight: 1.5 },
+  { term: 'pyme', weight: 2, prefix: true }, { term: 'freelance', weight: 2, prefix: true },
+  { term: 'agencia', weight: 1.5, prefix: true }, { term: 'codigo', weight: 1.5 }, { term: 'coding', weight: 1.5 }
+];
+
+// Términos de "salseo / humo / clickbait" sin utilidad práctica para el emprendedor o builder
+const FLUFF_KEYWORDS = [
+  { term: 'demanda', weight: 2.5 }, { term: 'demandan', weight: 3 }, { term: 'lawsuit', weight: 3 },
+  { term: 'juicio', weight: 2.5 }, { term: 'tribunal', weight: 2.5 }, { term: 'policia', weight: 3 },
+  { term: 'arresto', weight: 2.5 }, { term: 'polemica', weight: 2.5 }, { term: 'escandalo', weight: 2.5 },
+  { term: 'homicidio', weight: 3.5 }, { term: 'adolescente', weight: 3, prefix: true },
+  { term: 'crisis mental', weight: 3.5 }, { term: 'suicidio', weight: 4 }, { term: 'catastrofe', weight: 2.5 },
+  { term: 'apocalipsis', weight: 3 }, { term: 'extincion', weight: 3 }, { term: 'famoso', weight: 2, prefix: true },
+  { term: 'celebridad', weight: 2.5, prefix: true }, { term: 'novio', weight: 2.5, prefix: true },
+  { term: 'horoscopo', weight: 3 }
+];
+
 const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const KEYWORD_REGEXES = AI_KEYWORDS.map(k => ({
+const buildRegexList = list => list.map(k => ({
   ...k,
   re: new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegex(k.term)}${k.prefix ? '' : '(?![\\p{L}\\p{N}])'}`, 'u')
 }));
+
+const KEYWORD_REGEXES = buildRegexList(AI_KEYWORDS);
+const MEAT_REGEXES = buildRegexList(MEAT_KEYWORDS);
+const FLUFF_REGEXES = buildRegexList(FLUFF_KEYWORDS);
 
 /** Devuelve los términos IA presentes (distintos) en un texto. */
 function matchedAiKeywords(text) {
@@ -149,6 +207,19 @@ function matchedAiKeywords(text) {
 function keywordScore(text) {
   const norm = normalizeText(text);
   return KEYWORD_REGEXES.reduce((acc, k) => acc + (k.re.test(norm) ? k.weight : 0), 0);
+}
+
+/** Puntuación de "carnita" práctica (positiva por herramientas/métricas, negativa por salseo/demandas). */
+function meatScore(title, body = '') {
+  const normTitle = normalizeText(title);
+  const normBody = normalizeText(String(body).slice(0, 2000));
+  const meatTitle = MEAT_REGEXES.reduce((acc, k) => acc + (k.re.test(normTitle) ? k.weight * 1.5 : 0), 0);
+  const meatBody = MEAT_REGEXES.reduce((acc, k) => acc + (k.re.test(normBody) ? k.weight * 0.8 : 0), 0);
+  const hasHardNumbers = /(\b\d+(?:[.,]\d+)?\s*(?:%|ms|gb|tb|x|usd|eur|tokens|millones|billion|million)\b|\$\s*\d+)/i.test(`${title} ${body}`);
+  const numberBonus = hasHardNumbers ? 2 : 0;
+  const fluffTitle = FLUFF_REGEXES.reduce((acc, k) => acc + (k.re.test(normTitle) ? k.weight * 1.8 : 0), 0);
+  const fluffBody = FLUFF_REGEXES.reduce((acc, k) => acc + (k.re.test(normBody) ? k.weight * 0.8 : 0), 0);
+  return Math.min(meatTitle + Math.min(meatBody, 6) + numberBonus, 14) - Math.min(fluffTitle + fluffBody, 12);
 }
 
 /** Puntuación de relevancia IA: el título pesa el doble que el resumen (resumen con tope). */
@@ -366,9 +437,46 @@ async function fetchFeeds(urls, { timeoutMs = 12000, fetchImpl, log = console.lo
   return { items, errors };
 }
 
+// Entidades principales para evitar hablar 4 veces seguidas de la misma marca (fatiga temática)
+const MAJOR_ENTITIES = [
+  { id: 'openai', re: /\b(openai|chatgpt|gpt-?\d|sam altman|sora)\b/i },
+  { id: 'anthropic', re: /\b(anthropic|claude)\b/i },
+  { id: 'google', re: /\b(google|gemini|deepmind)\b/i },
+  { id: 'meta', re: /\b(meta|llama|muse wonder|zuckerberg)\b/i },
+  { id: 'nvidia', re: /\b(nvidia|rtx|cuda|jensen huang)\b/i },
+  { id: 'microsoft', re: /\b(microsoft|copilot|nadella)\b/i },
+  { id: 'apple', re: /\b(apple|siri|apple intelligence)\b/i },
+  { id: 'xai', re: /\b(xai|grok|elon musk|spacex)\b/i }
+];
+
+function detectEntities(text) {
+  const norm = normalizeText(text);
+  return MAJOR_ENTITIES.filter(e => e.re.test(norm)).map(e => e.id);
+}
+
 /**
- * Filtra y ordena candidatos: frescos, no publicados, relevantes para IA.
- * Orden: relevancia IA (con tope) menos penalización por antigüedad; desempate por orden del feed.
+ * Penaliza ligeramente una noticia si su protagonista principal ya apareció en las últimas entradas del historial,
+ * forzando rotación de ecosistemas, herramientas open-source y casos de negocio.
+ */
+function entityFatiguePenalty(title, history = [], windowSize = 4) {
+  if (!history || !history.length) return 0;
+  const itemEntities = detectEntities(title);
+  if (!itemEntities.length) return 0;
+  const recent = history.slice(-windowSize);
+  let penalty = 0;
+  recent.forEach((h, idx) => {
+    const recencyWeight = (idx + 1) / recent.length; // más reciente = mayor peso
+    const histEntities = detectEntities(h.title || h.url || '');
+    if (itemEntities.some(e => histEntities.includes(e))) {
+      penalty += 2.2 * recencyWeight;
+    }
+  });
+  return Math.min(penalty, 5.5);
+}
+
+/**
+ * Filtra y ordena candidatos: frescos, no publicados, relevantes para IA y con alta densidad práctica ("carnita").
+ * Orden: relevancia IA + bonus de carnita - penalización por fatiga de marca - antigüedad; desempate por orden del feed.
  */
 function rankCandidates(items, {
   history = [], historyChannels = null, isSeen = () => false, maxAgeHours = DEFAULT_MAX_AGE_HOURS,
@@ -389,9 +497,20 @@ function rankCandidates(items, {
     if (isInHistory(history, { url: item.link, title: item.title }, { channels: historyChannels })) { stats.inHistory++; log(`⏭️ Ya publicada (historial compartido): "${item.title}"`); continue; }
     if (isSeen(item)) { stats.seen++; continue; }
     const aiScore = aiRelevanceScore(item.title, item.contentSnippet);
+    const meat = meatScore(item.title, item.contentSnippet);
+    const fatigue = entityFatiguePenalty(item.title, history);
     const age = ageHours(item, now);
-    const rank = Math.min(aiScore, 14) - (age === null ? 12 : age) / 12;
-    pool.push({ ...item, aiScore, ageHours: age, rank });
+    const rank = Math.min(aiScore, 14) + meat - fatigue - (age === null ? 12 : age) / 12;
+    pool.push({
+      ...item,
+      aiScore,
+      meatScore: meat,
+      meat: Number(meat.toFixed(1)),
+      score: Number(rank.toFixed(1)),
+      fatiguePenalty: fatigue,
+      ageHours: age,
+      rank
+    });
   }
   const byRank = (a, b) => (b.rank - a.rank) || ((a.feedIndex ?? 0) - (b.feedIndex ?? 0));
   const relevant = pool.filter(c => c.aiScore >= minScore).sort(byRank);
@@ -641,16 +760,169 @@ function issueInstruction(title) {
   return String(title || '').replace(/^\s*\[(POST|ARTICULO|ARTÍCULO|NOTICIA|PUBLICAR)\]\s*/i, '').trim() || 'Ninguna';
 }
 
+// ─────────────────────────────────────────
+// Curaduría Editorial: Datos Duros, Ángulos Rotativos y Anti-Clichés
+// ─────────────────────────────────────────
+const BANNED_CLICHES = [
+  'atención emprendedor',
+  'cambiar todas las reglas del juego',
+  'cambiar las reglas del juego',
+  'reescribir las reglas del juego',
+  'operan veinticuatro siete',
+  'operan 24 horas continuas',
+  'ochenta y cinco por ciento de las empresas',
+  '85% de las empresas',
+  'no compiten por precio: cobran por el verdadero valor',
+  'no compitas por precio: cobra por el valor',
+  'mientras los dinosaurios',
+  'el momento perfecto no existe'
+];
+
+const EDITORIAL_ANGLES = [
+  {
+    id: 'tactical_tool',
+    name: 'DESTRIPE TÁCTICO Y STACK',
+    tag: '✦ DESTRIPE TÁCTICO ✦',
+    matchRe: /\b(lanz[ao]|release|api|sdk|open[\s-]source|codigo abierto|open[\s-]weights|github|herramienta|tool|workflow|n8n|mcp|plugin|extension|browser|navegador|app)\b/i,
+    directive: 'Enfócate en DESTRIPAR LA HERRAMIENTA O TECNOLOGÍA: explica exactamente qué hace bajo el capó, qué limitación anterior supera y describe 1 flujo de trabajo concreto (paso a paso) donde una agencia, dev o negocio puede conectarla esta misma semana.',
+    fbDirective: 'Enfócate en DESTRIPAR LA HERRAMIENTA O TECNOLOGÍA: explica exactamente qué hace bajo el capó, qué limitación anterior supera y describe 1 flujo de trabajo concreto (paso a paso) donde una agencia, dev o negocio puede conectarla esta misma semana.',
+    videoDirective: 'Ángulo de DESTRIPE TÁCTICO: En lugar de hablar en abstracto, explica qué hace exactamente esta herramienta/modelo, cómo funciona su mecanismo técnico y en qué flujo concreto de automatización o desarrollo se conecta hoy.'
+  },
+  {
+    id: 'roi_tear_down',
+    name: 'RADIOGRAFÍA DE COSTOS Y TARIFA',
+    tag: '✦ RADIOGRAFÍA DE ROI ✦',
+    matchRe: /\b(precio|cost|dolar|euro|millon|billion|gratis|free|barat|tarifa|sueldo|salario|ahorr|token|finops|rentab|ingresos|revenue|credito)\b/i,
+    directive: 'Enfócate en la MATEMÁTICA Y EL MARGEN: desglosa los números reales del artículo (precios, ahorro en tokens/hardware, salarios o inversión) y explica cómo esta caída de costos o nuevo modelo permite empaquetar un servicio B2B con mayor margen de ganancia.',
+    fbDirective: 'Enfócate en la MATEMÁTICA Y EL MARGEN: desglosa los números reales del artículo (precios, ahorro en tokens/hardware, salarios o inversión) y explica cómo esta caída de costos o nuevo modelo permite empaquetar un servicio B2B con mayor margen de ganancia.',
+    videoDirective: 'Ángulo de RADIOGRAFÍA DE ROI: Destaca las cifras económicas o de eficiencia reales del artículo y explica cómo un consultor o negocio usa esta ventaja de costos para vender soluciones de alto margen.'
+  },
+  {
+    id: 'contrarian_truth',
+    name: 'DETECTOR DE HUMO (CONTRARIAN)',
+    tag: '✦ REALIDAD VS HUMO ✦',
+    matchRe: /\b(fall[oa]|error|limit|riesgo|seguridad|privacidad|bloque[oa]|alucinaci|humo|problema|falsa|comprometid|corta|rechaz|restring)\b/i,
+    directive: 'Enfócate en el ANÁLISIS CONTRARIAN ANTI-HUMO: desinfla el hype corporativo. Explica cuál es el cuello de botella técnico real que revela la nota (alucinaciones, seguridad, privacidad, lock-in) y cómo un arquitecto de IA serio diseña guardarraíles o usa modelos locales para no depender a ciegas.',
+    fbDirective: 'Enfócate en el ANÁLISIS CONTRARIAN ANTI-HUMO: desinfla el hype corporativo. Explica cuál es el cuello de botella técnico real que revela la nota (alucinaciones, seguridad, privacidad, lock-in) y cómo un arquitecto de IA serio diseña guardarraíles o usa modelos locales para no depender a ciegas.',
+    videoDirective: 'Ángulo CONTRARIAN ANTI-HUMO: Señala con bisturí dónde está fallando la promesa de las Big Tech en esta noticia, por qué usar IA sin arquitectura ni control sale caro, y cuál es la jugada profesional para blindar un negocio.'
+  },
+  {
+    id: 'architecture_shift',
+    name: 'ARQUITECTURA Y AGENTES',
+    tag: '✦ ARQUITECTURA IA ✦',
+    matchRe: /\b(agente|agentic|autonom|razonamiento|reasoning|arquitectura|modular|benchmark|chip|gpu|inferencia|local|memoria|contexto)\b/i,
+    directive: 'Enfócate en el CAMBIO DE ARQUITECTURA: explica la diferencia técnica real (por ejemplo, pasar de simples prompts de chat a sistemas multi-agente, memoria persistente, inferencia local o verificación) y qué procesos operativos complejos ya se pueden delegar.',
+    fbDirective: 'Enfócate en el CAMBIO DE ARQUITECTURA: explica la diferencia técnica real (por ejemplo, pasar de simples prompts de chat a sistemas multi-agente, memoria persistente, inferencia local o verificación) y qué procesos operativos complejos ya se pueden delegar.',
+    videoDirective: 'Ángulo de ARQUITECTURA DE AGENTES: Explica el salto técnico que describe la noticia (por qué ya no hablamos de un simple chatbot) y cómo cambia la forma de construir software y automatizaciones.'
+  },
+  {
+    id: 'market_play',
+    name: 'JUGADA DE MERCADO B2B',
+    tag: '✦ JUGADA DE MERCADO ✦',
+    matchRe: /.*/,
+    directive: 'Enfócate en la OPORTUNIDAD DE NICHO B2B: traduce esta movida de la industria en un servicio o producto específico que un freelancer, consultor o pyme en Latinoamérica puede ofrecer a clientes reales (clínicas, e-commerce, despachos, logística) antes que su competencia.',
+    fbDirective: 'Enfócate en la OPORTUNIDAD DE NICHO B2B: traduce esta movida de la industria en un servicio o producto específico que un freelancer, consultor o pyme en Latinoamérica puede ofrecer a clientes reales (clínicas, e-commerce, despachos, logística) antes que su competencia.',
+    videoDirective: 'Ángulo de JUGADA DE MERCADO: Traduce esta noticia en una oportunidad concreta de negocio o servicio B2B aplicable en Latinoamérica, especificando qué problema real de clientes resuelve.'
+  }
+];
+
+/**
+ * Extrae oraciones con cifras duras, porcentajes reales, montos en $/€ o métricas técnicas del texto
+ * para inyectarlas al LLM y evitar que invente datos genéricos ("85% de las empresas").
+ */
+function extractHardFacts(text, maxFacts = 5) {
+  const clean = String(text || '').replace(/\s+/g, ' ').trim();
+  const defaultMetric = { type: 'badge', label: 'IA B2B', badge: 'IA B2B', number: null, raw: 'IA B2B', context: '' };
+  if (!clean) return { facts: [], primaryMetric: defaultMetric };
+
+  const sentences = clean
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length >= 30 && s.length <= 240 && !/cookie|suscr[ií]b|newsletter|derechos reservados/i.test(s));
+
+  const metricRegex = /(\b\d+(?:[.,]\d+)?\s*(?:%|por ciento|percent|millones|billones|million|billion|mil\b|k\b|d[oó]lares|euros|usd|eur|d[ií]as|horas|segundos|ms|veces|x\b|par[aá]metros|tokens|gb|tb|modelos|agentes|usuarios|empresas|pa[ií]ses|plataformas|platforms|tools|herramientas))|([\$€]\s*\d+(?:[.,]\d+)?\s*(?:M|B|K|mil|millones)?)/i;
+
+  const facts = [];
+  for (const s of sentences) {
+    if (metricRegex.test(s) && facts.length < maxFacts) {
+      facts.push(s);
+    }
+  }
+
+  const contextSentence = facts[0] || sentences[0] || clean.slice(0, 140);
+
+  // Detectar una métrica real corta para la Escena 3 si existe en el texto
+  let primaryMetric = null;
+  const pctMatch = clean.match(/\b([1-9]\d?(?:[.,]\d)?)\s*(?:%|por ciento\b|percent\b)/i);
+  const moneyMatch = clean.match(/(?:[\$€]\s*(\d+(?:[.,]\d+)?)\s*(mil|M|B|K|millones)?)|(\b\d+(?:[.,]\d+)?)\s*(?:mil\s+)?(d[oó]lares|euros|USD|EUR)\b/i);
+  const multMatch = clean.match(/\b([2-9]\d?)\s*(?:x|veces\s+m[aá]s)\b/i);
+  const countMatch = clean.match(/\b(\d{1,4})\s+(manuscritos|modelos|agentes|navegadores|d[ií]as|empresas|estados|pa[ií]ses|usuarios|best|mejores|plataformas|platforms|tools|herramientas|workflows|flujos)\b/i);
+
+  if (pctMatch) {
+    const num = Math.round(parseFloat(pctMatch[1].replace(',', '.')));
+    if (num >= 1 && num <= 99 && num !== 85) {
+      primaryMetric = { type: 'percentage', label: `${num}%`, badge: `${num}%`, number: num, raw: pctMatch[0], context: contextSentence };
+    }
+  }
+  if (!primaryMetric && moneyMatch) {
+    const rawNum = (moneyMatch[1] || moneyMatch[3] || '').replace(/[.,]\d+$/, '');
+    const suffix = (moneyMatch[2] || '').toUpperCase().startsWith('M') ? 'M' : (moneyMatch[2] ? 'K' : '');
+    const sym = moneyMatch[0].includes('€') || /euro/i.test(moneyMatch[0]) ? '€' : '$';
+    if (rawNum && rawNum.length <= 4) {
+      const lbl = `${sym}${rawNum}${suffix}`;
+      primaryMetric = { type: 'money', label: lbl, badge: lbl, number: null, raw: moneyMatch[0], context: contextSentence };
+    }
+  }
+  if (!primaryMetric && multMatch) {
+    const lbl = `${multMatch[1]}X`;
+    primaryMetric = { type: 'multiplier', label: lbl, badge: lbl, number: null, raw: multMatch[0], context: contextSentence };
+  }
+  if (!primaryMetric && countMatch) {
+    const lbl = `${countMatch[1]}`;
+    primaryMetric = { type: 'count', label: lbl, badge: lbl, number: null, raw: countMatch[0], context: contextSentence };
+  }
+  if (!primaryMetric) {
+    const fallbackLabel = /\bopen[\s-]?source\b|codigo abierto/i.test(clean) ? 'OPEN' : (/\bapi\b|\bsdk\b|\bmcp\b/i.test(clean) ? 'API' : 'IA B2B');
+    primaryMetric = { type: 'badge', label: fallbackLabel, badge: fallbackLabel, number: null, raw: fallbackLabel, context: contextSentence };
+  }
+
+  return { facts, primaryMetric };
+}
+
+/**
+ * Selecciona el mejor ángulo editorial para una noticia y rota si varios ángulos aplican.
+ */
+function selectEditorialAngle(item = {}, text = '', history = []) {
+  const sample = `${item.title || ''} ${String(text || item.contentSnippet || '').slice(0, 1500)}`;
+  const matched = EDITORIAL_ANGLES.filter(a => a.id !== 'market_play' && a.matchRe.test(sample));
+  const candidates = matched.length ? matched : EDITORIAL_ANGLES;
+
+  // Usar el tamaño del historial y el hash del título para rotar determinísticamente entre los ángulos candidatos
+  const histLen = Array.isArray(history) ? history.length : 0;
+  const titleSeed = String(item.title || '').split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  const chosen = candidates[(histLen + titleSeed) % candidates.length] || EDITORIAL_ANGLES[0];
+  return chosen;
+}
+
+/**
+ * Devuelve un array con los últimos títulos publicados para inyectar memoria anti-repetición en el prompt.
+ */
+function getRecentHistorySummary(history = [], limit = 6) {
+  return (history || []).filter(h => h && h.title).slice(-limit).reverse().map(h => h.title);
+}
+
 module.exports = {
-  HISTORY_PATH, HISTORY_MAX, DEFAULT_MAX_AGE_HOURS, USER_AGENT, JINA_REMOVE_SELECTOR, AI_KEYWORDS,
+  HISTORY_PATH, HISTORY_MAX, DEFAULT_MAX_AGE_HOURS, USER_AGENT, JINA_REMOVE_SELECTOR,
+  DEFAULT_FEEDS, AI_KEYWORDS, MEAT_KEYWORDS, FLUFF_KEYWORDS, BANNED_CLICHES, EDITORIAL_ANGLES,
   fetchText, decodeEntities, htmlToText, realTextLength, normalizeText,
-  matchedAiKeywords, aiRelevanceScore, itemDate, ageHours, isFresh,
+  matchedAiKeywords, aiRelevanceScore, meatScore, entityFatiguePenalty, itemDate, ageHours, isFresh,
   normalizeUrl, normalizeTitle, titlesMatch, cleanCapturedUrl, extractFirstUrl,
   loadHistory, isInHistory, addToHistory, mergeHistories, saveHistory, recordPublished,
   parseFeed, fetchFeed, fetchFeeds, rankCandidates,
   detectGarbage, isUsefulImageUrl, dedupeImages, extractImagesFromHtml, extractOgImage, imagesFromMarkdown,
   extractArticleBodyHtml, getFullRssText, fetchJina, extractWithJina, extractArticleContent, pickArticle,
-  isContentRequestIssue, issueInstruction
+  isContentRequestIssue, issueInstruction,
+  extractHardFacts, selectEditorialAngle, getRecentHistorySummary
 };
 
 // CLI: fusionar historiales (lo usa .github/scripts/persist_state.sh para resolver conflictos de rebase)

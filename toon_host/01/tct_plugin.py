@@ -20,11 +20,19 @@ TOON_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
 TCT_BOT_DIR = r"c:\Users\rufin\.gemini\antigravity\playground\astral-curie\talento_con_tarifa_bot"
 
 FEEDS = [
+    # Fuentes primarias de IA Aplicada, Agentes, DevTools y Negocios B2B (Inglés)
+    "https://blog.n8n.io/rss/",
+    "https://simonwillison.net/atom/everything/",
+    "https://huggingface.co/blog/feed.xml",
+    "https://techcrunch.com/category/artificial-intelligence/feed/",
+    "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+    "https://hnrss.org/newest?q=AI+OR+LLM+OR+agent&points=80",
+    # Fuentes curadas en Español (Tecnología, IA y Emprendimiento)
     "https://www.xataka.com/tag/inteligencia-artificial/rss2.xml",
-    "https://www.entrepreneur.com/es/feed",
-    "https://feeds.weblogssl.com/xataka2",
-    "https://feeds.weblogssl.com/genbeta",
     "https://wwwhatsnew.com/feed/",
+    "https://feeds.weblogssl.com/genbeta",
+    "https://feeds.weblogssl.com/xataka2",
+    "https://www.entrepreneur.com/es/feed",
 ]
 
 CONTACT_ENDING = {
@@ -42,10 +50,39 @@ CONTACT_ENDING = {
 }
 
 AI_KEYWORDS = [
-    "ia", "inteligencia artificial", "openai", "chatgpt", "claude", "gemini",
-    "llm", "agente", "agentes", "automatización", "automatizacion", "robot",
-    "nvidia", "deepseek", "meta ai", "copilot", "algoritmo", "machine learning",
-    "startup", "negocio", "productividad", " SaaS", "modelo",
+    "ia", "inteligencia artificial", "artificial intelligence", "openai", "chatgpt",
+    "claude", "anthropic", "gemini", "llm", "agente", "agentes", "agent", "agents",
+    "agentic", "automatización", "automatizacion", "automation", "nvidia", "deepseek",
+    "meta ai", "copilot", "algoritmo", "machine learning", "mcp", "rag", "n8n",
+    "open source", "open weights", "api", "sdk", "hugging face", "qwen", "mistral",
+]
+
+MEAT_KEYWORDS = [
+    "api", "sdk", "open source", "open weights", "github", "benchmark", "workflow",
+    "flujo de trabajo", "automatizar", "integración", "integracion", "producción",
+    "produccion", "caso de uso", "use case", "arquitectura", "architecture", "mcp",
+    "rag", "fine-tuning", "n8n", "zapier", "make", "supabase", "postgres", "docker",
+    "ahorro", "costo", "cost", "pricing", "precio", "token", "latencia", "latency",
+    "b2b", "saas", "crm", "erp", "ventas", "soporte", "pipeline",
+]
+
+FLUFF_KEYWORDS = [
+    "demanda", "juicio", "policía", "policia", "arresto", "allana", "casa de",
+    "famoso", "celebridad", "chisme", "polémica", "polemica", "horóscopo",
+    "horoscopo", "crimen", "homicidio", "ataque", "adolescente", "suicidio",
+]
+
+BANNED_CLICHES = [
+    "atención emprendedor",
+    "cambiar todas las reglas del juego",
+    "cambiaron las reglas",
+    "operan veinticuatro siete",
+    "operan 24 horas continuas",
+    "el 85% de las empresas",
+    "ochenta y cinco por ciento de las empresas",
+    "quienes dominan esta tecnología no compiten por precio",
+    "cobra por tu valor",
+    "no compitas por precio",
 ]
 
 
@@ -115,14 +152,57 @@ def _load_used_urls():
     return used
 
 
+def _extract_hard_facts(text):
+    """Extrae oraciones con cifras/métricas reales y una insignia corta para la Escena 3."""
+    if not text:
+        return {"facts": [], "metric": "DATO", "number": None, "context": ""}
+    sentences = [
+        s.strip()
+        for s in re.split(r"(?<=[.!?])\s+", re.sub(r"\s+", " ", text))
+        if 35 <= len(s.strip()) <= 210
+    ]
+    num_re = re.compile(
+        r"(\b\d+(?:[.,]\d+)?\s*(?:%|por ciento|percent|x|veces|millones|miles|billones|billion|million|k\b|m\b|usd|dólares|dolares|euros|horas|minutos|segundos|ms|gb|tb|parámetros|parametros|parameters|tokens)\b|\$\s*\d+(?:[.,]\d+)?\s*[kmb]?)",
+        re.I,
+    )
+    facts = [s for s in sentences if num_re.search(s)][:4]
+
+    pct_match = re.search(r"\b([1-9]\d?)\s*(?:%|por ciento|percent)", text, re.I)
+    mult_match = re.search(r"\b(\d+(?:[.,]\d+)?)\s*(?:x|veces)\b", text, re.I)
+    money_match = re.search(r"\$\s*(\d+(?:[.,]\d+)?\s*[kmb]?)", text, re.I)
+    count_match = re.search(r"\b(\d{2,4})\s+(?:empresas|modelos|agentes|clientes|usuarios|herramientas|flujos|integraciones|nodos|workflows|apps)\b", text, re.I)
+
+    metric = "IA B2B"
+    num_val = None
+    if pct_match:
+        num_val = int(pct_match.group(1))
+        metric = f"{num_val}%"
+    elif mult_match:
+        metric = f"{mult_match.group(1).replace(',', '.')}X"[:6]
+    elif money_match:
+        metric = f"${money_match.group(1).upper().replace(' ', '')}"[:6]
+    elif count_match:
+        metric = count_match.group(1)[:6]
+    elif re.search(r"\bopen[\s-]?source\b|código abierto", text, re.I):
+        metric = "OPEN"
+    elif re.search(r"\bapi\b|\bsdk\b|\bmcp\b", text, re.I):
+        metric = "API"
+
+    return {
+        "facts": facts,
+        "metric": metric,
+        "number": num_val,
+        "context": facts[0] if facts else (sentences[0] if sentences else ""),
+    }
+
+
 def fetch_latest_ai_news():
     """
-    1) Revisa talento_queue.json si hay post reciente.
-    2) Si no, consulta los feeds RSS de Talento con Tarifa y extrae el artículo más relevante de IA.
+    Consulta los feeds RSS (ES + EN) de Talento con Tarifa y extrae el artículo
+    con mayor densidad técnica/práctica ("carnita") y sin repetir URLs usadas.
     """
     used_urls = _load_used_urls()
 
-    # 1. Revisar feeds RSS en vivo
     candidates = []
     for feed_url in FEEDS:
         try:
@@ -132,10 +212,25 @@ def fetch_latest_ai_news():
             )
             xml_bytes = urllib.request.urlopen(req, timeout=10).read()
             root = ET.fromstring(xml_bytes)
-            for item in root.findall(".//item"):
-                title = (item.findtext("title") or "").strip()
+            # Soporta tanto RSS (<item>) como Atom (<entry>)
+            items = root.findall(".//item") or root.findall(".//{http://www.w3.org/2005/Atom}entry")
+            for item in items:
+                title = (
+                    item.findtext("title")
+                    or item.findtext("{http://www.w3.org/2005/Atom}title")
+                    or ""
+                ).strip()
                 link = (item.findtext("link") or "").strip()
-                desc = item.findtext("description") or ""
+                if not link:
+                    atom_link = item.find("{http://www.w3.org/2005/Atom}link")
+                    if atom_link is not None:
+                        link = (atom_link.attrib.get("href") or "").strip()
+                desc = (
+                    item.findtext("description")
+                    or item.findtext("{http://www.w3.org/2005/Atom}summary")
+                    or item.findtext("{http://www.w3.org/2005/Atom}content")
+                    or ""
+                )
                 content_encoded = ""
                 for child in item:
                     if child.tag.endswith("encoded") and child.text:
@@ -146,35 +241,44 @@ def fetch_latest_ai_news():
                 if _normalize_url(link) in used_urls:
                     continue
 
-                text_lower = f"{title} {body[:400]}".lower()
-                score = sum(3 if kw in title.lower() else 1 for kw in AI_KEYWORDS if kw in text_lower)
-                if score >= 2 and len(body) > 120:
+                text_lower = f"{title} {body[:600]}".lower()
+                ai_score = sum(3 if kw in title.lower() else 1 for kw in AI_KEYWORDS if kw in text_lower)
+                meat_score = sum(2 if kw in title.lower() else 1 for kw in MEAT_KEYWORDS if kw in text_lower)
+                fluff_penalty = sum(4 for kw in FLUFF_KEYWORDS if kw in text_lower)
+                if re.search(r"\b\d+(?:[.,]\d+)?\s*(?:%|x|millones|billion|million|usd|\$|ms|gb|tokens)\b", text_lower):
+                    meat_score += 2
+                total_score = ai_score + meat_score - fluff_penalty
+
+                if ai_score >= 2 and total_score >= 3 and len(body) > 120:
                     candidates.append(
                         {
                             "title": html.unescape(title),
                             "link": link,
                             "text": body[:6000],
-                            "score": score,
+                            "score": total_score,
+                            "meat": meat_score,
                         }
                     )
         except Exception as e:
             print(f"   (Aviso RSS {feed_url[:35]}...: {e})")
 
-    candidates.sort(key=lambda x: x["score"], reverse=True)
+    candidates.sort(key=lambda x: (x["score"], x["meat"]), reverse=True)
     if candidates:
         best = candidates[0]
-        print(f"📰 Noticia IA extraída: \"{best['title']}\" ({best['link']})")
+        print(f"📰 Noticia IA extraída: \"{best['title']}\" (score={best['score']}, carnita={best['meat']}) [{best['link']}]")
         return best
 
     return {
-        "title": "Agentes de IA y Automatización para Negocios en Latinoamérica",
+        "title": "Arquitectura de Agentes con MCP y Flujos en n8n para Operaciones B2B",
         "link": "https://talentocontarifa.lat",
         "text": (
-            "Las empresas y negocios locales que integran agentes autónomos de inteligencia artificial "
-            "están reduciendo hasta un 70% el tiempo en tareas repetitivas de atención a clientes, "
-            "ventas y marketing digital, operando 24/7 sin fricción."
+            "El protocolo MCP (Model Context Protocol) combinado con flujos de trabajo en n8n permite "
+            "conectar modelos LLM directamente a bases de datos SQL, CRMs y APIs internas con control "
+            "de latencia y auditoría, reduciendo el costo por millón de tokens en un 62% frente a "
+            "arquitecturas monolíticas sin caché."
         ),
-        "score": 10,
+        "score": 12,
+        "meat": 8,
     }
 
 
@@ -191,7 +295,7 @@ def _enforce_contact_ending(scenes):
 def generate_tct_5_scenes(news_item=None):
     """
     Genera las 5 escenas oficiales de Talento con Tarifa usando Groq (Llama 3.3 70B)
-    o Gemini (gemini-2.5-flash), con textos extraídos para los apoyos visuales inferiores
+    o Gemini (gemini-2.5-flash), con datos duros reales del artículo, cero clichés
     y la cortinilla de salida oficial en la escena 5.
     """
     env = _load_env_vars()
@@ -201,8 +305,17 @@ def generate_tct_5_scenes(news_item=None):
     if news_item is None:
         news_item = fetch_latest_ai_news()
 
-    prompt = f"""Actúa como director de arte y curador de "Talento con Tarifa".
-Tu misión: convertir esta noticia del día en un video narrativo de impacto presentado por nuestro Host Virtual para emprendedores latinoamericanos.
+    hard_facts = _extract_hard_facts(f"{news_item['title']}. {news_item.get('text', '')}")
+    facts_block = (
+        "DATOS DUROS EXTRAÍDOS DEL ARTÍCULO (úsalos obligatoriamente en las escenas 2 y 3):\n- "
+        + "\n- ".join(hard_facts["facts"])
+        if hard_facts["facts"]
+        else "REGLA DE DATOS: Cita únicamente los nombres técnicos, modelos, empresas y cifras reales del artículo."
+    )
+    banned_block = ", ".join(f'"{c}"' for c in BANNED_CLICHES)
+
+    prompt = f"""Actúa como Director Técnico y Estratega B2B de "Talento con Tarifa".
+Tu misión: convertir esta noticia técnica o de negocios de IA (puede estar en inglés o español) en un guion en ESPAÑOL de 5 escenas con sustancia real ("con carnita"), datos concretos y aplicación práctica.
 
 NOTICIA EXTRAÍDA:
 Título: {news_item['title']}
@@ -212,25 +325,31 @@ Contenido:
 {news_item['text'][:4500]}
 \"\"\"
 
+{facts_block}
+Métrica sugerida para Escena 3: "{hard_facts['metric']}"
+
+PROHIBIDO USAR ESTOS CLICHÉS QUEMADOS: {banned_block}. Tampoco inventes el porcentaje "85%".
+
 Debes crear exactamente 5 escenas en este orden:
-1. "title": Gancho inicial impactante. Requiere:
+1. "title": Gancho técnico/directo sobre la noticia real (entra directo con el nombre de la tecnología, empresa o hallazgo, sin "¡Atención emprendedor!"). Requiere:
    - "text1" y "text2" (máximo 14 letras cada uno, MAYÚSCULAS).
-   - "tag": frase corta de contexto (ej: "✦ NOTICIAS IA ✦").
-   - "voice_text": frase hablada exacta (13 a 18 palabras, español neutro energético).
-   - "subtitle": resumen corto extraído para el apoyo visual inferior (máx 10 palabras).
-2. "image_text": Datos clave extraídos de la noticia. Requiere:
-   - "title": titular corto de la escena (máx 22 letras, MAYÚSCULAS).
-   - "key_points": array de EXACTAMENTE 3 datos o ideas clave extraídas (máx 5 palabras cada una).
-   - "voice_text": frase hablada que explica estos 3 puntos (15 a 22 palabras).
+   - "tag": categoría técnica (ej: "✦ INGENIERÍA IA ✦" o "✦ RADIOGRAFÍA ROI ✦").
+   - "voice_text": frase hablada exacta con el hecho central de la noticia (13 a 18 palabras, español neutro).
+   - "subtitle": resumen corto para la barra inferior (máx 10 palabras).
+2. "image_text": Desglose técnico / mecánico de la noticia. Requiere:
+   - "title": titular corto de lo que hace o cambia (máx 22 letras, MAYÚSCULAS).
+   - "key_points": array de EXACTAMENTE 3 datos o mecanismos concretos del artículo (máx 5 palabras cada uno).
+   - "voice_text": frase hablada que explica estos 3 puntos concretos (15 a 22 palabras).
    - "subtitle": subtítulo corto para la barra inferior (máx 10 palabras).
-3. "big_percentage": Estadística o magnitud de impacto. Requiere:
-   - "number": porcentaje numérico real o estimado de impacto (15 a 98).
-   - "label": etiqueta corta de la cifra (máx 22 letras, ej: "AHORRO EN TIEMPO OPERATIVO").
-   - "voice_text": frase hablada explicando la estadística o el impacto en negocios (13 a 18 palabras).
+3. "big_percentage": El DATO DURO o MÉTRICA REAL del artículo. Requiere:
+   - "metric": insignia corta (máx 6 caracteres) con la cifra o hallazgo real (ej: "{hard_facts['metric']}", "3.5X", "$20/M", "OPEN", "API", "66%").
+   - "number": si el dato real es un porcentaje (1 a 99), pon el entero; si NO es porcentaje, pon null.
+   - "label": qué mide o significa ese dato en el artículo (máx 22 letras).
+   - "voice_text": frase hablada explicando el dato duro real del artículo (13 a 18 palabras).
    - "subtitle": subtítulo corto para la barra inferior (máx 10 palabras).
-4. "image_text": La jugada estratégica para el emprendedor. Requiere:
-   - "title": titular de acción (máx 22 letras, MAYÚSCULAS, ej: "AUTOMATIZA Y ESCALA").
-   - "voice_text": frase hablada de reflexión o estrategia práctica (13 a 18 palabras).
+4. "image_text": La jugada operativa o arquitectónica aplicable. Requiere:
+   - "title": titular táctico específico al tema de hoy (máx 22 letras, MAYÚSCULAS; PROHIBIDO poner "COBRA POR TU VALOR").
+   - "voice_text": recomendación accionable y específica derivada de esta noticia para quien construye o dirige un negocio (13 a 18 palabras).
    - "subtitle": frase contundente para el apoyo visual inferior (máx 10 palabras).
 5. "cta": Cortinilla de salida oficial de Talento con Tarifa. Requiere:
    - "headline": "¿LISTO PARA DOMINAR?"
@@ -255,7 +374,7 @@ Responde ÚNICAMENTE con JSON válido:
                         "model": model_name,
                         "response_format": {"type": "json_object"},
                         "messages": [{"role": "user", "content": prompt}],
-                        "temperature": 0.7,
+                        "temperature": 0.65,
                     }
                 ).encode("utf-8")
                 req = urllib.request.Request(
@@ -287,7 +406,7 @@ Responde ÚNICAMENTE con JSON válido:
                     {
                         "contents": [{"parts": [{"text": prompt}]}],
                         "generationConfig": {
-                            "temperature": 0.7,
+                            "temperature": 0.65,
                             "responseMimeType": "application/json",
                         },
                     }
@@ -311,17 +430,18 @@ Responde ÚNICAMENTE con JSON válido:
     print("ℹ️ Extrayendo 5 escenas directamente del artículo RSS detectado...")
     raw_title = news_item["title"].strip()
     clean_words = [w for w in re.sub(r"[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9\s]", "", raw_title).upper().split() if len(w) > 2]
-    t1 = " ".join(clean_words[:2])[:14] or "IMPACTO IA"
-    t2 = " ".join(clean_words[2:4])[:14] or "NOTICIA HOY"
+    t1 = " ".join(clean_words[:2])[:14] or "SISTEMA IA"
+    t2 = " ".join(clean_words[2:4])[:14] or "EN PRODUCCIÓN"
 
     sentences = [
         s.strip()
         for s in re.split(r"(?<=[.!?])\s+", news_item.get("text", ""))
         if 35 <= len(s.strip()) <= 165
     ]
-    hook_voice = f"¡Atención! {raw_title}."
-    s2_voice = sentences[0] if len(sentences) > 0 else "Esta tendencia de inteligencia artificial está transformando la productividad y la seguridad en toda la industria."
-    s3_voice = sentences[1] if len(sentences) > 1 else "Más del ochenta y cinco por ciento de los equipos digitales están ajustando su estrategia ante este cambio."
+    hook_voice = f"{raw_title}."
+    s2_voice = sentences[0] if len(sentences) > 0 else f"El reporte detalla cómo {raw_title} modifica la arquitectura técnica y operativa del sector."
+    s3_voice = hard_facts["context"] if hard_facts["context"] else (sentences[1] if len(sentences) > 1 else s2_voice)
+    s4_voice = sentences[2] if len(sentences) > 2 else "Integra esta capacidad mediante API o flujos automatizados en tus procesos críticos antes de escalar costos."
 
     def _clip_words(txt, max_chars=74):
         txt = str(txt or "").strip()
@@ -330,14 +450,10 @@ Responde ÚNICAMENTE con JSON válido:
         cut = txt[:max_chars].rsplit(" ", 1)[0].rstrip(",:;.")
         return cut + "..."
 
-    # Extraer 3 puntos clave reales del título/artículo
     clauses = [c.strip() for c in re.split(r"[,:;—\-]|\by\b|\bque\b", raw_title) if len(c.strip()) >= 8]
-    kp1 = _clip_words(clauses[0] if len(clauses) > 0 else "Impacto directo en usuarios IA", 38)
-    kp2 = _clip_words(clauses[1] if len(clauses) > 1 else "Nuevos estándares en modelos", 38)
-    kp3 = _clip_words(clauses[2] if len(clauses) > 2 else "Oportunidad para negocios", 38)
-
-    pct_match = re.search(r"\b([1-9]\d)\s*%", news_item.get("text", ""))
-    pct_num = int(pct_match.group(1)) if pct_match else 85
+    kp1 = _clip_words(clauses[0] if len(clauses) > 0 else "Integración técnica directa", 38)
+    kp2 = _clip_words(clauses[1] if len(clauses) > 1 else "Impacto en arquitectura B2B", 38)
+    kp3 = _clip_words(clauses[2] if len(clauses) > 2 else "Optimización de flujos IA", 38)
 
     return {
         "topic": raw_title,
@@ -349,29 +465,30 @@ Responde ÚNICAMENTE con JSON válido:
                     "type": "title",
                     "text1": t1,
                     "text2": t2,
-                    "tag": "// NOTICIAS IA HOY //",
+                    "tag": "// INGENIERÍA Y DATOS IA //",
                     "voice_text": hook_voice,
                     "subtitle": _clip_words(raw_title, 78),
                 },
                 {
                     "type": "image_text",
-                    "title": "PUNTOS EXTRAÍDOS",
+                    "title": "DESGLOSE TÉCNICO",
                     "key_points": [kp1, kp2, kp3],
                     "voice_text": s2_voice,
                     "subtitle": _clip_words(s2_voice, 72),
                 },
                 {
                     "type": "big_percentage",
-                    "number": pct_num,
-                    "label": "IMPACTO EN EL SECTOR IA",
+                    "number": hard_facts["number"],
+                    "metric": hard_facts["metric"],
+                    "label": "DATO DURO DEL REPORTE",
                     "voice_text": s3_voice,
                     "subtitle": _clip_words(s3_voice, 78),
                 },
                 {
                     "type": "image_text",
-                    "title": "COBRA POR TU VALOR",
-                    "voice_text": "Quienes dominan esta tecnología no compiten por precio bajo: cobran por el verdadero valor de su talento.",
-                    "subtitle": "Domina la IA y cobra por el valor real de tu talento.",
+                    "title": "JUGADA OPERATIVA",
+                    "voice_text": s4_voice,
+                    "subtitle": _clip_words(s4_voice, 74),
                 },
                 dict(CONTACT_ENDING),
             ]
