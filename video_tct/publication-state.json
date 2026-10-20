@@ -375,5 +375,28 @@
         "id": "UhAtPvUGDVE"
       }
     }
+  },
+  "04694384f58fcd0421a8d014321a4504647ba3f230e7b4475e402392a4b40d46": {
+    "source_url": "https://www.xataka.com/seleccion/que-sea-codigo-abierto-claves-internxt-nube-europea-que-almacena-tus-archivos-forma-segura",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "888989150905246",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18126461839807797",
+        "phase": "publishing",
+        "id": "18117687205799142"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "thcWVuRVU0Q"
+      }
+    }
   }
 }
