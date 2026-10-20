@@ -144,7 +144,8 @@ with sync_playwright() as p:
     comp_data = s3_complete.get("data", {}).get("data") or s3_complete.get("data", {})
     final_media_url = comp_data.get("convertedFileUrl") or comp_data.get("fileUrl") or file_url
 
-    pub_dt = (datetime.datetime.now() + datetime.timedelta(minutes=delay_min)).strftime("%Y-%m-%dT%H:%M:%S")
+    cancun_now = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=5)
+    pub_dt = (cancun_now + datetime.timedelta(minutes=delay_min)).strftime("%Y-%m-%dT%H:%M:%S")
     post_res = page.evaluate("""async ({ mediaUrl, caption, pubDt, tz, userId, blogId }) => {
         const auth = JSON.parse(localStorage.getItem('global.authData') || '{}');
         const payload = {

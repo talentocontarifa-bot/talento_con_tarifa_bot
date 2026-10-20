@@ -71,7 +71,7 @@ jobs:
           pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
           pip install --no-deps chatterbox-tts
           pip install onnxruntime edge-tts opencv-python-headless numpy pillow playwright librosa s3tokenizer resemble-perth conformer==0.3.2 safetensors pyloudnorm omegaconf pykakasi==2.3.0 diffusers==0.29.0 transformers huggingface-hub
-          if [ "${{ inputs.use_3d_tv }}" = "true" ]; then
+          if [ "true" = "true" ]; then
             playwright install --with-deps chromium
           fi
           # Scrapling modo ligero (último recurso de extracción, sin navegadores)
