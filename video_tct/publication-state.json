@@ -350,5 +350,30 @@
         "status": "requires_review"
       }
     }
+  },
+  "5ce580893165e3a7839debf0b48ebed378f1e65646799de1f0e2c8162b2fe62e": {
+    "source_url": "https://www.xataka.com/videojuegos/google-deepmind-presume-haber-batido-a-minecraft-agentes-controlados-gemini-4-argon-apenas-27-horas",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1494173805863713",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18126424114807797",
+        "phase": "publishing",
+        "id": "17891825022459235"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7698827158404171797",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "UhAtPvUGDVE"
+      }
+    }
   }
 }
