@@ -6,6 +6,10 @@ on:
         description: Publicar el video en las redes configuradas
         type: boolean
         default: false
+      use_3d_tv:
+        description: Renderizar dentro de la Tele 3D Café 80s (desactivado = Estudio Pantalla Completa ONNX)
+        type: boolean
+        default: false
   repository_dispatch:
     types: [trigger-video-tct]
   schedule:
@@ -59,18 +63,17 @@ jobs:
           restore-keys: |
             chatterbox-rufino-v2-
             chatterbox-goku-v1-
-      - name: Instalar herramientas y Chatterbox TTS Local
+      - name: Instalar herramientas, ONNX Runtime y Chatterbox TTS Local
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg unzip curl
           pip install --upgrade pip
           pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
           pip install --no-deps chatterbox-tts
-          pip install edge-tts opencv-python-headless numpy pillow playwright librosa s3tokenizer resemble-perth conformer==0.3.2 safetensors pyloudnorm omegaconf pykakasi==2.3.0 diffusers==0.29.0 transformers huggingface-hub
-          playwright install --with-deps chromium
-          curl -fsSL https://github.com/DanielSWolf/rhubarb-lip-sync/releases/download/v1.13.0/Rhubarb-Lip-Sync-1.13.0-Linux.zip -o /tmp/rhubarb.zip
-          sudo unzip -q /tmp/rhubarb.zip -d /opt/rhubarb
-          sudo ln -sf /opt/rhubarb/Rhubarb-Lip-Sync-1.13.0-Linux/rhubarb /usr/local/bin/rhubarb
+          pip install onnxruntime edge-tts opencv-python-headless numpy pillow playwright librosa s3tokenizer resemble-perth conformer==0.3.2 safetensors pyloudnorm omegaconf pykakasi==2.3.0 diffusers==0.29.0 transformers huggingface-hub
+          if [ "${{ inputs.use_3d_tv }}" = "true" ]; then
+            playwright install --with-deps chromium
+          fi
           # Scrapling modo ligero (último recurso de extracción, sin navegadores)
           pip install -r requirements-scraper.txt
           npm ci
@@ -90,8 +93,10 @@ jobs:
           ELEVENLABS_MODEL_ID: ${{ vars.ELEVENLABS_MODEL_ID || 'eleven_v4_turbo' }}
           JINA_API_KEY: ${{ secrets.JINA_API_KEY }} # Opcional: más cuota en Jina Reader
         run: npm run generate --prefix video_tct
-      - name: Validar composición y renderizar con Toon Maker (Personaje 01)
+      - name: Validar composición y renderizar con Toon Maker ONNX (Personaje 01)
         working-directory: video_tct
+        env:
+          TCT_DISABLE_3D_TV: ${{ inputs.use_3d_tv && '0' || '1' }}
         run: |
           mkdir -p out
           python render_toon_tct.py --output out/render.mp4
@@ -120,4 +125,3 @@ jobs:
             bash .github/scripts/persist_state.sh "chore: persist video publication state [skip ci]" \
               video_tct/publication-state.json video_tct/used_video_news.json published_news.json
           fi
-

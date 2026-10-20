@@ -448,7 +448,7 @@ charTempCanvas.width = 640;
 charTempCanvas.height = 512;
 const charTempCtx = charTempCanvas.getContext('2d');
 
-function drawInsideCrtScreen(snapIdx, prevIdx, activeShot, tSec, normVol, isChannelCut, sceneIdx) {{
+function drawInsideCrtScreen(snapIdx, prevIdx, activeShot, tSec, normVol, isChannelCut, sceneIdx, customSpriteImg = null) {{
   const W = 640, H = 512;
   crtCtx.clearRect(0, 0, W, H);
 
@@ -505,7 +505,7 @@ function drawInsideCrtScreen(snapIdx, prevIdx, activeShot, tSec, normVol, isChan
   }}
 
   // 2. Dibujar al Personaje 01 encuadrado para la pantalla 4:3 de la tele
-  const spriteImg = ladderImages[snapIdx] || ladderImages[2];
+  const spriteImg = customSpriteImg || ladderImages[snapIdx] || ladderImages[2];
   if (spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0) {{
     charTempCtx.clearRect(0, 0, W, H);
     const cx = PAYLOAD.focus_center_x || 360;
@@ -537,7 +537,7 @@ function drawInsideCrtScreen(snapIdx, prevIdx, activeShot, tSec, normVol, isChan
     charTempCtx.restore();
 
     // Desfase cromático RGB dentro del tubo CRT en sílabas fuertes o cambios de plano
-    const visemeJump = Math.abs(snapIdx - prevIdx);
+    const visemeJump = customSpriteImg ? 0 : Math.abs(snapIdx - prevIdx);
     const strongSyllable = (visemeJump >= 3 && normVol > 0.48) || isChannelCut;
     if (strongSyllable) {{
       const rgbShift = isChannelCut ? 9 : Math.round(3 + normVol * 4);
@@ -1664,7 +1664,7 @@ function drawTctTopBranding(targetCtx, tSec, totalDur, hideBottomPill) {{
 // ============================================================================
 let prevSceneIdxGlobal = 0;
 
-function renderCompositeAtState(tSec, totalDur, snapIdx, prevIdx, normVol, isOffline = false) {{
+function renderCompositeAtState(tSec, totalDur, snapIdx, prevIdx, normVol, isOffline = false, customSpriteImg = null) {{
   const sceneInfo = getSceneIndexAtTime(tSec, totalDur);
   const activeSceneIdx = sceneInfo.activeIdx;
 
@@ -1683,7 +1683,7 @@ function renderCompositeAtState(tSec, totalDur, snapIdx, prevIdx, normVol, isOff
   if (cutGlitchFrames > 0) cutGlitchFrames--;
 
   // 1. Actualizar pantalla CRT interna con el personaje + Max Headroom FX
-  drawInsideCrtScreen(snapIdx, prevIdx, activeShot, tSec, normVol, isChannelCut, activeSceneIdx);
+  drawInsideCrtScreen(snapIdx, prevIdx, activeShot, tSec, normVol, isChannelCut, activeSceneIdx, customSpriteImg);
   crtTexture.needsUpdate = true;
 
   // 2. Actualizar física 3D de la Tele y Cámara en Three.js
@@ -1722,11 +1722,17 @@ window.addEventListener('load', () => {{
   setTimeout(() => {{ window.isReady = true; }}, 250);
 }});
 
-window.renderOfflineBatch = function(framesSpec) {{
+window.renderOfflineBatch = async function(framesSpec) {{
   const outJpegs = [];
   for (let k = 0; k < framesSpec.length; k++) {{
     const f = framesSpec[k];
-    renderCompositeAtState(f.tSec, f.totalDur, f.snapIdx, f.prevIdx, f.normVol, true);
+    let customImg = null;
+    if (f.customFrameUrl) {{
+      customImg = new Image();
+      customImg.src = f.customFrameUrl;
+      await customImg.decode();
+    }}
+    renderCompositeAtState(f.tSec, f.totalDur, f.snapIdx, f.prevIdx, f.normVol, true, customImg);
     outJpegs.push(stageCanvas.toDataURL('image/jpeg', 0.94));
   }}
   return outJpegs;
@@ -1850,6 +1856,7 @@ def render_threejs_cafe80s_video(
     fps,
     final_audio_for_mux,
     output_mp4_path,
+    onnx_rgba_frames=None,
 ):
     """
     Renderiza el video MP4 usando el motor Three.js WebGL real (en Chromium vía Playwright)
@@ -1888,15 +1895,18 @@ def render_threejs_cafe80s_video(
     prev_idx = 2
     for i in range(total_vframes):
         snap_idx = int(np.clip(round(positions[i]), 0, len(packager.rgba_ladder) - 1))
-        frames_spec.append(
-            {
-                "tSec": round(i / float(fps), 4),
-                "totalDur": round(duration_sec, 4),
-                "snapIdx": snap_idx,
-                "prevIdx": prev_idx,
-                "normVol": round(float(norm_rms[i]), 4),
-            }
-        )
+        spec_item = {
+            "tSec": round(i / float(fps), 4),
+            "totalDur": round(duration_sec, 4),
+            "snapIdx": snap_idx,
+            "prevIdx": prev_idx,
+            "normVol": round(float(norm_rms[i]), 4),
+        }
+        if onnx_rgba_frames is not None and i < len(onnx_rgba_frames):
+            ok_w, buf_w = cv2.imencode(".webp", onnx_rgba_frames[i][:520, :], [int(cv2.IMWRITE_WEBP_QUALITY), 86])
+            if ok_w:
+                spec_item["customFrameUrl"] = "data:image/webp;base64," + base64.b64encode(buf_w.tobytes()).decode("ascii")
+        frames_spec.append(spec_item)
         prev_idx = snap_idx
 
     ffmpeg_cmd = [

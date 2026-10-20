@@ -418,6 +418,21 @@ class ToonPackager:
         jaw_m = cv2.GaussianBlur(jaw_m, (31, 31), 11.0)
         self.jaw_feather_mask = jaw_m.reshape(self.H, self.W, 1) * 0.24
 
+        # Motor Ultraligero ONNX (FeatherTalk + FeatherHuBERT) si existe carpeta onnx/ junto al video semilla
+        self.onnx_engine = None
+        onnx_dir = os.path.join(vid_dir, "onnx")
+        if os.environ.get("TCT_DISABLE_ONNX", "").strip() != "1" and os.path.exists(os.path.join(onnx_dir, "feathertalk_144.onnx")):
+            try:
+                from onnx_lipsync import OnnxLipSyncEngine
+                self.onnx_engine = OnnxLipSyncEngine(
+                    source_video_path=source_video_path,
+                    onnx_dir=onnx_dir,
+                    ffmpeg_path=ffmpeg_path,
+                )
+                print(f"   🤖 Motor ONNX Digital Human cargado desde: {onnx_dir}")
+            except Exception as e_onnx:
+                print(f"   ⚠️ Aviso motor ONNX ({e_onnx}), usando escalera de visemas clásica...")
+
     def _default_dark_bg(self):
         bg = np.zeros((self.H, self.W, 3), dtype=np.uint8)
         bg[:] = (28, 18, 12)
@@ -2114,6 +2129,19 @@ class ToonPackager:
         )
         duration_sec = total_vframes / float(fps)
 
+        onnx_rgba_frames = None
+        if getattr(self, "onnx_engine", None) is not None and os.environ.get("TCT_DISABLE_ONNX", "").strip() != "1":
+            try:
+                onnx_rgba_frames = self.onnx_engine.synthesize_rgba_frames(
+                    clean_voice_wav=clean_voice_wav,
+                    total_vframes=total_vframes,
+                    fps=fps,
+                    key_frame_fn=self.key_frame_clean_rgba,
+                )
+            except Exception as e_syn:
+                print(f"   ⚠️ Error en síntesis ONNX ({e_syn}), usando escalera de 16 frames...")
+                onnx_rgba_frames = None
+
         # Preparar línea de tiempo de las 5 escenas (Apoyos visuales inferiores + Cortinilla de Salida)
         scenes_timeline = (
             self._ensure_tct_scenes_timeline(scenes, script_text, duration_sec)
@@ -2126,7 +2154,10 @@ class ToonPackager:
         final_audio_for_mux = self.mix_voice_with_bgm(clean_voice_wav, mixed_audio_wav, bgm_vol=0.18)
 
         # 3. Modo Tele 3D Café 80's (Three.js WebGL Real) para Talento con Tarifa
-        use_3d_tv = (brand_preset == "tct") and (os.environ.get("TCT_DISABLE_3D_TV", "").strip() != "1")
+        if onnx_rgba_frames is not None:
+            use_3d_tv = (brand_preset == "tct") and (os.environ.get("TCT_DISABLE_3D_TV", "1").strip() == "0" or os.environ.get("TCT_ENABLE_3D_TV", "").strip() == "1")
+        else:
+            use_3d_tv = (brand_preset == "tct") and (os.environ.get("TCT_DISABLE_3D_TV", "").strip() != "1")
         if use_3d_tv:
             try:
                 import cafe80s_tv_3d
@@ -2156,6 +2187,7 @@ class ToonPackager:
                     fps=fps,
                     final_audio_for_mux=final_audio_for_mux,
                     output_mp4_path=output_mp4_path,
+                    onnx_rgba_frames=onnx_rgba_frames,
                 )
                 if ok_3d:
                     if os.path.exists(mixed_audio_wav) and mixed_audio_wav != clean_voice_wav:
@@ -2200,7 +2232,10 @@ class ToonPackager:
             vol = float(norm_rms[i])
             viseme_jump = 0
 
-            if self.blend_mode == "snap" or self.phonetic_mode:
+            if onnx_rgba_frames is not None and i < len(onnx_rgba_frames):
+                sprite_rgba = onnx_rgba_frames[i]
+                viseme_jump = 0
+            elif self.blend_mode == "snap" or self.phonetic_mode:
                 snap_idx = int(np.clip(round(pos), 0, len(self.rgba_ladder) - 1))
                 viseme_jump = abs(snap_idx - prev_snap_idx)
                 sprite_rgba = self.rgba_ladder[snap_idx]
