@@ -287,8 +287,12 @@ def _enforce_contact_ending(scenes):
         scenes = []
     while len(scenes) < 5:
         scenes.append(dict(CONTACT_ENDING))
-    scenes = scenes[:5]
-    scenes[4] = {**scenes[4], **CONTACT_ENDING}
+    if len(scenes) == 5:
+        scenes[4] = {**scenes[4], **CONTACT_ENDING}
+    elif scenes[-1].get("type") == "cta":
+        scenes[-1] = {**scenes[-1], **CONTACT_ENDING}
+    else:
+        scenes.append(dict(CONTACT_ENDING))
     return scenes
 
 
@@ -314,8 +318,8 @@ def generate_tct_5_scenes(news_item=None):
     )
     banned_block = ", ".join(f'"{c}"' for c in BANNED_CLICHES)
 
-    prompt = f"""Actúa como Director Técnico y Locutor Estelar de "Talento con Tarifa".
-Tu misión: convertir esta noticia técnica o de negocios de IA (puede estar en inglés o español) en un guion en ESPAÑOL de 5 escenas con sustancia real ("con carnita"), datos concretos y un ritmo oral conversacional y fluido (hablando de "tú", nunca de "usted", sin sonar a traducción robótica).
+    prompt = f"""Actúa como Director Técnico y Estratega B2B de "Talento con Tarifa".
+Tu misión: convertir esta noticia técnica o de negocios de IA (puede estar en inglés o español) en un guion en ESPAÑOL de 5 escenas con sustancia real ("con carnita"), datos concretos y aplicación práctica.
 
 NOTICIA EXTRAÍDA:
 Título: {news_item['title']}
@@ -328,29 +332,29 @@ Contenido:
 {facts_block}
 Métrica sugerida para Escena 3: "{hard_facts['metric']}"
 
-PROHIBIDO USAR ESTOS CLICHÉS QUEMADOS: {banned_block}. Tampoco inventes el porcentaje "85%" ni hables de "usted".
+PROHIBIDO USAR ESTOS CLICHÉS QUEMADOS: {banned_block}. Tampoco inventes el porcentaje "85%".
 
 Debes crear exactamente 5 escenas en este orden:
 1. "title": Gancho técnico/directo sobre la noticia real (entra directo con el nombre de la tecnología, empresa o hallazgo, sin "¡Atención emprendedor!"). Requiere:
-   - "text1" y "text2" (máximo 14 letras cada uno, MAYÚSCULAS, en español).
+   - "text1" y "text2" (máximo 14 letras cada uno, MAYÚSCULAS).
    - "tag": categoría técnica (ej: "✦ INGENIERÍA IA ✦" o "✦ RADIOGRAFÍA ROI ✦").
-   - "voice_text": frase hablada fluida y directa con el hecho central de la noticia (13 a 18 palabras, español neutro).
-   - "subtitle": resumen corto para la barra inferior (máx 10 palabras).
+   - "voice_text": gancho hablado extenso, conversacional y con mucha carnita explicando el hecho central y el contraste del mercado (30 a 42 palabras, español neutro).
+   - "subtitle": resumen corto para la barra inferior (máx 11 palabras).
 2. "image_text": Desglose técnico / mecánico de la noticia. Requiere:
    - "title": titular corto de lo que hace o cambia (máx 22 letras, MAYÚSCULAS).
-   - "key_points": array de EXACTAMENTE 3 datos o mecanismos concretos del artículo (máx 5 palabras cada uno).
-   - "voice_text": frase hablada natural que explica estos 3 puntos concretos (15 a 22 palabras).
-   - "subtitle": subtítulo corto para la barra inferior (máx 10 palabras).
+   - "key_points": array de EXACTAMENTE 3 datos o mecanismos concretos del artículo (máx 6 palabras cada uno).
+   - "voice_text": explicación generosa y detallada de estos 3 puntos concretos y cómo operan bajo el capó (35 a 48 palabras).
+   - "subtitle": subtítulo corto para la barra inferior (máx 11 palabras).
 3. "big_percentage": El DATO DURO o MÉTRICA REAL del artículo. Requiere:
    - "metric": insignia corta (máx 6 caracteres) con la cifra o hallazgo real (ej: "{hard_facts['metric']}", "3.5X", "$20/M", "OPEN", "API", "66%").
    - "number": si el dato real es un porcentaje (1 a 99), pon el entero; si NO es porcentaje, pon null.
    - "label": qué mide o significa ese dato en el artículo (máx 22 letras).
-   - "voice_text": frase hablada natural explicando el dato duro real del artículo (13 a 18 palabras).
-   - "subtitle": subtítulo corto para la barra inferior (máx 10 palabras).
+   - "voice_text": análisis profundo y con carnita del dato duro real del artículo, comparando costos, parámetros o rendimiento (32 a 45 palabras).
+   - "subtitle": subtítulo corto para la barra inferior (máx 11 palabras).
 4. "image_text": La jugada operativa o arquitectónica aplicable. Requiere:
    - "title": titular táctico específico al tema de hoy (máx 22 letras, MAYÚSCULAS; PROHIBIDO poner "COBRA POR TU VALOR").
-   - "voice_text": recomendación accionable y directa (hablando de "tú") derivada de esta noticia para quien construye o dirige un negocio (13 a 18 palabras).
-   - "subtitle": frase contundente para el apoyo visual inferior (máx 10 palabras).
+   - "voice_text": recomendación accionable, completa y paso a paso derivada de esta noticia para quien construye o dirige un negocio (32 a 45 palabras).
+   - "subtitle": frase contundente para el apoyo visual inferior (máx 11 palabras).
 5. "cta": Cortinilla de salida oficial de Talento con Tarifa. Requiere:
    - "headline": "¿LISTO PARA DOMINAR?"
    - "sub": "El superpoder de la IA para tu local o negocio."
@@ -358,9 +362,9 @@ Debes crear exactamente 5 escenas en este orden:
    - "voice_text": "{CONTACT_ENDING['voice_text']}"
    - "subtitle": "Visita talentocontarifa.lat y escala tu negocio."
 
-Responde ÚNICAMENTE con JSON válido (con "topic" SIEMPRE traducido o redactado en ESPAÑOL):
+Responde ÚNICAMENTE con JSON válido:
 {{
-  "topic": "Titular atractivo en español",
+  "topic": "...",
   "layout_type": "neo_brutalist",
   "scenes": [ ... ]
 }}"""

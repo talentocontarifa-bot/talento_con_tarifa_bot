@@ -27,11 +27,182 @@ const HISTORY_CHANNEL = 'video_news';
 let processedNewsLink = null;
 let processedNewsTitle = '';
 let extractedArticleImages = [];
+let activeCustomIssueNumber = null;
 
 // DRY_RUN=1: solo selecciona/extrae la noticia y sus imágenes; no llama al LLM, TTS ni escribe archivos
 const DRY_RUN = ['1', 'true', 'yes'].includes(String(process.env.DRY_RUN || '').toLowerCase());
 
-if (!GEMINI_API_KEY && !GROQ_API_KEY && !DRY_RUN) {
+function extractTitleFromScript(rawText) {
+  if (!rawText) return '';
+  const m = String(rawText).match(/\*?T[ÍIíi\ufffd?]TULO:\s*([^\n*]+)\*?/i);
+  return m ? m[1].trim() : '';
+}
+
+/**
+ * Detecta si el usuario envió un guion, videoblog o idea personalizada para el Clon (Personaje 01)
+ * ya sea por variables de entorno (workflow_dispatch: TCT_CUSTOM_TITLE / TCT_CUSTOM_SCRIPT / TCT_ISSUE_NUMBER)
+ * o mediante un Issue abierto en GitHub con etiqueta clon/reel/tct o prefijo [CLON]/[REEL]/[VIDEOBLOG] o bloques VOZ:.
+ */
+function getCustomCloneInput() {
+  const envTitle = (process.env.TCT_CUSTOM_TITLE || '').trim();
+  const envScript = (process.env.TCT_CUSTOM_SCRIPT || '').trim();
+  const envIssue = (process.env.TCT_ISSUE_NUMBER || '').trim();
+
+  if (envTitle || envScript) {
+    console.log(`🎬 [MODO IDEA/GUION DIRECTO] Recibido por workflow_dispatch: "${envTitle || envScript.substring(0, 60)}"`);
+    if (envIssue && /^\d+$/.test(envIssue)) activeCustomIssueNumber = Number(envIssue);
+    return {
+      isCustom: true,
+      title: envTitle || extractTitleFromScript(envScript) || 'Videoblog Talento con Tarifa',
+      script: envScript || envTitle,
+      issueNumber: activeCustomIssueNumber
+    };
+  }
+
+  try {
+    const { execSync } = require('child_process');
+    if (envIssue && /^\d+$/.test(envIssue)) {
+      const out = execSync(`gh issue view ${envIssue} --json number,title,body,labels`, { encoding: 'utf-8', timeout: 20000 });
+      const iss = JSON.parse(out);
+      if (iss && (iss.title || iss.body)) {
+        activeCustomIssueNumber = iss.number;
+        const cleanTitle = String(iss.title || '').replace(/^\s*\[(CLON|REEL|VIDEOBLOG|TCT)\]\s*/i, '').trim();
+        console.log(`🎬 [MODO ISSUE #${iss.number}] Guion/Idea para el Clon detectado: "${cleanTitle}"`);
+        return {
+          isCustom: true,
+          title: extractTitleFromScript(iss.body) || cleanTitle || 'Videoblog Talento con Tarifa',
+          script: iss.body || cleanTitle,
+          issueNumber: iss.number
+        };
+      }
+    }
+
+    const listOut = execSync('gh issue list --state open --limit 20 --json number,title,body,labels', { encoding: 'utf-8', timeout: 20000 });
+    const issues = JSON.parse(listOut);
+    for (const iss of issues) {
+      const labels = (iss.labels || []).map(l => String(typeof l === 'string' ? l : l.name).toLowerCase());
+      const title = String(iss.title || '');
+      const body = String(iss.body || '');
+      const isCloneIssue =
+        labels.some(l => ['clon', 'reel', 'tct', 'videoblog'].includes(l)) ||
+        /^\s*\[(CLON|REEL|VIDEOBLOG|TCT)\]/i.test(title) ||
+        /\*?VOZ:\*?/i.test(body);
+      if (isCloneIssue) {
+        activeCustomIssueNumber = iss.number;
+        const cleanTitle = title.replace(/^\s*\[(CLON|REEL|VIDEOBLOG|TCT)\]\s*/i, '').trim();
+        console.log(`🎬 [MODO ISSUE #${iss.number}] Guion/Idea para el Clon detectado: "${cleanTitle}"`);
+        return {
+          isCustom: true,
+          title: extractTitleFromScript(body) || cleanTitle || 'Videoblog Talento con Tarifa',
+          script: body || cleanTitle,
+          issueNumber: iss.number
+        };
+      }
+    }
+  } catch (e) {
+    // Sin acceso a gh cli o sin issues abiertos, continuar normal
+  }
+  return null;
+}
+
+/**
+ * Si el guion personalizado ya viene con bloques explícitos (*VOZ:* / VOZ:), extrae cada bloque
+ * respetando 100% las palabras del autor para que el clon no recorte ni resuma nada.
+ */
+function parseStructuredVozBlocks(rawScript, fallbackTitle = 'Videoblog IA') {
+  const text = String(rawScript || '');
+  const voiceMatches = [...text.matchAll(/\*?VOZ(?:\s+EN\s+OFF)?:\*?\s*["“]?([^"\n”]+)["”]?/gi)];
+  if (voiceMatches.length < 3) return null;
+
+  const detectedTitle = extractTitleFromScript(text) || fallbackTitle;
+  const blocks = [];
+  for (let i = 0; i < voiceMatches.length; i++) {
+    const startIdx = voiceMatches[i].index;
+    const endIdx = i + 1 < voiceMatches.length ? voiceMatches[i + 1].index : text.length;
+    const chunk = text.slice(startIdx, endIdx);
+    const voiceText = voiceMatches[i][1].trim();
+    const textoMatch = chunk.match(/\*?TEXTO(?:\s+EN\s+PANTALLA)?:\*?\s*([\s\S]*?)(?=\n\s*\*?(?:B-ROLL|\[|$))/i);
+    const screenLines = textoMatch
+      ? textoMatch[1]
+          .split('\n')
+          .map(l => l.replace(/^\*+|\*+$/g, '').trim())
+          .filter(Boolean)
+      : [];
+    blocks.push({ voiceText, screenLines });
+  }
+
+  const titleWords = detectedTitle.toUpperCase().replace(/[^A-ZÁÉÍÓÚÑ0-9\s]/g, '').split(/\s+/).filter(Boolean);
+  const t1 = (titleWords.slice(0, 2).join(' ') || 'PATITO FEO').substring(0, 14);
+  const t2 = (titleWords.slice(2, 5).join(' ') || 'DE LAS IAS').substring(0, 14);
+
+  const scenes = blocks.map((b, idx) => {
+    const subtitleLine = (b.screenLines[0] || b.voiceText).replace(/[👉🤡🦢❌✅]/g, '').trim().substring(0, 74);
+    if (idx === 0) {
+      return {
+        type: 'title',
+        text1: t1,
+        text2: t2,
+        tag: '✦ VIDEOBLOG IA ✦',
+        voice_text: b.voiceText,
+        subtitle: subtitleLine
+      };
+    }
+    const metricMatch = (b.screenLines.join(' ') + ' ' + b.voiceText).match(/\b(\d{2,4}\s*B|\$\s*\d+|\d+\s*%)/i);
+    if (idx === 2 || (metricMatch && idx === 1)) {
+      const rawMetric = metricMatch ? metricMatch[1].replace(/\s+/g, '').toUpperCase().substring(0, 6) : 'GRATIS';
+      return {
+        type: 'big_percentage',
+        number: rawMetric.endsWith('%') ? parseInt(rawMetric, 10) : null,
+        metric: rawMetric,
+        label: (b.screenLines[b.screenLines.length - 1] || 'FRONTERA GRATIS').replace(/[*]/g, '').substring(0, 24).toUpperCase(),
+        voice_text: b.voiceText,
+        subtitle: subtitleLine
+      };
+    }
+    if (b.screenLines.length >= 2) {
+      return {
+        type: 'image_text',
+        title: (b.screenLines[0] || `BLOQUE 0${idx + 1}`).replace(/[👉🤡🦢❌✅*]/g, '').trim().substring(0, 22).toUpperCase(),
+        key_points: b.screenLines.slice(0, 3).map(l => l.replace(/[*]/g, '').trim().substring(0, 38)),
+        voice_text: b.voiceText,
+        subtitle: subtitleLine
+      };
+    }
+    const slashParts = (b.screenLines[0] || '').split('/').map(s => s.trim()).filter(Boolean);
+    if (slashParts.length >= 3) {
+      return {
+        type: 'image_text',
+        title: 'PODER OCULTO EN WHATSAPP',
+        key_points: slashParts.slice(0, 3).map(s => s.substring(0, 36)),
+        voice_text: b.voiceText,
+        subtitle: subtitleLine
+      };
+    }
+    return {
+      type: 'image_text',
+      title: (b.screenLines[0] || 'LA JUGADA REAL').replace(/[👉🤡🦢❌✅*]/g, '').trim().substring(0, 22).toUpperCase(),
+      voice_text: b.voiceText,
+      subtitle: subtitleLine
+    };
+  });
+
+  scenes.push({ ...CONTACT_ENDING });
+
+  return {
+    topic: detectedTitle,
+    theme_color: BRAND_COLOR,
+    layout_type: 'neo_brutalist',
+    social_post: {
+      hook: `**${detectedTitle}:** ${blocks[0].voiceText}`,
+      summary: blocks.slice(1, 3).map(b => b.voiceText).join(' '),
+      bullets: blocks.slice(1, 4).map(b => `**Clave:** ${b.voiceText.substring(0, 120)}`),
+      play: blocks[blocks.length - 1].voiceText
+    },
+    scenes
+  };
+}
+
+if (require.main === module && !GEMINI_API_KEY && !GROQ_API_KEY && !DRY_RUN && !process.env.TCT_CUSTOM_SCRIPT) {
   console.error("❌ Faltan variables de entorno: necesitas GEMINI_API_KEY o GROQ_API_KEY");
   process.exit(1);
 }
@@ -95,6 +266,22 @@ async function extractArticleImages(articleUrl, feedItem, jinaText) {
 // 0. QUEUE/RSS — Lee el contexto del post programado del día o feeds RSS
 // ─────────────────────────────────────────
 async function getTodaysContext() {
+  const customInput = getCustomCloneInput();
+  if (customInput) {
+    processedNewsTitle = customInput.title;
+    const urlInScript = news.extractFirstUrl(customInput.script);
+    processedNewsLink = urlInScript || `https://talentocontarifa.lat/#videoblog-${Date.now()}`;
+    if (urlInScript) {
+      extractedArticleImages = await extractArticleImages(urlInScript, null, customInput.script);
+    }
+    return {
+      isCustom: true,
+      title: customInput.title,
+      message: customInput.script,
+      link: processedNewsLink
+    };
+  }
+
   const PAGE_ID = process.env.META_PAGE_ID;
   const ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN;
 
@@ -264,13 +451,23 @@ function extractWithScrapling(url) {
 }
 
 // ─────────────────────────────────────────
-// 1. GEMINI — Genera guion + estructura de escenas
+// 1. GEMINI/GROQ — Genera guion + estructura de escenas (o respeta bloques VOZ: del usuario)
 // ─────────────────────────────────────────
 async function generateScriptAndScenes() {
-  console.log("🤖 [1/4] Consultando a Gemini/Groq para guion y estructura de escenas...");
+  console.log("🤖 [1/4] Preparando guion y estructura de escenas para el Clon (Personaje 01)...");
 
   const queueContext = await getTodaysContext();
   const rawMessage = queueContext?.message || '';
+
+  // Si el usuario mandó un guion ya estructurado por bloques (VOZ: / TEXTO:), lo respetamos palabra por palabra
+  if (queueContext?.isCustom) {
+    const structured = parseStructuredVozBlocks(rawMessage, queueContext.title);
+    if (structured) {
+      console.log(`✅ [MODO GUION ESTRUCTURADO] Se detectaron ${structured.scenes.length - 1} bloques de VOZ más cortinilla final. Respetando el guion íntegro palabra por palabra.`);
+      return structured;
+    }
+  }
+
   const sharedHistory = news.loadHistory();
   const angle = news.selectEditorialAngle({ title: processedNewsTitle }, rawMessage, sharedHistory);
   const hardFacts = news.extractHardFacts(`${processedNewsTitle}. ${rawMessage}`);
@@ -286,7 +483,15 @@ async function generateScriptAndScenes() {
     console.log(`   Texto (primeros 500):\n-----------------\n${rawMessage.substring(0, 500)}\n-----------------`);
     process.exit(0);
   }
-  const contextSection = queueContext
+  const contextSection = queueContext?.isCustom
+    ? `\nIDEA / GUION ENVIADO POR EL CREADOR (PRIORIDAD ABSOLUTA — desarróllalo con amplitud, conservando su tono conversacional, ejemplos, humor e ideas clave):
+Título / Idea: ${processedNewsTitle}
+Contenido / Notas del Creador:
+"""
+${queueContext.message}
+"""
+`
+    : queueContext
     ? `\nNOTICIA DEL DÍA (puede estar en inglés o español; tu guion SIEMPRE va en español):
 Título: ${processedNewsTitle}
 Contenido:
@@ -298,8 +503,8 @@ Fuente: ${queueContext.link}
     : `\nCONTEXTO DEL DÍA: Usa un caso técnico real de agentes autónomos con MCP (Model Context Protocol) y automatización con n8n para operaciones B2B.\n`;
 
   const factsSection = hardFacts.facts.length > 0
-    ? `\nDATOS DUROS REALES EXTRAÍDOS DEL ARTÍCULO (DEBES usarlos en las escenas 2 y 3; NO inventes porcentajes):\n- ${hardFacts.facts.join('\n- ')}\nMétrica sugerida para Escena 3: "${hardFacts.primaryMetric.label}" (${hardFacts.primaryMetric.context})`
-    : `\nREGLA DE DATOS: Usa únicamente los hechos, herramientas y cifras reales mencionados en el artículo. PROHIBIDO inventar "85%".`;
+    ? `\nDATOS DUROS REALES EXTRAÍDOS DEL TEXTO (DEBES usarlos en las escenas 2 y 3; NO inventes porcentajes):\n- ${hardFacts.facts.join('\n- ')}\nMétrica sugerida para Escena 3: "${hardFacts.primaryMetric.label}" (${hardFacts.primaryMetric.context})`
+    : `\nREGLA DE DATOS: Usa únicamente los hechos, herramientas y cifras reales mencionados en el texto. PROHIBIDO inventar "85%".`;
 
   const historySection = recentTitles.length > 0
     ? `\nTEMAS RECIENTES YA CUBIERTOS (NO repitas las mismas frases de entrada ni el mismo enfoque):\n- ${recentTitles.join('\n- ')}`
@@ -308,8 +513,8 @@ Fuente: ${queueContext.link}
   console.log(`🎯 Ángulo de video: [${angle.name}] | Métrica detectada: ${hardFacts.primaryMetric.label}`);
 
   const prompt = `Actúa como Director Técnico, Arquitecto de IA y Creador Estelar de "Talento con Tarifa".
-Tu misión: transformar la noticia del día en un video vertical y un post con ALTA DENSIDAD DE INFORMACIÓN REAL ("con mucha carnita"), cero relleno corporativo y ritmo directo de tú a tú.
-Si un espectador ve el video o lee el copy, debe llevarse datos técnicos exactos, nombres reales de herramientas/modelos/protocolos, cifras concretas y una jugada de negocio aplicable hoy mismo.
+Tu misión: transformar el tema o noticia del día en un videoblog vertical GENEROSO EN TIEMPO Y EXTENSIÓN (entre 55 y 75 segundos de pura carnita hablada antes del cierre) y un post con ALTA DENSIDAD DE INFORMACIÓN REAL, cero relleno corporativo y ritmo directo de tú a tú.
+Si un espectador ve el video o lee el copy, debe sentir una explicación completa, sabrosa, sin prisas y llena de datos técnicos exactos, nombres reales de herramientas/modelos/protocolos, comparativas de precios/parámetros y una jugada práctica aplicable hoy mismo.
 
 ÁNGULO EDITORIAL OBLIGATORIO: "${angle.name}"
 Directriz: ${angle.directive}
@@ -319,27 +524,27 @@ REGLAS ANTI-PAJA Y ANTI-CLICHÉS (penalización crítica si aparecen):
 ${news.BANNED_CLICHES.map(c => `- "${c}"`).join('\n')}
 - PROHIBIDO usar frases vacías de folleto como "redefine la seguridad", "lidera la innovación", "optimiza tus procesos", "marca un antes y un después" o "en un mundo cada vez más digital".
 - PROHIBIDO inventar el porcentaje "85%", hablar de "usted" (usa SIEMPRE tuteo directo: "tú") o cerrar diciendo "cobra por tu valor".
-- Entra SIEMPRE con hechos duros: qué herramienta/modelo es, qué problema técnico resuelve bajo el capó, cuánto cuesta/ahorra y cómo se conecta.
+- SÉ GENEROSO EN LA EXPLICACIÓN DE CADA ESCENA: no cortes las ideas a la mitad. Cada escena hablada debe tener entre 32 y 48 palabras (totalizando 140 a 185 palabras en las escenas de contenido) para que el video respire como un verdadero videoblog de 60+ segundos.
 
 Debes crear exactamente 5 escenas en este orden:
-1. "title": Gancho explosivo con el hecho técnico o de negocio más fuerte de la nota (sin saludos ni introducciones lentas). Requiere:
+1. "title": Gancho explosivo + el contraste o prejuicio que nadie está viendo (sin saludos lentos). Requiere:
    - 'text1' y 'text2' (máximo 12 letras cada uno, MAYÚSCULAS, en español, ej: nombre del modelo/herramienta + jugada clave).
    - 'tag': categoría específica del ángulo (ej: "${angle.tag}").
-   - 'voice_text': gancho hablado punzante, conversacional y cargado de información real: nombra la herramienta/empresa, qué acaba de lanzar o revelar el reporte y por qué cambia el juego técnico hoy (18 a 25 palabras en español fluido).
+   - 'voice_text': gancho hablado punzante, conversacional y bien desarrollado: plantea el contraste del mercado, nombra la herramienta/empresa, qué prejuicio rompe o qué acaba de lanzar y por qué todos deberían voltear a verla hoy (32 a 45 palabras en español fluido).
    - 'subtitle': titular directo con el dato clave para la barra inferior (máx 11 palabras).
-2. "image_text": El mecanismo bajo el capó (qué hace exactamente y cómo funciona). Requiere:
+2. "image_text": El mecanismo bajo el capó y las pruebas reales (qué hace exactamente y cómo funciona). Requiere:
    - 'title': titular técnico de la arquitectura o mecanismo (máx 22 letras, MAYÚSCULAS).
-   - 'key_points': array de EXACTAMENTE 3 mecanismos o hechos concretos del artículo (de 3 a 6 palabras cada uno con datos reales, ej: "Corre local sin pagar API", "Conecta agentes vía protocolo MCP", "Cero envío de datos a nube"; PROHIBIDO poner palabras sueltas como "Auditable" o "Escalable").
-   - 'voice_text': explicación clara y con carnita de cómo funciona por dentro, qué protocolo o modelo utiliza y qué cuello de botella elimina frente a lo anterior (20 a 28 palabras).
+   - 'key_points': array de EXACTAMENTE 3 mecanismos, comparativas o hechos concretos del tema (de 3 a 6 palabras cada uno con datos reales, ej: "Corre local sin pagar API", "Conecta agentes vía protocolo MCP", "Cero envío de datos a nube"; PROHIBIDO poner palabras sueltas como "Auditable" o "Escalable").
+   - 'voice_text': explicación generosa, clara y con mucha carnita de cómo funciona por dentro, qué modelo o arquitectura utiliza, qué hace mejor que las opciones de pago y qué cuello de botella elimina (36 a 48 palabras).
    - 'subtitle': resumen concreto del mecanismo técnico (máx 11 palabras).
-3. "big_percentage": El DATO DURO, CIFRA o BENCHMARK REAL del artículo. Requiere:
-   - 'metric': string corto (máx 6 caracteres) con la cifra o insignia real del artículo (ej: "${hardFacts.primaryMetric.label}", "3.5X", "$20/M", "LOCAL", "API", "66%"). Si hay un porcentaje real en la nota, pon también 'number' con el entero; si NO es porcentaje, pon 'number': null y usa 'metric'.
+3. "big_percentage": El DATO DURO, CIFRA, PRECIO o BENCHMARK REAL del tema. Requiere:
+   - 'metric': string corto (máx 6 caracteres) con la cifra o insignia real (ej: "${hardFacts.primaryMetric.label}", "816B", "3.5X", "$0/MES", "LOCAL", "66%"). Si hay un porcentaje real en la nota, pon también 'number' con el entero; si NO es porcentaje, pon 'number': null y usa 'metric'.
    - 'label': qué mide exactamente esa cifra en la nota (máx 22 letras).
-   - 'voice_text': explica el impacto real de ese número (cuánto dinero, latencia, tokens, memoria o tiempo ahorra o exige en producción real) sin frases genéricas (18 a 25 palabras).
+   - 'voice_text': desglosa con calma y contundencia el impacto real de ese número (cuántos parámetros tiene, cuánto dinero al mes te ahorra frente a suscripciones de veinte dólares, o cuánta memoria/latencia mejora en producción) con ejemplos concretos (34 a 46 palabras).
    - 'subtitle': el dato duro explicado en una línea directa (máx 11 palabras).
-4. "image_text": La Jugada Práctica / Implementación paso a paso. Requiere:
+4. "image_text": El Poder Oculto y la Jugada Práctica paso a paso. Requiere:
    - 'title': titular táctico específico al caso de uso de hoy (máx 22 letras, MAYÚSCULAS; PROHIBIDO poner "COBRA POR TU VALOR").
-   - 'voice_text': dile exactamente qué flujo de trabajo, integración o servicio B2B puede armar o ajustar hoy mismo con esta tecnología y en qué tipo de proyecto aplicarlo (18 a 26 palabras).
+   - 'voice_text': detalla todas las capacidades prácticas que desbloquea hoy mismo, qué flujo de trabajo o automatización puedes armar con esta tecnología y el remate reflexivo del videoblog antes de despedirte (34 a 48 palabras).
    - 'subtitle': acción concreta a implementar hoy (máx 11 palabras).
 5. "cta": Cierre y llamado a la acción fijo de marca. Requiere:
    - 'headline': "¿LISTO PARA DOMINAR?"
@@ -350,13 +555,13 @@ Debes crear exactamente 5 escenas en este orden:
 
 Además, incluye en la raíz del JSON un objeto "social_post" pensado para que el Copy escrito del post (Facebook, Instagram, TikTok, YouTube) sea una joya editorial llena de valor:
 - "hook": 1 línea magnética y directa con el dato o revelación más potente (puedes usar **negritas**).
-- "summary": 1 párrafo sustancioso (45 a 70 palabras) explicando qué ocurrió exactamente, cómo funciona la herramienta/arquitectura y por qué importa en el mundo real (usa **negritas** en nombres técnicos y cifras).
-- "bullets": array de 3 puntos técnicos o de negocio bien explicados (10 a 18 palabras cada uno, iniciando con el concepto en **negritas**).
-- "play": 1 párrafo corto (25 a 40 palabras) con la jugada táctica: cómo un desarrollador, agencia o dueño de negocio puede aplicar o monetizar esto esta misma semana.
+- "summary": 1 párrafo sustancioso (55 a 85 palabras) explicando qué ocurrió exactamente, cómo funciona la herramienta/arquitectura y por qué importa en el mundo real (usa **negritas** en nombres técnicos y cifras).
+- "bullets": array de 3 puntos técnicos o de negocio bien explicados (12 a 20 palabras cada uno, iniciando con el concepto en **negritas**).
+- "play": 1 párrafo corto (30 a 45 palabras) con la jugada táctica: cómo un desarrollador, agencia o dueño de negocio puede aplicar o monetizar esto esta misma semana.
 
 Reglas de Formato:
-1. Incluye en la raíz del JSON el campo "topic" con el titular de la noticia SIEMPRE en ESPAÑOL atractivo y específico (máx 80 caracteres, sin inglés crudo).
-2. Todos los números o siglas de unidades que deban leerse en 'voice_text' escríbelos en palabras para locución fluida en español (ej: "ciento veintiocho gigas", "veinte dólares", "tres punto cinco veces"), pero en 'subtitle', 'key_points', 'metric' y 'social_post' usa dígitos cortos.
+1. Incluye en la raíz del JSON el campo "topic" con el titular del tema SIEMPRE en ESPAÑOL atractivo y específico (máx 80 caracteres, sin inglés crudo).
+2. Todos los números o siglas de unidades que deban leerse en 'voice_text' escríbelos en palabras para locución fluida en español (ej: "ochocientos dieciséis mil millones de parámetros", "veinte dólares al mes", "tres punto cinco veces"), pero en 'subtitle', 'key_points', 'metric' y 'social_post' usa dígitos cortos.
 3. No pongas asteriscos (**) dentro de 'voice_text', 'subtitle', 'title' ni 'key_points' (sí puedes usar **negritas** dentro de 'social_post').
 
 Responde ÚNICAMENTE con un objeto JSON válido con las claves "topic", "layout_type": "neo_brutalist", "social_post" y "scenes": [ ...5 escenas... ].`;
@@ -471,7 +676,7 @@ Responde ÚNICAMENTE con un objeto JSON válido con las claves "topic", "layout_
         text1: t1,
         text2: t2,
         tag: angle.tag,
-        voice_text: (processedNewsTitle || "Nueva actualización técnica en el ecosistema de inteligencia artificial aplicada.").substring(0, 140),
+        voice_text: (processedNewsTitle || "Nueva actualización técnica en el ecosistema de inteligencia artificial aplicada.").substring(0, 220),
         subtitle: (processedNewsTitle || "Actualización clave en arquitectura de IA.").substring(0, 70)
       },
       {
@@ -482,7 +687,7 @@ Responde ÚNICAMENTE con un objeto JSON válido con las claves "topic", "layout_
           "Flujos automatizados",
           "Control de latencia"
         ],
-        voice_text: fact1.substring(0, 160),
+        voice_text: fact1.substring(0, 240),
         subtitle: fact1.substring(0, 75)
       },
       {
@@ -490,7 +695,7 @@ Responde ÚNICAMENTE con un objeto JSON válido con las claves "topic", "layout_
         number: hardFacts.primaryMetric.number || 100,
         metric: hardFacts.primaryMetric.label || "DATO",
         label: "Métrica del Reporte",
-        voice_text: (hardFacts.primaryMetric.context || fact1).substring(0, 150),
+        voice_text: (hardFacts.primaryMetric.context || fact1).substring(0, 220),
         subtitle: (hardFacts.primaryMetric.context || fact1).substring(0, 75)
       },
       {
@@ -523,6 +728,8 @@ const AI_SIGNATURE_AUDIO =
 
 function sanitizeTtsText(text) {
   return text
+    // Remover etiquetas [pause] si vienen en guiones de ElevenLabs convirtiéndolas en puntos suspensivos/pausa
+    .replace(/\[pause\]/gi, '. ')
     // Reemplazar elipsis con un punto simple para evitar tropezones en ElevenLabs
     .replace(/\.{3,}/g, '.')
     .replace(/\.{2,}/g, '.')
@@ -585,7 +792,7 @@ async function generateVoice(scenes) {
   let currentTime = 0;
   const timelineScenes = [];
 
-  console.log(`\n🎙️ [2/4] Generando locución sincronizada escena por escena...`);
+  console.log(`\n🎙️ [2/4] Generando locución sincronizada escena por escena (${scenes.length} escenas)...`);
 
   // 0. Priorizar ElevenLabs (con rotación de 3 keys). Solo usar Chatterbox local si se pide explícitamente con ENABLE_CHATTERBOX=1
   const cloneScript = path.join(__dirname, '..', 'toon_host', '01', 'clone_voice_tct.py');
@@ -635,8 +842,6 @@ async function generateVoice(scenes) {
   const totalFrames = totalDurationSec * FPS;
 
   // Mezclar snippets en news_voice.mp3 colocando cada uno en su `start` exacto.
-  // (El concat demuxer pegaba los audios sin las pausas de 0.4s que sí cuenta la timeline,
-  //  y la voz se adelantaba ~0.4s por escena respecto a los gráficos.)
   const finalAudioPath = path.join(__dirname, 'public', 'news_voice.mp3');
   const { execSync, execFileSync: execFileSyncMix } = require('child_process');
   const mixArgs = ['-y'];
@@ -756,7 +961,7 @@ async function generateImages(scenes) {
 // ─────────────────────────────────────────
 async function main() {
   try {
-    // PASO 1: Gemini genera el contenido y se restaura el cierre oficial de marca
+    // PASO 1: Generar contenido (o parsear guion directo) y restaurar el cierre oficial de marca
     const rawData = await generateScriptAndScenes();
     if (Array.isArray(rawData?.scenes)) {
       rawData.scenes = rawData.scenes.map(s => ({
@@ -781,7 +986,7 @@ async function main() {
       preview_only: false,
       topic: resolvedTopic,
       source_url: processedNewsLink || null,
-      script: timelineScenes.slice(0, 4).map(s => s.voice_text).filter(Boolean).join(' '),
+      script: timelineScenes.filter(s => s.type !== 'cta').map(s => s.voice_text).filter(Boolean).join(' '),
       social_post: rawData?.social_post || null,
       theme_color: BRAND_COLOR,
       layout_type: data.layout_type || 'neo_brutalist',
@@ -819,14 +1024,31 @@ async function main() {
       }
     }
 
+    if (activeCustomIssueNumber) {
+      try {
+        const { execSync } = require('child_process');
+        execSync(`gh issue close ${activeCustomIssueNumber} -c "✅ Videoblog del Clon generado con éxito (${totalDurationSec}s, ${timelineScenes.length} escenas)."`, { timeout: 20000 });
+        console.log(`🔒 Issue #${activeCustomIssueNumber} cerrado tras generar el guion del Clon.`);
+      } catch (issErr) {
+        console.log(`ℹ️ Aviso al cerrar Issue #${activeCustomIssueNumber}: ${issErr.message}`);
+      }
+    }
+
     // PASO 5: Generar imágenes
     await generateImages(timelineScenes);
 
-    console.log('\n🚀 Todo listo. Remotion puede renderizar ahora.');
+    console.log('\n🚀 Todo listo. Remotion / Toon Maker puede renderizar ahora.');
   } catch (error) {
     console.error("❌ Error crítico:", error);
     process.exit(1);
   }
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  parseStructuredVozBlocks,
+  extractTitleFromScript
+};

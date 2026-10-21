@@ -130,7 +130,6 @@ async function publishReelToInstagram(videoFilePath, options = {}) {
     headers: {
       'Authorization': `OAuth ${accessToken}`,
       'Offset': '0',
-      'offset': '0',
       'file_size': videoSize.toString(),
       'Content-Type': 'application/octet-stream',
       'Content-Length': videoSize.toString()

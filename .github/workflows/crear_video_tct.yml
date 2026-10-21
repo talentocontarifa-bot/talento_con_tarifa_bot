@@ -1,15 +1,28 @@
 name: Crear y publicar Reel TCT
 on:
+  issues:
+    types: [opened, labeled]
   workflow_dispatch:
     inputs:
+      custom_title:
+        description: 'Título o idea central del videoblog (opcional — déjalo vacío para modo automático RSS)'
+        required: false
+        type: string
+        default: ''
+      custom_script:
+        description: 'Guion completo por bloques (VOZ / TEXTO) o idea a desarrollar por tu clon (opcional)'
+        required: false
+        type: string
+        default: ''
+      issue_number:
+        description: 'Número de Issue de GitHub con el guion/idea (opcional)'
+        required: false
+        type: string
+        default: ''
       publish:
         description: Publicar el video en las redes configuradas
         type: boolean
-        default: false
-      use_3d_tv:
-        description: Renderizar dentro de la Tele 3D Café 80s (desactivado = Estudio Pantalla Completa ONNX)
-        type: boolean
-        default: false
+        default: true
   repository_dispatch:
     types: [trigger-video-tct]
   schedule:
@@ -21,8 +34,19 @@ concurrency:
   cancel-in-progress: false
 permissions:
   contents: write
+  issues: write
 jobs:
   video:
+    if: >
+      github.event_name != 'issues' || (contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association) && (
+      contains(github.event.issue.labels.*.name, 'clon') ||
+      contains(github.event.issue.labels.*.name, 'reel') ||
+      contains(github.event.issue.labels.*.name, 'tct') ||
+      contains(github.event.issue.title, '[CLON]') ||
+      contains(github.event.issue.title, '[REEL]') ||
+      contains(github.event.issue.title, '[VIDEOBLOG]') ||
+      contains(github.event.issue.body, '*VOZ:*') ||
+      contains(github.event.issue.body, 'VOZ:')))
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -40,6 +64,10 @@ jobs:
       YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
       YOUTUBE_PRIVACY_STATUS: ${{ secrets.YOUTUBE_PRIVACY_STATUS }}
+      TCT_CUSTOM_TITLE: ${{ inputs.custom_title }}
+      TCT_CUSTOM_SCRIPT: ${{ inputs.custom_script }}
+      TCT_ISSUE_NUMBER: ${{ inputs.issue_number || github.event.issue.number }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -52,28 +80,27 @@ jobs:
           python-version: '3.11'
           cache: pip
           cache-dependency-path: requirements-scraper.txt
-      - name: Caché de pesos locales Chatterbox V3 es-mx-latam (~2.1 GB)
+      - name: Caché de pesos locales Chatterbox Multilingual TTS (~2.1 GB)
         uses: actions/cache@v4
         with:
           path: |
             ~/.cache/huggingface/hub
-            toon_host/01/voice_cache/chatterbox_rufino
             toon_host/01/voice_cache/chatterbox_goku
-          key: chatterbox-rufino-v3-esmx-${{ hashFiles('toon_host/01/clone_voice_tct.py') }}
+          key: chatterbox-goku-v1-${{ hashFiles('toon_host/01/clone_voice_tct.py') }}
           restore-keys: |
-            chatterbox-rufino-v3-esmx-
             chatterbox-goku-v1-
-      - name: Instalar herramientas, ONNX Runtime y Chatterbox TTS Local
+      - name: Instalar herramientas y Chatterbox TTS Local
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg unzip curl
           pip install --upgrade pip
           pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
           pip install --no-deps chatterbox-tts
-          pip install onnxruntime edge-tts opencv-python-headless numpy pillow playwright librosa s3tokenizer resemble-perth conformer==0.3.2 safetensors pyloudnorm omegaconf pykakasi==2.3.0 diffusers==0.29.0 transformers huggingface-hub
-          if [ "true" = "true" ]; then
-            playwright install --with-deps chromium
-          fi
+          pip install edge-tts opencv-python-headless numpy pillow playwright librosa s3tokenizer resemble-perth conformer==0.3.2 safetensors pyloudnorm omegaconf pykakasi==2.3.0 diffusers==0.29.0 transformers huggingface-hub
+          playwright install --with-deps chromium
+          curl -fsSL https://github.com/DanielSWolf/rhubarb-lip-sync/releases/download/v1.13.0/Rhubarb-Lip-Sync-1.13.0-Linux.zip -o /tmp/rhubarb.zip
+          sudo unzip -q /tmp/rhubarb.zip -d /opt/rhubarb
+          sudo ln -sf /opt/rhubarb/Rhubarb-Lip-Sync-1.13.0-Linux/rhubarb /usr/local/bin/rhubarb
           # Scrapling modo ligero (último recurso de extracción, sin navegadores)
           pip install -r requirements-scraper.txt
           npm ci
@@ -81,7 +108,7 @@ jobs:
       - name: Pruebas sin servicios externos
         run: npm test --prefix video_tct
       - name: Validar configuración de publicación
-        if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || inputs.publish
+        if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || github.event_name == 'issues' || inputs.publish
         run: node video_tct/publish_video.js --check-config
       - name: Generar guion, gráficos y narración
         env:
@@ -89,22 +116,19 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-          ELEVENLABS_API_KEYS: ${{ secrets.ELEVENLABS_API_KEYS }}
           ELEVENLABS_VOICE_ID: ${{ vars.ELEVENLABS_VOICE_ID || 'TX3LPaxmHKxFdv7VOQHJ' }}
           ELEVENLABS_MODEL_ID: ${{ vars.ELEVENLABS_MODEL_ID || 'eleven_v4_turbo' }}
           JINA_API_KEY: ${{ secrets.JINA_API_KEY }} # Opcional: más cuota en Jina Reader
         run: npm run generate --prefix video_tct
-      - name: Validar composición y renderizar con Toon Maker ONNX (Personaje 01)
+      - name: Validar composición y renderizar con Toon Maker (Personaje 01)
         working-directory: video_tct
-        env:
-          TCT_DISABLE_3D_TV: ${{ inputs.use_3d_tv && '0' || '1' }}
         run: |
           mkdir -p out
           python render_toon_tct.py --output out/render.mp4
           ffmpeg -y -i out/render.mp4 -c:v libx264 -pix_fmt yuv420p -r 30 -c:a aac -b:a 128k -ar 48000 -movflags +faststart out/video_final_tct.mp4
           node scripts/seal-render.js
       - name: Publicar en Facebook e Instagram
-        if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || inputs.publish
+        if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || github.event_name == 'issues' || inputs.publish
         run: npm run publish --prefix video_tct
       - name: Guardar video, fuentes y estado incluso si una red falla
         if: always()
@@ -120,7 +144,7 @@ jobs:
             published_news.json
             video_tct/public/voice_scene_*.mp3
       - name: Persistir resultados por red
-        if: always() && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || inputs.publish)
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || github.event_name == 'issues' || inputs.publish)
         run: |
           if [ -f video_tct/publication-state.json ]; then
             bash .github/scripts/persist_state.sh "chore: persist video publication state [skip ci]" \

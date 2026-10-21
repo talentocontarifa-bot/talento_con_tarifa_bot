@@ -6,8 +6,16 @@ const CONTACT_ENDING={
  voice_text:'Este contenido fue creado y publicado de manera automática con inteligencia artificial. Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento. Conéctate con nosotros en talentocontarifa punto lat.'
 };
 function restoreContactEnding(data){
- if(!Array.isArray(data?.scenes)||data.scenes.length!==5)throw new Error('El cierre requiere cinco escenas.');
- return {...data,scenes:data.scenes.map((s,i)=>i===4?{...s,...CONTACT_ENDING}:s)};
+ if(!Array.isArray(data?.scenes)||data.scenes.length<5)throw new Error('El cierre requiere cinco escenas.');
+ const scenes=[...data.scenes];
+ const lastIdx=scenes.length-1;
+ if(scenes.length===5){
+  scenes[4]={...scenes[4],...CONTACT_ENDING};
+ }else if(scenes[lastIdx]?.type==='cta'){
+  scenes[lastIdx]={...scenes[lastIdx],...CONTACT_ENDING};
+ }else{
+  scenes.push({...CONTACT_ENDING});
+ }
+ return {...data,scenes};
 }
 module.exports={CONTACT_ENDING,restoreContactEnding};
-
