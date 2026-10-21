@@ -398,5 +398,28 @@
         "id": "thcWVuRVU0Q"
       }
     }
+  },
+  "b360acae74e3286db157236438b57f8d3eb5e5ef0f3033bcf664da613780af55": {
+    "source_url": "https://wwwhatsnew.com/2026/10/21/como-escribir-buenos-prompts-openai-anthropic-google/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1123461793501138",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18126537466807797",
+        "phase": "publishing",
+        "id": "18133068740503737"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "qdjVUzKXAks"
+      }
+    }
   }
 }
