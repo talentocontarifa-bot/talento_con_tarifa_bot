@@ -446,5 +446,26 @@
         "id": "LiDKkXYZNBs"
       }
     }
+  },
+  "778ccf427e79d87941079943aaa80e1abe747f57bef202860fe453fdd39c5125": {
+    "source_url": "https://spanish.entrepreneur.com/tecnologia/las-empresas-estan-invirtiendo-millones-en-inteligencia-artificial-pero-hay-un-problema-que-podria-estar-frenando-los-resultados",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1140181182283983",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18126739090807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
