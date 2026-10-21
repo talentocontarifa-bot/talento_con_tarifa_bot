@@ -1,1 +1,91 @@
-window.NEWS_DATA = {"visual_mode":"hybrid","schema_version":2,"preview_only":true,"source_url":null,"layout_type":"cinematic","scenes":[{"type":"title","text1":"La IA no es","text2":"tu estrategia.","voice_text":"Antes de sumar otra herramienta de inteligencia artificial, define qué problema quieres resolver.","image":"public/scene_1.png","image_kind":"illustration","start":0,"end":6.5,"audio_duration":6.288,"durationInFrames":195,"audio":"public/voice_scene_1.mp3"},{"type":"image_text","title":"Empieza por una tarea.","key_points":["Repetitiva","Medible","Con revisión humana"],"voice_text":"Elige una tarea repetitiva que puedas medir y revisar. Ese puede ser un buen punto de partida.","image":"public/scene_1.png","image_kind":"illustration","start":6.5,"end":13.833333333333334,"audio_duration":7.104,"durationInFrames":220,"audio":"public/voice_scene_2.mp3"},{"type":"insight","title":"Automatiza con criterio.","body":"Una herramienta tiene sentido cuando resuelve un problema concreto.","voice_text":"La pregunta no es cuánta inteligencia artificial usas, sino para qué la estás usando.","image":null,"image_kind":"graphics","start":13.833333333333334,"end":19.766666666666666,"audio_duration":5.712,"durationInFrames":178,"audio":"public/voice_scene_3.mp3"},{"type":"image_text","title":"Prueba. Mide. Ajusta.","voice_text":"Prueba con un proceso pequeño, revisa la calidad y decide si vale la pena ampliarlo.","image":"public/scene_3.png","image_kind":"illustration","start":19.766666666666666,"end":25.766666666666666,"audio_duration":5.784,"durationInFrames":180,"audio":"public/voice_scene_4.mp3"},{"type":"cta","headline":"¿LISTO PARA DOMINAR?","sub":"El superpoder de la IA para tu local o negocio.","btn":"TALENTOCONTARIFA.LAT","voice_text":"Este contenido fue creado y publicado de manera automática con inteligencia artificial. Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento. Conéctate con nosotros en talentocontarifa punto lat.","image":null,"image_kind":"graphics","start":25.766666666666666,"end":41.46666666666667,"audio_duration":14.688,"durationInFrames":471,"audio":"public/voice_scene_5.mp3"}],"total_frames":1244,"total_duration_sec":41.46666666666667};
+window.NEWS_DATA = {
+  "preview_only": false,
+  "topic": "El Patito Feo de las IAs",
+  "source_url": "https://talentocontarifa.lat/#videoblog-1792620307141",
+  "script": "Todos están peleándose por ChatGPT y Gemini. Y están ignorando a la inteligencia artificial más poderosa que ya tienes instalada en tu celular. Sí, hablo de Meta AI. El que viene directo en WhatsApp. El que tu primo dice: ay, ese es el que responde puras tonterías. El patito feo. El que nadie presume en LinkedIn. Pero mientras tú pagas veinte dólares al mes por ChatGPT, este sistema es gratis, ilimitado y corre sobre la arquitectura Muse Spark. El mismo laboratorio que acaba de soltar hace seis días un monstruo open source de ochocientos dieciséis mil millones de parámetros MoE con cuarenta y dos mil millones activos por token, compitiendo cara a cara con GPT seis y Gemini cuatro. Y lo tienes aquí, sin bajar nada, sin tarjeta y sin límite de mensajes. No solo chatea. Te genera imágenes, te resume documentos PDF, busca en internet en tiempo real, recuerda tu contexto y te estructura guiones para Reels como este. Y lo más brutal: vive donde ya vives todos los días, en tu WhatsApp. No tienes que abrir otra aplicación, no cobra, no se cae y es el único que no te pide tarjetazo. Así que sí, búrlense del patito feo. Mientras otros siguen pagando mensualidades, tú puedes operar una inteligencia artificial de frontera gratis desde WhatsApp. El patito creció, y ahora es cisne.",
+  "social_post": {
+    "hook": "**El Patito Feo de las IAs:** Todos están peleándose por ChatGPT y Gemini. Y están ignorando a la inteligencia artificial más poderosa que ya tienes instalada en tu celular.",
+    "summary": "Sí, hablo de Meta AI. El que viene directo en WhatsApp. El que tu primo dice: ay, ese es el que responde puras tonterías. El patito feo. El que nadie presume en LinkedIn. Pero mientras tú pagas veinte dólares al mes por ChatGPT, este sistema es gratis, ilimitado y corre sobre la arquitectura Muse Spark. El mismo laboratorio que acaba de soltar hace seis días un monstruo open source de ochocientos dieciséis mil millones de parámetros MoE con cuarenta y dos mil millones activos por token, compitiendo cara a cara con GPT seis y Gemini cuatro. Y lo tienes aquí, sin bajar nada, sin tarjeta y sin límite de mensajes.",
+    "bullets": [
+      "**Clave:** Sí, hablo de Meta AI. El que viene directo en WhatsApp. El que tu primo dice: ay, ese es el que responde puras tonterías",
+      "**Clave:** Pero mientras tú pagas veinte dólares al mes por ChatGPT, este sistema es gratis, ilimitado y corre sobre la arquitectur",
+      "**Clave:** No solo chatea. Te genera imágenes, te resume documentos PDF, busca en internet en tiempo real, recuerda tu contexto y t"
+    ],
+    "play": "Así que sí, búrlense del patito feo. Mientras otros siguen pagando mensualidades, tú puedes operar una inteligencia artificial de frontera gratis desde WhatsApp. El patito creció, y ahora es cisne."
+  },
+  "theme_color": "#CCFF00",
+  "layout_type": "neo_brutalist",
+  "scenes": [
+    {
+      "type": "title",
+      "text1": "EL PATITO",
+      "text2": "FEO DE LAS",
+      "tag": "✦ VIDEOBLOG IA ✦",
+      "voice_text": "Todos están peleándose por ChatGPT y Gemini. Y están ignorando a la inteligencia artificial más poderosa que ya tienes instalada en tu celular.",
+      "subtitle": "TODOS LO IGNORAN  Está en tu WhatsApp",
+      "start": 0,
+      "audio_duration": 8.516,
+      "end": 8.516
+    },
+    {
+      "type": "image_text",
+      "title": "EL PATITO FEO",
+      "voice_text": "Sí, hablo de Meta AI. El que viene directo en WhatsApp. El que tu primo dice: ay, ese es el que responde puras tonterías. El patito feo. El que nadie presume en LinkedIn.",
+      "subtitle": "EL PATITO FEO",
+      "start": 8.916,
+      "audio_duration": 11.546,
+      "end": 20.462
+    },
+    {
+      "type": "big_percentage",
+      "number": null,
+      "metric": "816B",
+      "label": "816B MOE / 42B ACTIVOS",
+      "voice_text": "Pero mientras tú pagas veinte dólares al mes por ChatGPT, este sistema es gratis, ilimitado y corre sobre la arquitectura Muse Spark. El mismo laboratorio que acaba de soltar hace seis días un monstruo open source de ochocientos dieciséis mil millones de parámetros MoE con cuarenta y dos mil millones activos por token, compitiendo cara a cara con GPT seis y Gemini cuatro. Y lo tienes aquí, sin bajar nada, sin tarjeta y sin límite de mensajes.",
+      "subtitle": "$20/mes ChatGPT",
+      "start": 20.862,
+      "audio_duration": 28.029,
+      "end": 48.891
+    },
+    {
+      "type": "image_text",
+      "title": "PODER OCULTO EN WHATSAPP",
+      "key_points": [
+        "IMÁGENES",
+        "BÚSQUEDA",
+        "MEMORIA"
+      ],
+      "voice_text": "No solo chatea. Te genera imágenes, te resume documentos PDF, busca en internet en tiempo real, recuerda tu contexto y te estructura guiones para Reels como este. Y lo más brutal: vive donde ya vives todos los días, en tu WhatsApp. No tienes que abrir otra aplicación, no cobra, no se cae y es el único que no te pide tarjetazo.",
+      "subtitle": "IMÁGENES / BÚSQUEDA / MEMORIA / GRATIS",
+      "start": 49.291,
+      "audio_duration": 20.846,
+      "end": 70.137
+    },
+    {
+      "type": "image_text",
+      "title": "EL PATITO FEO YA ES CI",
+      "key_points": [
+        "EL PATITO FEO YA ES CISNE 🦢",
+        "¿Tú ya lo usaste o sigues pagando?"
+      ],
+      "voice_text": "Así que sí, búrlense del patito feo. Mientras otros siguen pagando mensualidades, tú puedes operar una inteligencia artificial de frontera gratis desde WhatsApp. El patito creció, y ahora es cisne.",
+      "subtitle": "EL PATITO FEO YA ES CISNE",
+      "start": 70.537,
+      "audio_duration": 12.434,
+      "end": 82.971
+    },
+    {
+      "type": "cta",
+      "headline": "¿LISTO PARA DOMINAR?",
+      "sub": "El superpoder de la IA para tu local o negocio.",
+      "btn": "TALENTOCONTARIFA.LAT",
+      "subtitle": "Visita talentocontarifa.lat y escala tu negocio.",
+      "voice_text": "Este contenido fue creado y publicado de manera automática con inteligencia artificial. Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento. Conéctate con nosotros en talentocontarifa punto lat.",
+      "start": 83.371,
+      "audio_duration": 12.748,
+      "end": 96.119
+    }
+  ],
+  "total_duration_sec": 99,
+  "total_frames": 2970
+};

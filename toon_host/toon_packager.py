@@ -2181,10 +2181,7 @@ class ToonPackager:
         final_audio_for_mux = self.mix_voice_with_bgm(clean_voice_wav, mixed_audio_wav, bgm_vol=0.18)
 
         # 3. Modo Tele 3D Café 80's (Three.js WebGL Real) para Talento con Tarifa
-        if onnx_rgba_frames is not None:
-            use_3d_tv = (brand_preset == "tct") and (os.environ.get("TCT_DISABLE_3D_TV", "1").strip() == "0" or os.environ.get("TCT_ENABLE_3D_TV", "").strip() == "1")
-        else:
-            use_3d_tv = (brand_preset == "tct") and (os.environ.get("TCT_DISABLE_3D_TV", "").strip() != "1")
+        use_3d_tv = False  # TV flotante desactivada permanentemente: Estilo Neo-Brutalista limpio
         if use_3d_tv:
             try:
                 import cafe80s_tv_3d
