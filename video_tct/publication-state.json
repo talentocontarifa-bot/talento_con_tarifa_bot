@@ -421,5 +421,30 @@
         "id": "qdjVUzKXAks"
       }
     }
+  },
+  "e6c4871a32ae418f8a3ae10796453b84c0c76503ca42ad1414390410f8aed4d9": {
+    "source_url": "https://www.xataka.com/robotica-e-ia/china-pone-jaque-a-anthropic-competencia-sus-modelos-amenaza-su-valoracion-antes-salir-a-bolsa",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1115493098068094",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18126698785807797",
+        "phase": "publishing",
+        "id": "18065866862790267"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7699200315375699988",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "LiDKkXYZNBs"
+      }
+    }
   }
 }
