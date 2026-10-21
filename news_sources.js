@@ -152,11 +152,12 @@ const AI_KEYWORDS = [
   { term: 'ia', weight: 2 }, { term: 'ai', weight: 2 }, { term: 'nvidia', weight: 2 },
   { term: 'agente', weight: 2 }, { term: 'agentes', weight: 2 }, { term: 'agentic', weight: 2 },
   { term: 'automatiz', weight: 2, prefix: true }, { term: 'automation', weight: 2 },
-  { term: 'open source', weight: 2 }, { term: 'codigo abierto', weight: 2 }, { term: 'open weights', weight: 2 },
-  { term: 'rag', weight: 2 }, { term: 'workflow', weight: 2, prefix: true },
-  { term: 'modelo', weight: 1 }, { term: 'modelos', weight: 1 }, { term: 'algoritmo', weight: 1, prefix: true },
-  { term: 'robot', weight: 1, prefix: true }, { term: 'gpu', weight: 1 }, { term: 'gpus', weight: 1 }
+  { term: 'open weights', weight: 2.5 }, { term: 'rag', weight: 2 },
+  { term: 'algoritmo', weight: 1, prefix: true }, { term: 'inferencia', weight: 2 }
 ];
+
+// URLs de publirreportajes, ofertas comerciales o secciones de compras que nunca deben elegirse como noticia técnica
+const ADVERTORIAL_URL_RE = /\/(seleccion|bazar|ofertas|chollos|descuentos|compras|escaparate|patrocinado|affiliates?|shopping|televisores|cine-y-tv|videojuegos|literatura-comics-y-juegos|deportes)\/|(?:brand-refresh|rebrand)/i;
 
 // Términos que indican "carnita" práctica (herramientas, costos, benchmarks, APIs, casos de uso reales)
 const MEAT_KEYWORDS = [
@@ -185,7 +186,11 @@ const FLUFF_KEYWORDS = [
   { term: 'crisis mental', weight: 3.5 }, { term: 'suicidio', weight: 4 }, { term: 'catastrofe', weight: 2.5 },
   { term: 'apocalipsis', weight: 3 }, { term: 'extincion', weight: 3 }, { term: 'famoso', weight: 2, prefix: true },
   { term: 'celebridad', weight: 2.5, prefix: true }, { term: 'novio', weight: 2.5, prefix: true },
-  { term: 'horoscopo', weight: 3 }
+  { term: 'horoscopo', weight: 3 }, { term: 'descuento', weight: 3, prefix: true },
+  { term: 'rebaja', weight: 3, prefix: true }, { term: 'cupon', weight: 3, prefix: true },
+  { term: 'chollo', weight: 3.5, prefix: true }, { term: 'pago unico', weight: 3 },
+  { term: 'de por vida', weight: 2.5 }, { term: 'black friday', weight: 3 },
+  { term: 'despide a', weight: 2.5 }, { term: 'soledad', weight: 2.5 }, { term: 'brand refresh', weight: 4 }, { term: 'rebrand', weight: 3.5, prefix: true }, { term: 'documentary', weight: 2.5 }, { term: 'documental', weight: 2.5 }, { term: 'smart tv', weight: 3 }, { term: 'chromecast', weight: 3 }
 ];
 
 const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -404,7 +409,7 @@ function parseFeed(xml, feedUrl = '') {
       pubDate,
       isoDate: pubDate && !Number.isNaN(new Date(pubDate).getTime()) ? new Date(pubDate).toISOString() : null,
       contentHtml,
-      contentSnippet: htmlToText(description || encoded).slice(0, 1500),
+      contentSnippet: htmlToText(contentHtml).slice(0, 1500),
       enclosureUrl: enclosureTag ? getAttr(enclosureTag, 'url') : '',
       mediaUrl: mediaTag ? getAttr(mediaTag, 'url') : '',
       feedUrl
@@ -489,6 +494,7 @@ function rankCandidates(items, {
   for (const item of items || []) {
     if (!item || !item.link) continue;
     stats.total++;
+    if (!allowNonAi && ADVERTORIAL_URL_RE.test(item.link)) { stats.lowScore++; continue; }
     const key = normalizeUrl(item.link);
     if (seenKeys.has(key) || seenTitles.some(t => titlesMatch(t, item.title))) { stats.duplicates++; continue; }
     seenKeys.add(key);

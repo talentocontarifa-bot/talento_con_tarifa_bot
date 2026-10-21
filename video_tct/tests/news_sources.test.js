@@ -248,5 +248,7 @@ test('formatMarkdownForSocial interpreta **negritas** y *cursivas* a Unicode y s
 
   const plain = ns.stripMarkdown(raw);
   assert.equal(plain, 'Un atacante usó Cairn en entornos sandboxed durante 23 horas.');
+  const { candidates } = ns.rankCandidates([{ title: 'Oferta de nube en código abierto con IA', link: 'https://www.xataka.com/seleccion/nube-oferta', pubDate: hoursAgo(1), feedIndex: 0 }, { title: 'OpenAI lanza agente MCP para pymes', link: 'https://www.xataka.com/robotica-e-ia/agente-mcp', pubDate: hoursAgo(2), feedIndex: 0 }], { now: NOW });
+  assert.deepEqual(candidates.map(c => c.link), ['https://www.xataka.com/robotica-e-ia/agente-mcp']);
 });
 

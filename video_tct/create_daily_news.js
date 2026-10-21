@@ -5,8 +5,10 @@ const { HfInference } = require('@huggingface/inference');
 const { getAudioDurationInSeconds } = require('get-audio-duration');
 const axios = require('axios');
 const googleTTS = require('google-tts-api');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const news = require('../news_sources');
 const { restoreContactEnding, CONTACT_ENDING } = require('./lib/ending');
+const { synthesizeWithElevenLabsRotation, getConfiguredKeys } = require('./lib/elevenlabs_rotator');
 
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -33,8 +35,8 @@ if (!GEMINI_API_KEY && !GROQ_API_KEY && !DRY_RUN) {
   console.error("❌ Faltan variables de entorno: necesitas GEMINI_API_KEY o GROQ_API_KEY");
   process.exit(1);
 }
-if (!ELEVENLABS_API_KEY) {
-  console.warn("⚠️ ELEVENLABS_API_KEY no encontrado. Se usará Google TTS como fallback.");
+if (!getConfiguredKeys().length) {
+  console.warn("⚠️ Pool de ElevenLabs vacío. Se usará edge-tts / Google TTS como fallback.");
 }
 
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
@@ -305,37 +307,40 @@ Fuente: ${queueContext.link}
 
   console.log(`🎯 Ángulo de video: [${angle.name}] | Métrica detectada: ${hardFacts.primaryMetric.label}`);
 
-  const prompt = `Actúa como Director Técnico y Locutor Estelar de "Talento con Tarifa".
-Tu misión: convertir la noticia del día en un guion de video vertical en ESPAÑOL con sustancia técnica real ("con carnita"), datos concretos y un ritmo oral conversacional, fluido y natural (como si se lo contaras de tú a tú a un colega builder o dueño de negocio, sin sonar a traducción robótica ni folleto corporativo).
+  const prompt = `Actúa como Director Técnico, Arquitecto de IA y Creador Estelar de "Talento con Tarifa".
+Tu misión: transformar la noticia del día en un video vertical y un post con ALTA DENSIDAD DE INFORMACIÓN REAL ("con mucha carnita"), cero relleno corporativo y ritmo directo de tú a tú.
+Si un espectador ve el video o lee el copy, debe llevarse datos técnicos exactos, nombres reales de herramientas/modelos/protocolos, cifras concretas y una jugada de negocio aplicable hoy mismo.
 
 ÁNGULO EDITORIAL OBLIGATORIO: "${angle.name}"
 Directriz: ${angle.directive}
 ${contextSection}${factsSection}${historySection}
 
-PROHIBIDO USAR ESTAS FRASES QUEMADAS (penalización crítica si aparecen):
+REGLAS ANTI-PAJA Y ANTI-CLICHÉS (penalización crítica si aparecen):
 ${news.BANNED_CLICHES.map(c => `- "${c}"`).join('\n')}
-- Tampoco uses el porcentaje inventado "85%", ni hables de "usted" (usa SIEMPRE tuteo natural: "tú"), ni cierres la escena 4 diciendo "cobra por tu valor / no compitas por precio".
+- PROHIBIDO usar frases vacías de folleto como "redefine la seguridad", "lidera la innovación", "optimiza tus procesos", "marca un antes y un después" o "en un mundo cada vez más digital".
+- PROHIBIDO inventar el porcentaje "85%", hablar de "usted" (usa SIEMPRE tuteo directo: "tú") o cerrar diciendo "cobra por tu valor".
+- Entra SIEMPRE con hechos duros: qué herramienta/modelo es, qué problema técnico resuelve bajo el capó, cuánto cuesta/ahorra y cómo se conecta.
 
 Debes crear exactamente 5 escenas en este orden:
-1. "title": Gancho técnico/directo sobre la noticia real (entra directo con el nombre de la tecnología, empresa o hallazgo, con ritmo hablado natural). Requiere:
-   - 'text1' y 'text2' (máximo 12 letras cada uno, MAYÚSCULAS, en español, ej: nombre del modelo/empresa + acción clave).
+1. "title": Gancho explosivo con el hecho técnico o de negocio más fuerte de la nota (sin saludos ni introducciones lentas). Requiere:
+   - 'text1' y 'text2' (máximo 12 letras cada uno, MAYÚSCULAS, en español, ej: nombre del modelo/herramienta + jugada clave).
    - 'tag': categoría específica del ángulo (ej: "${angle.tag}").
-   - 'voice_text': frase hablada fluida y directa con el hecho central de la noticia (13-18 palabras en español neutro).
-   - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
-2. "image_text": Desglose técnico / mecánico de la noticia. Requiere:
-   - 'title': titular de lo que hace o cambia (máx 22 letras, MAYÚSCULAS).
-   - 'key_points': array de EXACTAMENTE 3 datos o mecanismos concretos del artículo (máx 5 palabras cada uno, sin clichés).
-   - 'voice_text': frase hablada natural explicando cómo funciona o qué resuelve (15-22 palabras).
-   - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
-3. "big_percentage": El DATO DURO o MÉTRICA REAL del artículo. Requiere:
-   - 'metric': string corto (máx 6 caracteres) con la cifra o insignia real del artículo (ej: "${hardFacts.primaryMetric.label}", "3.5X", "$20/M", "OPEN", "API", "66%"). Si hay un porcentaje real en la nota, pon también 'number' con el entero; si NO es porcentaje, pon 'number': null y usa 'metric'.
-   - 'label': qué significa esa cifra o hallazgo en el artículo (máx 22 letras).
-   - 'voice_text': frase hablada natural explicando el dato duro real del artículo (13-18 palabras).
-   - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
-4. "image_text": La Jugada Práctica / Arquitectura aplicable. Requiere:
-   - 'title': titular táctico específico al tema de hoy (máx 22 letras, MAYÚSCULAS; PROHIBIDO poner "COBRA POR TU VALOR").
-   - 'voice_text': recomendación accionable y directa (hablando de "tú") derivada de esta noticia para quien construye o dirige un negocio (14-20 palabras).
-   - 'subtitle': subtítulo corto para la barra inferior (máx 10 palabras).
+   - 'voice_text': gancho hablado punzante, conversacional y cargado de información real: nombra la herramienta/empresa, qué acaba de lanzar o revelar el reporte y por qué cambia el juego técnico hoy (18 a 25 palabras en español fluido).
+   - 'subtitle': titular directo con el dato clave para la barra inferior (máx 11 palabras).
+2. "image_text": El mecanismo bajo el capó (qué hace exactamente y cómo funciona). Requiere:
+   - 'title': titular técnico de la arquitectura o mecanismo (máx 22 letras, MAYÚSCULAS).
+   - 'key_points': array de EXACTAMENTE 3 mecanismos o hechos concretos del artículo (de 3 a 6 palabras cada uno con datos reales, ej: "Corre local sin pagar API", "Conecta agentes vía protocolo MCP", "Cero envío de datos a nube"; PROHIBIDO poner palabras sueltas como "Auditable" o "Escalable").
+   - 'voice_text': explicación clara y con carnita de cómo funciona por dentro, qué protocolo o modelo utiliza y qué cuello de botella elimina frente a lo anterior (20 a 28 palabras).
+   - 'subtitle': resumen concreto del mecanismo técnico (máx 11 palabras).
+3. "big_percentage": El DATO DURO, CIFRA o BENCHMARK REAL del artículo. Requiere:
+   - 'metric': string corto (máx 6 caracteres) con la cifra o insignia real del artículo (ej: "${hardFacts.primaryMetric.label}", "3.5X", "$20/M", "LOCAL", "API", "66%"). Si hay un porcentaje real en la nota, pon también 'number' con el entero; si NO es porcentaje, pon 'number': null y usa 'metric'.
+   - 'label': qué mide exactamente esa cifra en la nota (máx 22 letras).
+   - 'voice_text': explica el impacto real de ese número (cuánto dinero, latencia, tokens, memoria o tiempo ahorra o exige en producción real) sin frases genéricas (18 a 25 palabras).
+   - 'subtitle': el dato duro explicado en una línea directa (máx 11 palabras).
+4. "image_text": La Jugada Práctica / Implementación paso a paso. Requiere:
+   - 'title': titular táctico específico al caso de uso de hoy (máx 22 letras, MAYÚSCULAS; PROHIBIDO poner "COBRA POR TU VALOR").
+   - 'voice_text': dile exactamente qué flujo de trabajo, integración o servicio B2B puede armar o ajustar hoy mismo con esta tecnología y en qué tipo de proyecto aplicarlo (18 a 26 palabras).
+   - 'subtitle': acción concreta a implementar hoy (máx 11 palabras).
 5. "cta": Cierre y llamado a la acción fijo de marca. Requiere:
    - 'headline': "¿LISTO PARA DOMINAR?"
    - 'sub': "El superpoder de la IA para tu local o negocio."
@@ -343,12 +348,18 @@ Debes crear exactamente 5 escenas en este orden:
    - 'voice_text': "Este contenido fue creado y publicado de manera automática con inteligencia artificial. Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento. Conéctate con nosotros en talentocontarifa punto lat."
    - 'subtitle': "Visita talentocontarifa.lat y escala tu negocio."
 
-Reglas de Formato:
-1. Incluye en la raíz del JSON el campo "topic" con el titular de la noticia SIEMPRE traducido o redactado en ESPAÑOL atractivo (máx 80 caracteres, sin inglés crudo).
-2. Todos los números o siglas de unidades que deban leerse en 'voice_text' escríbelos en palabras para locución fluida en español (ej: "ciento veintiocho gigas", " veinte dólares", "tres punto cinco veces"), pero en 'subtitle', 'key_points' y 'metric' usa dígitos cortos.
-3. No pongas asteriscos (**) dentro de 'voice_text', 'subtitle', 'title' ni 'key_points'.
+Además, incluye en la raíz del JSON un objeto "social_post" pensado para que el Copy escrito del post (Facebook, Instagram, TikTok, YouTube) sea una joya editorial llena de valor:
+- "hook": 1 línea magnética y directa con el dato o revelación más potente (puedes usar **negritas**).
+- "summary": 1 párrafo sustancioso (45 a 70 palabras) explicando qué ocurrió exactamente, cómo funciona la herramienta/arquitectura y por qué importa en el mundo real (usa **negritas** en nombres técnicos y cifras).
+- "bullets": array de 3 puntos técnicos o de negocio bien explicados (10 a 18 palabras cada uno, iniciando con el concepto en **negritas**).
+- "play": 1 párrafo corto (25 a 40 palabras) con la jugada táctica: cómo un desarrollador, agencia o dueño de negocio puede aplicar o monetizar esto esta misma semana.
 
-Responde ÚNICAMENTE con un objeto JSON válido con las claves "topic": "Titular en español", "layout_type": "neo_brutalist" y "scenes": [ ...5 escenas... ].`;
+Reglas de Formato:
+1. Incluye en la raíz del JSON el campo "topic" con el titular de la noticia SIEMPRE en ESPAÑOL atractivo y específico (máx 80 caracteres, sin inglés crudo).
+2. Todos los números o siglas de unidades que deban leerse en 'voice_text' escríbelos en palabras para locución fluida en español (ej: "ciento veintiocho gigas", "veinte dólares", "tres punto cinco veces"), pero en 'subtitle', 'key_points', 'metric' y 'social_post' usa dígitos cortos.
+3. No pongas asteriscos (**) dentro de 'voice_text', 'subtitle', 'title' ni 'key_points' (sí puedes usar **negritas** dentro de 'social_post').
+
+Responde ÚNICAMENTE con un objeto JSON válido con las claves "topic", "layout_type": "neo_brutalist", "social_post" y "scenes": [ ...5 escenas... ].`;
 
   // 1. Intentar con Groq si está disponible
   if (process.env.GROQ_API_KEY) {
@@ -533,26 +544,13 @@ function sanitizeTtsText(text) {
 async function synthesizeSnippet(text, targetPath) {
   const clean = sanitizeTtsText(text);
 
-  // 1. ElevenLabs si hay API key
-  if (ELEVENLABS_API_KEY) {
-    try {
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`, {
-        method: 'POST',
-        headers: { 'xi-api-key': ELEVENLABS_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: clean,
-          model_id: ELEVENLABS_MODEL_ID,
-          voice_settings: { stability: 0.65, similarity_boost: 0.85 }
-        })
-      });
-      if (response.ok) {
-        const buffer = await response.arrayBuffer();
-        fs.writeFileSync(targetPath, Buffer.from(buffer));
-        return;
-      }
-    } catch (e) {
-      console.warn(`⚠️ ElevenLabs error en snippet: ${e.message}`);
-    }
+  // 1. ElevenLabs con rotación automática de las 3 API keys y caché de CTA
+  const elevenRes = await synthesizeWithElevenLabsRotation(clean, targetPath, {
+    voiceId: ELEVENLABS_VOICE_ID,
+    modelId: ELEVENLABS_MODEL_ID
+  });
+  if (elevenRes.ok) {
+    return;
   }
 
   // 2. edge-tts (voz neuronal masculina es-MX-JorgeNeural, broadcast mastering)
@@ -589,9 +587,9 @@ async function generateVoice(scenes) {
 
   console.log(`\n🎙️ [2/4] Generando locución sincronizada escena por escena...`);
 
-  // 0. Intentar clonación en lote con ChatterboxMultilingualTTS local (voz Rufino_1)
+  // 0. Priorizar ElevenLabs (con rotación de 3 keys). Solo usar Chatterbox local si se pide explícitamente con ENABLE_CHATTERBOX=1
   const cloneScript = path.join(__dirname, '..', 'toon_host', '01', 'clone_voice_tct.py');
-  if (process.env.DISABLE_CHATTERBOX !== '1' && fs.existsSync(cloneScript)) {
+  if (process.env.ENABLE_CHATTERBOX === '1' && process.env.DISABLE_CHATTERBOX !== '1' && fs.existsSync(cloneScript)) {
     try {
       const { execFileSync } = require('child_process');
       const batchItems = scenes.map((sc, idx) => {
@@ -783,7 +781,8 @@ async function main() {
       preview_only: false,
       topic: resolvedTopic,
       source_url: processedNewsLink || null,
-      script: timelineScenes.map(s => s.voice_text).filter(Boolean).join(' '),
+      script: timelineScenes.slice(0, 4).map(s => s.voice_text).filter(Boolean).join(' '),
+      social_post: rawData?.social_post || null,
       theme_color: BRAND_COLOR,
       layout_type: data.layout_type || 'neo_brutalist',
       scenes: timelineScenes,

@@ -3,6 +3,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const { validateScript, createTimeline } = require('./lib/content');
 const { restoreContactEnding } = require('./lib/ending');
+const { synthesizeWithElevenLabsRotation } = require('./lib/elevenlabs_rotator');
 const { compose } = require('./scripts/compose');
 const axios = require('axios');
 let GoogleGenerativeAI;
@@ -305,27 +306,13 @@ function sanitizeTtsText(text) {
 
 async function synthesizeSnippet(text, targetPath) {
   const clean = sanitizeTtsText(text);
-  // 1. ElevenLabs si hay API key
-  if (ELEVENLABS_API_KEY) {
-    try {
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`, {
-        method: 'POST',
-        signal: AbortSignal.timeout(60000),
-        headers: { 'xi-api-key': ELEVENLABS_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: clean,
-          model_id: ELEVENLABS_MODEL_ID,
-          voice_settings: { stability: 0.65, similarity_boost: 0.85 }
-        })
-      });
-      if (response.ok) {
-        const buffer = await response.arrayBuffer();
-        fs.writeFileSync(targetPath, Buffer.from(buffer));
-        return;
-      }
-    } catch (e) {
-      console.warn(`⚠️ ElevenLabs error en snippet: ${e.message}`);
-    }
+  // 1. ElevenLabs con rotación automática de las 3 API keys y caché de CTA
+  const elevenRes = await synthesizeWithElevenLabsRotation(clean, targetPath, {
+    voiceId: ELEVENLABS_VOICE_ID,
+    modelId: ELEVENLABS_MODEL_ID
+  });
+  if (elevenRes.ok) {
+    return;
   }
 
   // 2. edge-tts (es-MX-JorgeNeural a +8%, con masterización broadcast)
@@ -354,7 +341,7 @@ async function synthesizeSnippet(text, targetPath) {
 
 async function generateVoice(scenes) {
   const cloneScript = path.join(__dirname, '..', 'toon_host', '01', 'clone_voice_tct.py');
-  if (process.env.DISABLE_CHATTERBOX !== '1' && fs.existsSync(cloneScript)) {
+  if (process.env.ENABLE_CHATTERBOX === '1' && process.env.DISABLE_CHATTERBOX !== '1' && fs.existsSync(cloneScript)) {
     try {
       const { execFileSync } = require('child_process');
       const tempDir = path.join(__dirname, 'temp_voice');

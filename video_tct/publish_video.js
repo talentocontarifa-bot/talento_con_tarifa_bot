@@ -65,17 +65,37 @@ function getMediaContent(rawData = null) {
     : `${topic} | Talento con Tarifa`;
   const shortTitle = title.length > 90 ? title.substring(0, 87) + '...' : title;
 
-  const narration = formatMarkdownForSocial((
-    data.script ||
-    scenes.map(s => s.voice_text).filter(Boolean).join(' ')
-  ).trim());
+  // Excluir escena 5 (cierre de marca) de la narración escrita para no duplicar el disclaimer de IA
+  const contentScenes = scenes.filter(s => s && s.type !== 'cta');
+  const rawScriptClean = String(data.script || '')
+    .replace(/Este contenido fue creado y publicado de manera autom[áa]tica[\s\S]*$/i, '')
+    .trim();
 
-  const keyPoints = scenes
-    .filter(s => s.type === 'image_text' && Array.isArray(s.key_points))
-    .flatMap(s => s.key_points)
-    .slice(0, 6)
-    .map(p => `✅ ${formatMarkdownForSocial(String(p).replace(/^\s*\d+[.)-]\s*/, '').trim())}`)
-    .join('\n');
+  const sp = data.social_post && typeof data.social_post === 'object' ? data.social_post : null;
+
+  const headlineLine = sp?.hook
+    ? `🔥 ${formatMarkdownForSocial(sp.hook)}`
+    : (hook ? `🔥 ${formatMarkdownForSocial(`**${hook}** — **${topic}**`)}` : `🔥 ${formatMarkdownForSocial(`**${topic}**`)}`);
+
+  const bodySummary = sp?.summary
+    ? formatMarkdownForSocial(sp.summary)
+    : formatMarkdownForSocial((
+        rawScriptClean ||
+        contentScenes.map(s => s.voice_text).filter(Boolean).join(' ')
+      ).trim());
+
+  const bulletList = Array.isArray(sp?.bullets) && sp.bullets.length > 0
+    ? sp.bullets.map(b => `▸ ${formatMarkdownForSocial(String(b).replace(/^[•▸✅\-*]+\s*/, '').trim())}`).join('\n')
+    : scenes
+        .filter(s => s.type === 'image_text' && Array.isArray(s.key_points))
+        .flatMap(s => s.key_points)
+        .slice(0, 6)
+        .map(p => `✅ ${formatMarkdownForSocial(String(p).replace(/^\s*\d+[.)-]\s*/, '').trim())}`)
+        .join('\n');
+
+  const playBlock = sp?.play
+    ? `💡 ${formatMarkdownForSocial('**La jugada práctica:**')} ${formatMarkdownForSocial(sp.play)}`
+    : (contentScenes[3]?.voice_text ? `💡 ${formatMarkdownForSocial('**Cómo aplicarlo hoy:**')} ${formatMarkdownForSocial(contentScenes[3].voice_text)}` : null);
 
   const hasValidSourceUrl =
     typeof data.source_url === 'string' &&
@@ -83,15 +103,15 @@ function getMediaContent(rawData = null) {
     !data.source_url.includes(' | ');
 
   const blocks = [
-    hook ? `🔥 ${formatMarkdownForSocial(`**${hook}**`)}` : `🔥 ${formatMarkdownForSocial(`**${topic}**`)}`,
-    narration || null,
-    keyPoints || null,
+    headlineLine,
+    bodySummary || null,
+    bulletList || null,
+    playBlock || null,
     hasValidSourceUrl ? `🔗 Fuente: ${data.source_url}` : null,
     '─────────────────────────',
-    '🤖 Este contenido fue creado y publicado de manera automática con Inteligencia Artificial.',
-    '⚡ Imagina lo que este superpoder puede hacer por tu local, negocio o emprendimiento.',
-    '👉 Conéctate con nosotros: https://talentocontarifa.lat',
-    '#TalentoConTarifa #InteligenciaArtificial #IAparaEmprendedores #Automatizacion #NegociosLocales #MarketingDigital #Shorts #Reels'
+    '🤖 Creado y publicado en piloto automático con agentes de IA.',
+    '👉 Implementa esta ingeniería en tu negocio: https://talentocontarifa.lat',
+    '#TalentoConTarifa #InteligenciaArtificial #AgentesIA #Automatizacion #ArquitecturaIA #NegociosB2B #Shorts #Reels'
   ].filter(Boolean);
 
   const caption = blocks.join('\n\n').slice(0, 2200);

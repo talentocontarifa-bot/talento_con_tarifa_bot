@@ -600,12 +600,30 @@ class ToonPackager:
         Sintetiza voz usando la API oficial de ElevenLabs (misma voz y credenciales de Talento con Tarifa)
         y la convierte a WAV 24kHz mono con procesamiento DSP.
         """
-        api_key = api_key or self._get_env_var("ELEVENLABS_API_KEY")
         voice_id = voice_id or self._get_env_var("ELEVENLABS_VOICE_ID", "TX3LPaxmHKxFdv7VOQHJ")
         model_id = model_id or self._get_env_var("ELEVENLABS_MODEL_ID", "eleven_v4_turbo")
 
-        if not api_key:
-            print("   ⚠️ No se encontró ELEVENLABS_API_KEY, usando respaldo edge-tts...")
+        raw_keys = []
+        if api_key:
+            raw_keys.append(api_key)
+        env_keys_str = self._get_env_var("ELEVENLABS_API_KEYS", "")
+        if env_keys_str:
+            raw_keys.extend([k.strip() for k in env_keys_str.replace(";", ",").split(",") if k.strip()])
+        single_env = self._get_env_var("ELEVENLABS_API_KEY", "")
+        if single_env:
+            raw_keys.append(single_env)
+        raw_keys.extend([
+            "sk_23049c20908c037dcaacd577ec4524ad4ef9674756d8f67c",
+            "sk_7a19a6c786e6ce5b518337ad562c31bb673e61403c048c3b",
+            "sk_9518cdd9e61bdf93f3e9d2ad8f129c455c108cf487881505",
+        ])
+        key_pool = []
+        for k in raw_keys:
+            if k and len(k) > 20 and k not in key_pool:
+                key_pool.append(k)
+
+        if not key_pool:
+            print("   ⚠️ No se encontraron llaves en el pool de ElevenLabs, usando respaldo edge-tts...")
             return self.synthesize_rattle_style_voice(text, output_wav_path, dsp_preset=dsp_preset)
 
         temp_mp3 = output_wav_path + ".eleven.mp3"
@@ -623,23 +641,32 @@ class ToonPackager:
             }
         ).encode("utf-8")
 
-        req = urllib.request.Request(
-            url,
-            data=payload,
-            headers={
-                "xi-api-key": api_key,
-                "Content-Type": "application/json",
-                "Accept": "audio/mpeg",
-            },
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(req, timeout=45) as resp:
-                audio_bytes = resp.read()
-            with open(temp_mp3, "wb") as f:
-                f.write(audio_bytes)
-        except Exception as e:
-            print(f"   ⚠️ Error en ElevenLabs ({e}), usando respaldo edge-tts...")
+        synthesized_ok = False
+        for idx_k, candidate_key in enumerate(key_pool, 1):
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={
+                    "xi-api-key": candidate_key,
+                    "Content-Type": "application/json",
+                    "Accept": "audio/mpeg",
+                },
+                method="POST",
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=45) as resp:
+                    audio_bytes = resp.read()
+                if len(audio_bytes) > 1000:
+                    with open(temp_mp3, "wb") as f:
+                        f.write(audio_bytes)
+                    synthesized_ok = True
+                    print(f"   🎙️ [ElevenLabs Key #{idx_k} {candidate_key[:8]}...{candidate_key[-4:]}] Audio sintetizado con éxito.")
+                    break
+            except Exception as e:
+                print(f"   ⚠️ [ElevenLabs Key #{idx_k} {candidate_key[:8]}...] fallo/cuota ({e}), rotando a siguiente llave...")
+
+        if not synthesized_ok:
+            print("   ⚠️ Todas las llaves de ElevenLabs fallaron o agotaron saldo, usando respaldo edge-tts...")
             return self.synthesize_rattle_style_voice(text, output_wav_path, dsp_preset=dsp_preset)
 
         audio_filter = self._get_dsp_audio_filter(dsp_preset)
