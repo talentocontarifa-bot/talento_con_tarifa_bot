@@ -467,5 +467,28 @@
         "status": "requires_review"
       }
     }
+  },
+  "f561526e77a385a513e905fc0d2bdca3d86a1f55538c1edf6979a729deca868b": {
+    "source_url": "https://www.xataka.com/seguridad/como-saber-web-esta-afectada-vulnerabilidad-php-herramienta-que-openai-ha-publicado",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1096080453191904",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18126809338807797",
+        "phase": "publishing",
+        "id": "18027314819918938"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "d5uRoNgMYVk"
+      }
+    }
   }
 }
