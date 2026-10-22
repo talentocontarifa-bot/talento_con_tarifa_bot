@@ -481,5 +481,12 @@
     "title": "MERCADO CERO MIL MILLONES",
     "date": "2026-10-22T20:14:40.666Z",
     "channel": "video_news"
+  },
+  {
+    "url": "blog.n8n.io/self-hosted-llm",
+    "link": "https://blog.n8n.io/self-hosted-llm/",
+    "title": "Self-Hosted LLM vs. Cloud APIs: How to Route Between Them",
+    "date": "2026-10-22T22:54:40.785Z",
+    "channel": "video_news"
   }
 ]

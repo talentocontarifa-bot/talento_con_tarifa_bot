@@ -515,5 +515,29 @@
         "id": "O6rQ28xao2I"
       }
     }
+  },
+  "95d8280e4689831f0300146dbc592c5266550490ad1d82d6b86848ead8f01558": {
+    "source_url": "https://blog.n8n.io/self-hosted-llm/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1068114076055826",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18127001212807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7699630859338663943",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "DojIrepnX-s"
+      }
+    }
   }
 }
