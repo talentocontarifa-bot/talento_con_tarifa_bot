@@ -490,5 +490,30 @@
         "id": "d5uRoNgMYVk"
       }
     }
+  },
+  "6abca4328fef230e54a2c99341a8448e4bd60257c151ede86ceb2f122d50a546": {
+    "source_url": "https://talentocontarifa.lat/#videoblog-1792700062485",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "3719945951496324",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18126976339807797",
+        "phase": "publishing",
+        "id": "17964991569216240"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7699588676221716501",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "O6rQ28xao2I"
+      }
+    }
   }
 }
