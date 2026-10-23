@@ -539,5 +539,29 @@
         "id": "DojIrepnX-s"
       }
     }
+  },
+  "dc3df4b7d9b148f75d7fb33f3992d9e79103961b807b3bf1d215c0bf51ed9206": {
+    "source_url": "https://wwwhatsnew.com/2026/10/23/modelos-ia-abiertos-open-weights-codigo-abierto/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1545182160967927",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18127073242807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7699739428989945862",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "vpebec-i9Mk"
+      }
+    }
   }
 }
