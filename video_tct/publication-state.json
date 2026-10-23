@@ -587,5 +587,26 @@
         "id": "S7gYauX9idU"
       }
     }
+  },
+  "9e0308113d32ae3fc53655209ad5823c1401d9ff168f092eade47d2354761f7a": {
+    "source_url": "https://simonwillison.net/2026/Oct/23/kimi-k31-pro/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1305780141629042",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18127249837807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
