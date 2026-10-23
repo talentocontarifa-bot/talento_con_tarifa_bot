@@ -502,5 +502,12 @@
     "title": "Los benchmarks de IA no cuentan toda la historia. Esto es lo que debes evaluar",
     "date": "2026-10-23T17:33:00.443Z",
     "channel": "fb_article"
+  },
+  {
+    "url": "blog.n8n.io/ai-agent-memory-how-llm-agents-manage-state-in-production",
+    "link": "https://blog.n8n.io/ai-agent-memory-how-llm-agents-manage-state-in-production/",
+    "title": "AI Agent Memory: How LLM Agents Manage State in Production",
+    "date": "2026-10-23T18:50:12.032Z",
+    "channel": "video_news"
   }
 ]

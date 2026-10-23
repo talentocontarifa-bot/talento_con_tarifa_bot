@@ -563,5 +563,29 @@
         "id": "vpebec-i9Mk"
       }
     }
+  },
+  "6f5857a836ca7996d8d46a3a74e1d9ebf7e7e2da53145c26fca8f70c10cc5693": {
+    "source_url": "https://blog.n8n.io/ai-agent-memory-how-llm-agents-manage-state-in-production/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1429733208586544",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18127218652807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7699938267059374100",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "S7gYauX9idU"
+      }
+    }
   }
 }
