@@ -608,5 +608,27 @@
         "status": "requires_review"
       }
     }
+  },
+  "0c971a68684d0e220f11f1348ae167e3b106cbe524254d8be07d29400f606d75": {
+    "source_url": "https://www.xataka.com/servicios/amazon-cierra-puerta-a-agentes-ia-mayor-cadena-supermercados-eeuu-abre-par-par",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "4304633406337184",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18127328773807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "Ax6byAgKPIY"
+      }
+    }
   }
 }
