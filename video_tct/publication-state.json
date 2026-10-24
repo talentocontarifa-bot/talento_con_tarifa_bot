@@ -630,5 +630,27 @@
         "id": "Ax6byAgKPIY"
       }
     }
+  },
+  "e7a80d87e8606cee69a815d06e2848b2e420fab4398892381db73d78ffc01e50": {
+    "source_url": "https://techcrunch.com/2026/10/24/forced-to-pick-groks-ai-model-chooses-republicans-openais-picks-democrats/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1677796107106671",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18127488484807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "hUSYgSIm-pg"
+      }
+    }
   }
 }
