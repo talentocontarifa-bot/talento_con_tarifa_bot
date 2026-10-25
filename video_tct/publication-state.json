@@ -717,5 +717,26 @@
         "id": "QRuaCQZJiNg"
       }
     }
+  },
+  "49b75f5bcc17378316c958f244f491201b14affb395e0365ff7bdb18ab7437ef": {
+    "source_url": "https://wwwhatsnew.com/2026/10/25/cursos-bonificados-para-empresas-avanforma-imparte-excel-e-inteligencia-artificial-para-trabajar-mejor/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "28975441698777882",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18127832362807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
