@@ -673,5 +673,27 @@
         "status": "requires_review"
       }
     }
+  },
+  "2f38489938aada9ceff855353f6137c69fbf6d9333adfdbef03b75464927ce3c": {
+    "source_url": "https://simonwillison.net/2026/Oct/22/donating-agent-skills/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "28229521153394241",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18127622791807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "9QRm-hiJvmU"
+      }
+    }
   }
 }
