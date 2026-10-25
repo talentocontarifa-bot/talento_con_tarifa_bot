@@ -695,5 +695,27 @@
         "id": "9QRm-hiJvmU"
       }
     }
+  },
+  "f94f576c55d3253b48e094f660deb98e46ada24cb9d2bcccd9b00b99d61c269d": {
+    "source_url": "https://www.xataka.com/robotica-e-ia/presidente-alibaba-tiene-claro-unica-forma-que-europa-alcance-soberania-tecnologica-ia-open-source",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1346206138584326",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18127784608807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "QRuaCQZJiNg"
+      }
+    }
   }
 }
