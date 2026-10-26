@@ -760,5 +760,29 @@
         "id": "rRZim3W0ykY"
       }
     }
+  },
+  "22742f6ae43b9790c201ea0e3ddc0fc89c8da96a7c279b83d83c778600d65d51": {
+    "source_url": "https://wwwhatsnew.com/2026/10/26/deloitte-australia-occidental-informe-ia-reembolso-chatgpt/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2096162884595988",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18128136022807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7701074134911731732",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "wdX70M6SOhk"
+      }
+    }
   }
 }
