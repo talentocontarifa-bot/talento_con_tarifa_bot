@@ -738,5 +738,27 @@
         "status": "requires_review"
       }
     }
+  },
+  "0da1fae7870426f243d255658386194fbda0fc2b3b53dbfa2f0c663f83cf6bf6": {
+    "source_url": "https://www.xataka.com/privacidad/dinamarca-tiene-plan-deepfakes-blindar-voz-rostro-sus-ciudadanos-ia",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2236093106936109",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18127932385807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "rRZim3W0ykY"
+      }
+    }
   }
 }
