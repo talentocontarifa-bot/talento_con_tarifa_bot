@@ -784,5 +784,28 @@
         "id": "wdX70M6SOhk"
       }
     }
+  },
+  "30e11eae7c6fbeab2df61e801312ff7e1e5ff93319662454083b763b1537b757": {
+    "source_url": "https://wwwhatsnew.com/2026/10/27/por-que-ia-te-da-la-razon-complacencia-chatbots/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "4424250344552098",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18128164072807797",
+        "phase": "publishing",
+        "id": "18101078804380470"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "mUmE_G8txbs"
+      }
+    }
   }
 }
