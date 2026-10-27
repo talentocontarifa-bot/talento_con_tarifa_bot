@@ -807,5 +807,28 @@
         "id": "mUmE_G8txbs"
       }
     }
+  },
+  "939d943fc8f0d3999bfa9328dde06c03a4fd9ee5f70059c3d6a17d436480c39f": {
+    "source_url": "https://techcrunch.com/2026/10/26/how-openai-turned-its-coding-tools-into-dots-an-always-on-personal-assistant/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2046781636707214",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18128231629807797",
+        "phase": "publishing",
+        "id": "18097938962555707"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "U76d4XDrJSc"
+      }
+    }
   }
 }
