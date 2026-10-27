@@ -618,7 +618,7 @@ Responde ÚNICAMENTE con un objeto JSON válido con las claves "topic", "layout_
       throw new Error("No hay API Key de Groq ni de Gemini disponible.");
   }
   
-  const geminiModels = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-3.8-flash", "gemini-3.1-pro-preview"];
+  const geminiModels = ["gemini-3.5-flash", "gemini-3.6-flash", "gemini-2.5-flash", "gemini-3-flash-preview"];
   let lastGeminiError = null;
 
   for (const modelName of geminiModels) {

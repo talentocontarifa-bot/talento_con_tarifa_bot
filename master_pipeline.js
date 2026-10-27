@@ -146,7 +146,7 @@ async function callGeminiWithRetry(model, content, maxRetries = 3) {
         } catch (error) {
             attempts++;
             console.warn(`⚠️ Intento ${attempts} fallido al llamar a Gemini: ${error.message}`);
-            if (attempts >= maxRetries) {
+            if (attempts >= maxRetries || /404|not found|no longer available/i.test(error.message)) {
                 throw error;
             }
             let waitTime = Math.min(Math.pow(2, attempts) * 1000 + 5000, 30000);
@@ -244,7 +244,7 @@ REGLAS ESTRICTAS DE REDACCIÓN (CON CARNITA):
     }
 
     console.log("🧠 3. Procesando con Gemini... Aplicando ángulo editorial y datos duros.");
-    const geminiModels = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
+    const geminiModels = ["gemini-3.5-flash", "gemini-3.6-flash", "gemini-2.5-flash", "gemini-3-flash-preview"];
     let lastError = null;
     for (const modelName of geminiModels) {
         try {

@@ -77,7 +77,7 @@ ${ghRepos.map(r => `- ${r.name}: ${r.description}`).join('\n')}
 
 Enfócate en cómo los emprendedores y profesionales de software pueden aprovechar esta ola para automatizar y cobrar más por su tarifa. No uses saludos largos.
 `;
-  for (const modelName of ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash']) {
+  for (const modelName of ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-3-flash-preview']) {
     try {
       const model = genAI.getGenerativeModel({ model: modelName });
       const result = await model.generateContent(prompt);

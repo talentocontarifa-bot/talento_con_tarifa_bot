@@ -237,8 +237,8 @@ Devuelve ÚNICAMENTE el objeto JSON con formato: {"scenes": [...]}.`;
   const genAI = getGenAI();
   if (genAI) {
     const geminiModels = process.env.GEMINI_MODEL
-      ? [process.env.GEMINI_MODEL, 'gemini-2.5-flash-lite', 'gemini-2.0-flash']
-      : ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+      ? [process.env.GEMINI_MODEL, 'gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-2.5-flash']
+      : ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-3-flash-preview'];
     for (const modelName of geminiModels) {
       try {
         console.log(`🧠 Intentando generar guion de Top 10 con Gemini (${modelName})...`);

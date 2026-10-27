@@ -148,7 +148,7 @@ Por favor, sé directo, estratégico y enfocado al crecimiento. No inventes dato
     console.log('🧠 [4/5] Generando reporte con Google Gemini (gemini-2.5-flash)...');
     const { GoogleGenerativeAI } = require('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(GEMINI_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
 
     let attempts = 0;
     const maxRetries = 4;

@@ -127,7 +127,7 @@ async function generateEditorialPostWithGemini(videoMeta, transcriptText) {
 
   try {
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
 
     // Truncar a máximo 80,000 caracteres de transcripción si es extremadamente largo (para velocidad y eficiencia)
     const contextText = transcriptText.length > 80000 
