@@ -830,5 +830,27 @@
         "id": "U76d4XDrJSc"
       }
     }
+  },
+  "5d9cd26fe2dc50c0884a4e6473d9a4590b8ac372854d25a7eb3a8c7e1c03e430": {
+    "source_url": "https://www.xataka.com/empresas-y-economia/anthropic-su-s-1-tenemos-historial-perdidas-posible-que-no-generemos-ingresos-suficientes-futuro",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1491085222932256",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18128390623807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "q7flMInpO8w"
+      }
+    }
   }
 }
