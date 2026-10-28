@@ -920,5 +920,28 @@
         "id": "EoGY1yMQDbk"
       }
     }
+  },
+  "c83773f3203907931c58d2c93698ce773897f0c0e8a9c9edaf01ae055d655d6c": {
+    "source_url": "https://wwwhatsnew.com/2026/10/28/presentaciones-ia-copilot-powerpoint-gemini-slides-gamma/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1886742802295199",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18128692738807797",
+        "phase": "publishing",
+        "id": "18137356030661227"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "fd8x9QoG-q0"
+      }
+    }
   }
 }
