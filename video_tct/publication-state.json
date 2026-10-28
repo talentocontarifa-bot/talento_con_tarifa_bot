@@ -897,5 +897,28 @@
         "status": "requires_review"
       }
     }
+  },
+  "47b9ac53c66e8a48cfb404e70ea91e3c7d029ced3cc8f9da089c6f221db91b51": {
+    "source_url": "https://wwwhatsnew.com/2026/10/27/anthropic-salida-bolsa-s1-ingresos-perdidas-compromisos-computacion/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1379825453978527",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18128519908807797",
+        "phase": "publishing",
+        "id": "18137430028709732"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "EoGY1yMQDbk"
+      }
+    }
   }
 }
