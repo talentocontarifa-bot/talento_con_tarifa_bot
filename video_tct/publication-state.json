@@ -943,5 +943,27 @@
         "id": "fd8x9QoG-q0"
       }
     }
+  },
+  "42870cc05c581f98fcd64ff93bea5d5c593e3118bd3b234479a885ec7cb4df4c": {
+    "source_url": "https://www.xataka.com/empresas-y-economia/que-anthropic-salga-a-bolsa-va-a-tener-consecuencias-para-constructora-espanola-ferrovial",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1881062062889683",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18128729428807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "KjjdnELGBbc"
+      }
+    }
   }
 }
