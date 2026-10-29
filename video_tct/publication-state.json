@@ -965,5 +965,28 @@
         "id": "KjjdnELGBbc"
       }
     }
+  },
+  "7b5653451a244c2d34efb38f2003e0796172f26d8c9a89099a24d3767ad6f629": {
+    "source_url": "https://www.theverge.com/tech/1021339/google-gemini-4-carbon-cybersecurity-frontier",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1132313205948225",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18128803756807797",
+        "phase": "publishing",
+        "id": "17910713355321134"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "54EPm2nRcg8"
+      }
+    }
   }
 }
