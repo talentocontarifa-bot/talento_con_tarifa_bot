@@ -1010,5 +1010,27 @@
         "id": "yka5KhqY008"
       }
     }
+  },
+  "49d99f09e516b736e5fe7e5fd742a875375d1686ca8154d3bfc178cb74435b2c": {
+    "source_url": "https://simonwillison.net/2026/Oct/29/api-credits/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1139624415693776",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18129002887807797",
+        "phase": "publishing",
+        "id": "17912085969308097"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
