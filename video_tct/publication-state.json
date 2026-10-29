@@ -988,5 +988,27 @@
         "id": "54EPm2nRcg8"
       }
     }
+  },
+  "da6295c65e727fbb0550fb47d4e137a9a06f961129693eee6f6c3e9965422931": {
+    "source_url": "https://www.xataka.com/empresas-y-economia/openai-supone-11-ingresos-microsoft-eso-buena-mala-noticia",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1145866161722134",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18128972443807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "yka5KhqY008"
+      }
+    }
   }
 }
