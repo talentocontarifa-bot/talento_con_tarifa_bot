@@ -1032,5 +1032,27 @@
         "status": "requires_review"
       }
     }
+  },
+  "6f2af59dd620b75ec377b2236a50a94e544d06db39cb015a820f801b3d304a74": {
+    "source_url": "https://www.xataka.com/robotica-e-ia/github-ha-tenido-que-hacer-algo-a-gran-escala-para-seguir-ritmo-ia-sus-cifras-explican-que-punto",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2654011235039601",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18129075115807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "_8iM8G_ir7U"
+      }
+    }
   }
 }
