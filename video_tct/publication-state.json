@@ -1054,5 +1054,28 @@
         "id": "_8iM8G_ir7U"
       }
     }
+  },
+  "4d0843b360d077cf4f8e57d3d04c018508bffdf5e1602efd1a5a76b8544c5931": {
+    "source_url": "https://techcrunch.com/2026/10/30/zests-new-ai-agent-finds-restaurants-and-books-reservations-over-text/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "4300962356861516",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18129224503807797",
+        "phase": "publishing",
+        "id": "17975027682150583"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "Ca1PfNStftc"
+      }
+    }
   }
 }
