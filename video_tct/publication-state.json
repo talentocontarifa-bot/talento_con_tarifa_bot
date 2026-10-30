@@ -1077,5 +1077,27 @@
         "id": "Ca1PfNStftc"
       }
     }
+  },
+  "7a24eca35f77e86d873fde1b3133eb6c2782f99772d9581abac82b6be52a155a": {
+    "source_url": "https://www.theverge.com/tech/1023763/openai-google-microsoft-ai-scraping-standard-opt-out",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2001405313862806",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18129252991807797",
+        "phase": "publishing",
+        "id": "18118614859806334"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
