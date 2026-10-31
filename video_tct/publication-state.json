@@ -1123,5 +1123,28 @@
         "id": "MoJofi9wH9g"
       }
     }
+  },
+  "9a3f8a1c7c28b68198f2124efeacbfc16534d00caaf1555a97d83628e6339d9c": {
+    "source_url": "https://wwwhatsnew.com/2026/10/31/investigacion-profunda-deep-research-chatgpt-gemini-claude/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1111812931711897",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18129491680807797",
+        "phase": "publishing",
+        "id": "17945551719369227"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "NTfX-zmer5Q"
+      }
+    }
   }
 }
