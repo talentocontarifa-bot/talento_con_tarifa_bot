@@ -1099,5 +1099,29 @@
         "status": "requires_review"
       }
     }
+  },
+  "83d7b69615dbd46fd07d26594c329f19b4aafee6157bb11b3e12c3cde7cce672": {
+    "source_url": "https://www.genbeta.com/inteligencia-artificial/sam-altman-creador-chatgpt-mundo-deberia-aceptar-que-sucedan-algunas-cosas-malas-aras-beneficios-ia",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1447877390877443",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18129332908807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7702720883118901269",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "MoJofi9wH9g"
+      }
+    }
   }
 }
