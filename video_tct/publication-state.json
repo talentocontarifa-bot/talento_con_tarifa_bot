@@ -1146,5 +1146,29 @@
         "id": "NTfX-zmer5Q"
       }
     }
+  },
+  "8a3d202fcd8a002c9953981d823223b3e9ae0b37dcc6a1bc202799072e6e3f5d": {
+    "source_url": "https://wwwhatsnew.com/2026/11/01/crear-musica-ia-suno-udio-derechos-spotify-youtube/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2365396127549312",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18129630304807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7703099698542200840",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "ZK63vvTGBYI"
+      }
+    }
   }
 }
