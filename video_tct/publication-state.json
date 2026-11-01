@@ -1192,5 +1192,27 @@
         "id": "FCsaQXpjUDI"
       }
     }
+  },
+  "a382e3726a0ce6359c3322170296949b8a5f498c4916d17f2e221f288c006030": {
+    "source_url": "https://www.xataka.com/robotica-e-ia/negocio-que-anthropic-promete-a-sus-inversores-vale-40-billones-que-cobramos-quienes-hacemos-que-quiere-hacer-su-ia",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1154118806944307",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18129811267807797",
+        "phase": "publishing",
+        "id": "18117651305042989"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
