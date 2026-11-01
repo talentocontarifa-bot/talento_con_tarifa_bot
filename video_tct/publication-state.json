@@ -1170,5 +1170,27 @@
         "id": "ZK63vvTGBYI"
       }
     }
+  },
+  "d14bd70e8b3f984e9842fe7f1ef19e58a5140f1426290d21651c8f8be166f0df": {
+    "source_url": "https://wwwhatsnew.com/2026/11/01/apple-intelligence-china-diciembre-qwen-alibaba-siri/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1363677975665266",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18129772309807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "FCsaQXpjUDI"
+      }
+    }
   }
 }
