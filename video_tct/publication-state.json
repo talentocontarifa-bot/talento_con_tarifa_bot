@@ -1239,5 +1239,27 @@
         "id": "afkkoWPHyvA"
       }
     }
+  },
+  "ffb95cbae65776319f03466646b8347069f6f3c7c69766c70fdd6e831b9ca4ce": {
+    "source_url": "https://wwwhatsnew.com/2026/11/02/ia-movil-apple-intelligence-galaxy-ai-gemini-espana/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1773823733887475",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18130052014807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "z2s3NWhQcA8"
+      }
+    }
   }
 }
