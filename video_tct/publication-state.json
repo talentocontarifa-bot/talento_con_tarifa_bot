@@ -1214,5 +1214,30 @@
         "status": "requires_review"
       }
     }
+  },
+  "262712ff85e16bc612cfef9641ea7438e91cf578311f43f0a9f920c9dd2bcb96": {
+    "source_url": "https://wwwhatsnew.com/2026/11/02/anthropic-renombra-claude-max-ultra-limite-cinco-horas/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "28831087999918156",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18129894355807797",
+        "phase": "publishing",
+        "id": "17941898499385764"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7703472366466156551",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "afkkoWPHyvA"
+      }
+    }
   }
 }
