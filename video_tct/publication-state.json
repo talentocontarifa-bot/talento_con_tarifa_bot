@@ -1261,5 +1261,27 @@
         "id": "z2s3NWhQcA8"
       }
     }
+  },
+  "dfb1d49114f0805e7875e6056003bb855d5ccf8c5d1579a812ff6118ffec2af1": {
+    "source_url": "https://techcrunch.com/2026/11/02/y-combinators-garry-tan-uses-ai-agents-so-much-he-spends-up-to-200k-a-year-on-tokens/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1467330528656757",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18130083754807797",
+        "phase": "publishing",
+        "id": "18358740028221216"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
