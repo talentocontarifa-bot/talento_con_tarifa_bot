@@ -866,5 +866,12 @@
     "title": "Logran arrancar iOS en un Redmi Note 12, un móvil Android, con ayuda de agentes de IA como Claude",
     "date": "2026-11-03T13:01:29.865Z",
     "channel": "fb_article"
+  },
+  {
+    "url": "simonwillison.net/2026/nov/3/qwen-can-interpret-model-weights",
+    "link": "https://simonwillison.net/2026/Nov/3/qwen-can-interpret-model-weights/",
+    "title": "Qwen 3.8 27B on my laptop can interpret model weights, too",
+    "date": "2026-11-03T19:54:12.426Z",
+    "channel": "fb_article"
   }
 ]
