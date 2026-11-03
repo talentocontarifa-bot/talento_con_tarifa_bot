@@ -1307,5 +1307,28 @@
         "id": "dGLHJX-XhvM"
       }
     }
+  },
+  "4fe5a79db15088c456ae1f9c04dd9def169dc5624ec172e974706aa6f57160d6": {
+    "source_url": "https://www.xataka.com/empresas-y-economia/anthropic-ingresa-17-000-millones-al-trimestre-su-factura-computacion-50-veces-mayor",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1838783993930984",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18130276405807797",
+        "phase": "publishing",
+        "id": "18148070650602482"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "e5E6orWYjiI"
+      }
+    }
   }
 }
