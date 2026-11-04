@@ -1375,5 +1375,27 @@
         "id": "UJO7CWSjMac"
       }
     }
+  },
+  "5112f3d519822a572a0230ce7a1fdd5ffb10d5fdb4797c91ad2cbeed304d986a": {
+    "source_url": "https://techcrunch.com/video/open-source-ai-is-booming-hugging-face-explains-who-profits/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1687277916122603",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18130511416807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "ZYgktVkE_0s"
+      }
+    }
   }
 }
