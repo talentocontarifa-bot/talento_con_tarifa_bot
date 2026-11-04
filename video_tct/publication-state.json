@@ -1352,5 +1352,28 @@
         "status": "requires_review"
       }
     }
+  },
+  "d514ab4f8f917f4a90ececd5f2e03db46fd7d93d56405f80c6907db3e06c2899": {
+    "source_url": "https://spanish.entrepreneur.com/noticias/la-ia-atrae-mas-inversion-en-startups-latinoamericanas-pero-el-capital-ya-no-garantiza-el-crecimiento",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1652794802924640",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18130361278807797",
+        "phase": "publishing",
+        "id": "18126082108693762"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "UJO7CWSjMac"
+      }
+    }
   }
 }
