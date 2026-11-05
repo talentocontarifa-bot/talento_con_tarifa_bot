@@ -1419,5 +1419,27 @@
         "status": "requires_review"
       }
     }
+  },
+  "d7d9a2a25df6ba5386fde18a0f872abfae6e86b29805b9ad390f902f51b6b820": {
+    "source_url": "https://news.ycombinator.com/item?id=50366117",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "988712430363654",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18130623256807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "M-e9lje4cD8"
+      }
+    }
   }
 }
