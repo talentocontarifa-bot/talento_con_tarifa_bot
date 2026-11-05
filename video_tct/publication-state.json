@@ -1441,5 +1441,28 @@
         "id": "M-e9lje4cD8"
       }
     }
+  },
+  "5c7cf002e5f20afcb59e5321851cf89b94195521d0a8a876f034f75fb7149ffc": {
+    "source_url": "https://www.xataka.com/empresas-y-economia/no-todos-tokens-que-producen-modelos-valen-dario-amodei-sugiere-modelo-precios-dinamicos-funcion-tarea",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1505389198072780",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18130774450807797",
+        "phase": "publishing",
+        "id": "18100116812542664"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "cMQkz3t1xio"
+      }
+    }
   }
 }
