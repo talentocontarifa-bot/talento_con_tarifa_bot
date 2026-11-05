@@ -1397,5 +1397,27 @@
         "id": "ZYgktVkE_0s"
       }
     }
+  },
+  "ed446416108cc493d6aea906ea8f56e29927a4d8c3623f0c36608229c1266927": {
+    "source_url": "https://www.xataka.com/empresas-y-economia/revolut-pasa-claude-code-codex-pone-a-2-000-ingenieros-a-trabajar-glm-5-3-su-factura-ia-ahora-diez-veces-menor",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "3213720252163992",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18130544566807797",
+        "phase": "publishing",
+        "id": "17916077313498176"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
