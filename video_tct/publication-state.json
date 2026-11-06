@@ -1486,5 +1486,27 @@
         "id": "KayDasrRbAI"
       }
     }
+  },
+  "a6338063ab6578244950123aa86fe4533eb3b22c72cd4ec96ad476f39b2f6de3": {
+    "source_url": "https://wwwhatsnew.com/2026/11/06/openai-gpt-6-cyber-fallos-firefox/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1638481824420512",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18130862638807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "3sZIXVoska8"
+      }
+    }
   }
 }
