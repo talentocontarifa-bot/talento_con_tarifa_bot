@@ -1531,5 +1531,28 @@
         "id": "AW35w3kfiH0"
       }
     }
+  },
+  "56cd2cda74b822d46abec4274cba5d05dc3d353daeb033d6e270b9bff47c588a": {
+    "source_url": "https://spanish.entrepreneur.com/tecnologia/asi-es-como-los-agentes-de-ia-estan-transformando-la-infraestructura-tecnologica-de-los-bancos",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "39794729186836999",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18131032579807797",
+        "phase": "publishing",
+        "id": "18106143908311479"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "LbyNJjzsLL0"
+      }
+    }
   }
 }
