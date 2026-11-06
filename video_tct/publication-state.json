@@ -1508,5 +1508,28 @@
         "id": "3sZIXVoska8"
       }
     }
+  },
+  "e556ccc1d8fc746b72979c67d3164f616ea1348e8dccdaf01d42cfd9a71b1918": {
+    "source_url": "https://www.genbeta.com/laboral/jeff-bezos-revela-vision-inteligencia-artificial-que-podria-transformar-jornada-laboral-estadounidense",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "4528751234045437",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18131011264807797",
+        "phase": "publishing",
+        "id": "18101403809533939"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "AW35w3kfiH0"
+      }
+    }
   }
 }
