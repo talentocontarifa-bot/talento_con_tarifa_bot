@@ -1464,5 +1464,27 @@
         "id": "cMQkz3t1xio"
       }
     }
+  },
+  "2165b65a40c289be1bb36318e87a09af8acbd091add0493fd72ecfc8e16c3ecd": {
+    "source_url": "https://www.theverge.com/ai-artificial-intelligence/1028302/perplexity-teammates-ai-agents-work",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1151549713980320",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18130799425807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "KayDasrRbAI"
+      }
+    }
   }
 }
