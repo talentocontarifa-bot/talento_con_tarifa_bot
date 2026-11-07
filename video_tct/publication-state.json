@@ -1554,5 +1554,27 @@
         "id": "LbyNJjzsLL0"
       }
     }
+  },
+  "69ec5fdd824b441ccf20e01e887c67003a0d0b1708cac82098c9c81bf6e0c4a9": {
+    "source_url": "https://wwwhatsnew.com/2026/11/07/perplexity-teammates-agentes-ia-trabajo/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "3359835814209221",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18131231458807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "EJbBGTVKRa4"
+      }
+    }
   }
 }
