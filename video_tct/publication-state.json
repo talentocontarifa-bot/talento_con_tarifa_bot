@@ -1576,5 +1576,27 @@
         "id": "EJbBGTVKRa4"
       }
     }
+  },
+  "121d6091a8baaf3be665335f7e182ba72c64658b9fb366fcf517d854b5fb5a5e": {
+    "source_url": "https://wwwhatsnew.com/2026/11/07/amazon-alexa-comprar-mensaje-texto/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1712206100527652",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18131267755807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "OVJt1vamggA"
+      }
+    }
   }
 }
