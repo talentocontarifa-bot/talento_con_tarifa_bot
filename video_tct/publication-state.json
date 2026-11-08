@@ -1598,5 +1598,27 @@
         "id": "OVJt1vamggA"
       }
     }
+  },
+  "45da1b2a01619c5dea24f82db768e55f9fb154105247bdd765989d6780b2620b": {
+    "source_url": "https://wwwhatsnew.com/2026/11/07/ia-declaracion-renta-asistente-virtual-aeat-chatgpt-errores-datos/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2381965685891545",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18131352505807797",
+        "phase": "publishing",
+        "id": "17972117643061354"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
