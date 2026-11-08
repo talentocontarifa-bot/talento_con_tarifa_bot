@@ -1620,5 +1620,27 @@
         "status": "requires_review"
       }
     }
+  },
+  "4e35f2e80fabcb2f99e71deb77b21f0003acc1dbae62e9823aaeeb7964aafdda": {
+    "source_url": "https://www.genbeta.com/seguridad/roblox-acusado-descargar-145-gb-modelos-3d-incluido-contenido-para-adultos-para-entrenar-ia-empresa-niega-haber-usado-archivos",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1459249992823821",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18131490766807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "S0doL54qlso"
+      }
+    }
   }
 }
