@@ -1642,5 +1642,27 @@
         "id": "S0doL54qlso"
       }
     }
+  },
+  "68e717f1eb9afdcb1360e766d5dc48ae497d54ebab2eb1e890db1c8badc6f82e": {
+    "source_url": "https://www.genbeta.com/inteligencia-artificial/modelo-openai-resuelve-cientos-problemas-matematicos-no-resueltos-provoca-gran-sensacion-vacio",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "3118100598525891",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18131523988807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "6BDW4wRj8b0"
+      }
+    }
   }
 }
