@@ -1664,5 +1664,28 @@
         "id": "6BDW4wRj8b0"
       }
     }
+  },
+  "025ac884c6b81570ce8f40ec0fa688ce184dbe6e2ed520b9fff86f3e99b4d5f5": {
+    "source_url": "https://www.xataka.com/robotica-e-ia/claude-code-guardaba-tu-correo-para-saber-quien-eres-algunas-webs-acabaron-recibiendolo",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1892221105550975",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18131761201807797",
+        "phase": "publishing",
+        "id": "18179468923450916"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "Ie_AGF47E3E"
+      }
+    }
   }
 }
