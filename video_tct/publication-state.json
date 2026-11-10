@@ -1687,5 +1687,27 @@
         "id": "Ie_AGF47E3E"
       }
     }
+  },
+  "b4cf37578d6b0e598e568006034572bc2fde4895aee8b43f0138c69d25d74106": {
+    "source_url": "https://www.xataka.com/robotica-e-ia/unos-320-millones-viajes-pedidos-uber-semana-halloween-solo-cuatro-viajes-500-pedidos-uber-eats-vinieron-agentes-ia",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1140554848696693",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18131784538807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "8teR-L-7d1U"
+      }
+    }
   }
 }
