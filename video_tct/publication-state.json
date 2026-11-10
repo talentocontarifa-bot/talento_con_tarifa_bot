@@ -1709,5 +1709,27 @@
         "id": "8teR-L-7d1U"
       }
     }
+  },
+  "f121bfe947f9b7e3d23740d84b6cd13501cb9cc4721c4a27a457bade31f608b6": {
+    "source_url": "https://www.xataka.com/robotica-e-ia/pulsar-no-vuelvas-a-preguntar-claude-code-parecia-inofensivo-ha-acabado-filtrando-miles-contrasenas-github",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2557904854637030",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18132012568807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "iTbV8GGghWQ"
+      }
+    }
   }
 }
