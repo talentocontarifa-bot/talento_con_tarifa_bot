@@ -1779,5 +1779,28 @@
         "status": "requires_review"
       }
     }
+  },
+  "01f783f4251928bdbe3a0dfefebd25a0314ed802595eae2320b4217ff5049280": {
+    "source_url": "https://wwwhatsnew.com/2026/11/11/adobe-agentes-ia-mcp-photoshop-premiere-firefly/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1706240534286044",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18132297550807797",
+        "phase": "publishing",
+        "id": "17951999271095444"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "bJnLaBg6Jes"
+      }
+    }
   }
 }
