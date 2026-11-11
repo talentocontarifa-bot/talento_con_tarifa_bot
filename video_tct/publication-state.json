@@ -1731,5 +1731,29 @@
         "id": "iTbV8GGghWQ"
       }
     }
+  },
+  "74dc64b339c459e84208475a9d38d6a7ea2e080ac666ed3e8bcf5b73f83cffd4": {
+    "source_url": "https://www.genbeta.com/inteligencia-artificial/creador-clones-gratuitos-adobe-presenta-replicaciones-microsoft-office-excel-powerpoint-word-codigo-abierto-herramientas-autodesk-otros-servicios-basados-suscripcion-pueden-ser-proximos",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2471568163251975",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18132047653807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7706703273428191250",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "1yrg3rdBZIU"
+      }
+    }
   }
 }
