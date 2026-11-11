@@ -1755,5 +1755,29 @@
         "id": "1yrg3rdBZIU"
       }
     }
+  },
+  "697debda975c187536f8515001c1cd5474d3c903e845e96da8289f054c29cdfb": {
+    "source_url": "https://techcrunch.com/2026/11/10/cyberattacks-threaten-to-make-open-source-ai-a-little-less-open-hugging-face-exec-warns/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1766352984421062",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18132110074807797",
+        "phase": "publishing",
+        "id": "18041623223893525"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7706816019762956309",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
