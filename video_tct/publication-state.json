@@ -1850,5 +1850,27 @@
         "id": "nuhnmas2Je0"
       }
     }
+  },
+  "bd79903a17a4b8df7ffd328ad3f7ff9ac89c97e5390e4f4794a8b5e6ed89be2d": {
+    "source_url": "https://techcrunch.com/2026/11/12/jensen-huangs-exit-puts-nvidias-support-for-open-source-in-question/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1160118679815749",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18132579748807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "ihTV9ZhaSSQ"
+      }
+    }
   }
 }
