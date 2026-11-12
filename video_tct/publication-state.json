@@ -1802,5 +1802,29 @@
         "id": "bJnLaBg6Jes"
       }
     }
+  },
+  "485ec329c8b74027b381458d522d85316f706755eddca7134520c91ccc7b841f": {
+    "source_url": "https://simonwillison.net/2026/Nov/11/gemini-decisions-api/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1126444513367485",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18132344548807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7707096083352061972",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "KL7i3y53hl4"
+      }
+    }
   }
 }
