@@ -1826,5 +1826,29 @@
         "id": "KL7i3y53hl4"
       }
     }
+  },
+  "3c4a130ff1dbafc38dee6b28c18e9582e36c07dec78116be1df03232579c9c7a": {
+    "source_url": "https://www.theverge.com/ai-artificial-intelligence/1031623/united-unauthorized-ai-agents",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1266581915684530",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18132410983807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7707194172763162630",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "nuhnmas2Je0"
+      }
+    }
   }
 }
