@@ -1174,5 +1174,12 @@
     "title": "llm-gemini 0.37",
     "date": "2026-11-13T00:49:38.954Z",
     "channel": "video_news"
+  },
+  {
+    "url": "blog.n8n.io/new-in-n8n-public-api-rate-limits-that-keep-every-team-on-your-instance-running",
+    "link": "https://blog.n8n.io/new-in-n8n-public-api-rate-limits-that-keep-every-team-on-your-instance-running/",
+    "title": "New in n8n: Public API rate limits that keep every team on your instance running",
+    "date": "2026-11-13T13:01:06.679Z",
+    "channel": "fb_article"
   }
 ]
