@@ -1872,5 +1872,27 @@
         "id": "ihTV9ZhaSSQ"
       }
     }
+  },
+  "5b86eed0286e0e3b833c14ec5bb4fb0aa60d664b795fa186347dd9c4243b9dc5": {
+    "source_url": "https://simonwillison.net/2026/Nov/12/llm-gemini/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "959220793657388",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18132611755807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "NR07Ypn6jgQ"
+      }
+    }
   }
 }
