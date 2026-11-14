@@ -1216,5 +1216,12 @@
     "title": "AMD ha presentado una nueva gama de procesadores que apuntan a dónde más están sufriendo los centros de datos: a los agentes de IA",
     "date": "2026-11-14T13:01:02.548Z",
     "channel": "fb_article"
+  },
+  {
+    "url": "claude.com/resources/articles/projects-redesigned",
+    "link": "https://claude.com/resources/articles/projects-redesigned",
+    "title": "Anthropic upgrades Claude Code Projects to run parallel AI workers",
+    "date": "2026-11-14T18:33:18.319Z",
+    "channel": "fb_article"
   }
 ]
