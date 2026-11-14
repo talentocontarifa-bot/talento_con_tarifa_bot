@@ -1986,5 +1986,27 @@
         "id": "Ml-5Sy8SsTI"
       }
     }
+  },
+  "8f4b2632f43363d7fda4c9360f691ce085164eac7403aa5325d0bf41766b5c13": {
+    "source_url": "https://www.techpowerup.com/354814/nvidia-allegedly-engineered-scarcity-by-funding-ai-startups-to-buy-its-gpus",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1871412024280001",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18133164322807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "BTMz4DQ_UH4"
+      }
+    }
   }
 }
