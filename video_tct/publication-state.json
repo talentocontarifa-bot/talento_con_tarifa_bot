@@ -1919,5 +1919,27 @@
         "id": "7oLDMT6u_jg"
       }
     }
+  },
+  "9a4f043b926f872ffedeba965cd40f5785545788e074e642d19bc5698872e4d7": {
+    "source_url": "https://www.xataka.com/robotica-e-ia/google-cree-haber-dado-santo-grial-ia-gemini-4-hydrogen-rapido-bueno-casi-barato",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "27674458742252636",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18132875287807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "7YxLyQk_0o8"
+      }
+    }
   }
 }
