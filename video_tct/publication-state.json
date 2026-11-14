@@ -1964,5 +1964,27 @@
         "status": "requires_review"
       }
     }
+  },
+  "6c2539c06ead4df205307d9679270241e557336527dc63b466a94dfd0d38ca8a": {
+    "source_url": "https://www.theverge.com/podcast/1032907/helen-toner-openai-cset-ai-safety-policy-interview",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1928654068290885",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18133119121807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "Ml-5Sy8SsTI"
+      }
+    }
   }
 }
