@@ -1941,5 +1941,28 @@
         "id": "7YxLyQk_0o8"
       }
     }
+  },
+  "aa25a235ed9ed726cd09c27745f0418aa7c41ced44137c21a921b2f50758560f": {
+    "source_url": "https://wwwhatsnew.com/2026/11/14/openai-chatgpt-wallet-agentes-compras-pago/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1434058398813297",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18132957103807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7707927135872141318",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
