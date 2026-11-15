@@ -2008,5 +2008,28 @@
         "id": "BTMz4DQ_UH4"
       }
     }
+  },
+  "e9477865501b0215260c38f88fa655ccd36aa7382eb73debe9b70119c540d786": {
+    "source_url": "https://simonwillison.net/2026/Nov/14/datasette-llm/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1612139256868991",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18133258861807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7708300895716575240",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }

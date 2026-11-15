@@ -1237,5 +1237,12 @@
     "title": "Nvidia allegedly engineered scarcity by funding AI startups to buy its GPUs",
     "date": "2026-11-14T23:31:54.179Z",
     "channel": "video_news"
+  },
+  {
+    "url": "simonwillison.net/2026/nov/14/datasette-llm",
+    "link": "https://simonwillison.net/2026/Nov/14/datasette-llm/",
+    "title": "datasette-llm 0.1a11",
+    "date": "2026-11-15T07:42:39.041Z",
+    "channel": "video_news"
   }
 ]
