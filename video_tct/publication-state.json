@@ -2031,5 +2031,27 @@
         "status": "requires_review"
       }
     }
+  },
+  "dc51b1200752085f352aeb546595210089d345e2a4f56fe24da8c5555a66eab3": {
+    "source_url": "https://wwwhatsnew.com/2026/11/16/consultar-dudas-legales-ia-chatgpt-boe-errores-abogados/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1857032705644716",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18133464772807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "xzQbIRQ2_JM"
+      }
+    }
   }
 }
