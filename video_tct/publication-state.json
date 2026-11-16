@@ -2053,5 +2053,28 @@
         "id": "xzQbIRQ2_JM"
       }
     }
+  },
+  "ce48c91bf4ea00a2f81744cf98388225af0cf6e09e761d00ed70a96827997e61": {
+    "source_url": "https://wwwhatsnew.com/2026/11/16/chatgpt-generar-editar-gifs-images-2-6/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1144626854823859",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18133557541807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7708673823902025780",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
