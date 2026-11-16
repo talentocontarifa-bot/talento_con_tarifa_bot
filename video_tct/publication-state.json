@@ -2076,5 +2076,29 @@
         "status": "requires_review"
       }
     }
+  },
+  "ba303a673cb91b4d8859b60c432aabf21bac86773b23fc58586e29b814d13155": {
+    "source_url": "https://wwwhatsnew.com/2026/11/16/copilot-recall-windows-11-datos-desactivar-desinstalar/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1438021677978167",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18133792102807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7708918913228359688",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "1EnYL_fmosQ"
+      }
+    }
   }
 }
