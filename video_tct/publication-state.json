@@ -2147,5 +2147,27 @@
         "id": "VEnAjuCNb4g"
       }
     }
+  },
+  "0b5f35342ecc69a52f0353df7edbc19350b7c388e984c1fcb9d6ef7dfecf0e49": {
+    "source_url": "https://simonwillison.net/2026/Nov/17/gpt62-astra-and-sol/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1124723943672362",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18134041267807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "PWI7hRLdZrs"
+      }
+    }
   }
 }
