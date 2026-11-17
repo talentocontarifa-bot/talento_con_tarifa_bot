@@ -2100,5 +2100,27 @@
         "id": "1EnYL_fmosQ"
       }
     }
+  },
+  "a50437ccc021c623712f2923fc5b1ac5fbdee7de50378f8f6091763c03c8a298": {
+    "source_url": "https://simonwillison.net/2026/Nov/16/llm/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2345733182949756",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18133842145807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "Hjnqs3McD_Q"
+      }
+    }
   }
 }
