@@ -2122,5 +2122,30 @@
         "id": "Hjnqs3McD_Q"
       }
     }
+  },
+  "bfb315fd661774c1bf3552f5ac4bf7e8122c60ceffa3b2bfbeac7311a83ae7a7": {
+    "source_url": "https://www.xataka.com/robotica-e-ia/google-tiene-idea-programar-ia-gaste-que-modelo-caro-solo-piense-barato-haga-trabajo",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "3628137857350194",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18133909792807797",
+        "phase": "publishing",
+        "id": "18019370540989917"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7709063560168474632",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "VEnAjuCNb4g"
+      }
+    }
   }
 }
