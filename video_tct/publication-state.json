@@ -2192,5 +2192,28 @@
         "id": "uJbdBsgFBFI"
       }
     }
+  },
+  "614a1012b75ba53299aa139f55e86e5d1dd27ffd2fecf173201def56e798cfdc": {
+    "source_url": "https://wwwhatsnew.com/2026/11/18/apple-macos-27-3-controles-agentes-ia-archivos/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1607170083988671",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18134113114807797",
+        "phase": "publishing",
+        "id": "17961141291256967"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "H47mKT2OMGo"
+      }
+    }
   }
 }
