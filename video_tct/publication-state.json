@@ -2215,5 +2215,28 @@
         "id": "H47mKT2OMGo"
       }
     }
+  },
+  "509bb199cce9af4103229c07249290299900648dface89d4e43a7cc191d0afce": {
+    "source_url": "https://wwwhatsnew.com/2026/11/18/ia-finanzas-personales-presupuesto-hoja-calculo-datos/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1846229036404764",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18134250667807797",
+        "phase": "publishing",
+        "id": "18108694706313343"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "LY32E4LetrI"
+      }
+    }
   }
 }
