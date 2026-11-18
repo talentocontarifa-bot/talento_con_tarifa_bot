@@ -2169,5 +2169,28 @@
         "id": "PWI7hRLdZrs"
       }
     }
+  },
+  "8339a30c8d70bc4c3f5ca833790613236a4c12044514023be686af6313861d3d": {
+    "source_url": "https://techcrunch.com/2026/11/17/nvidia-says-its-open-source-ai-strategy-remains-intact-after-jensen-huangs-exit/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2712974476114964",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18134063698807797",
+        "phase": "publishing",
+        "id": "17953551999339120"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "uJbdBsgFBFI"
+      }
+    }
   }
 }
