@@ -2238,5 +2238,28 @@
         "id": "LY32E4LetrI"
       }
     }
+  },
+  "49ff21afd78ef9de5ec7b048a8ba40e5045464372abb46355df3020f7076a7e9": {
+    "source_url": "https://techcrunch.com/2026/11/18/satya-nadella-predicts-ai-agents-will-reshuffle-the-economics-of-the-web/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "4508541649385166",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18134274472807797",
+        "phase": "publishing",
+        "id": "17880723975567882"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "2vkR_JgffYs"
+      }
+    }
   }
 }
