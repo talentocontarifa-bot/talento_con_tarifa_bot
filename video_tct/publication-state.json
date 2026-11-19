@@ -2283,5 +2283,28 @@
         "id": "aT_zrjkWTgQ"
       }
     }
+  },
+  "f8133dc16aac0ad50d9028197181b9ddf0aad28ed07a39054323c47283007f3a": {
+    "source_url": "https://www.theverge.com/tech/1038227/apple-ai-agent-engineer-job-listing",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2205876923679140",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18134452654807797",
+        "phase": "publishing",
+        "id": "18138530317678872"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "6R28LK8unsw"
+      }
+    }
   }
 }
