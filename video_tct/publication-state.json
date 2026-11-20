@@ -2328,5 +2328,27 @@
         "id": "gu0XFavBJyo"
       }
     }
+  },
+  "98cec1d61b6ed647472862e9636524217a1ea88e60b7f03b6e1a62735cffbc99": {
+    "source_url": "https://wwwhatsnew.com/2026/11/20/anthropic-ipo-nasdaq-mayor-salida-bolsa-historia/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1130872876223342",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18134526151807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "0ZrCSwz-Yrw"
+      }
+    }
   }
 }

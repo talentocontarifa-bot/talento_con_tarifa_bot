@@ -1,12 +1,5 @@
 [
   {
-    "url": "xataka.com/robotica-e-ia/mistral-da-su-mayor-salto-ahora-modelo-europeo-que-quiere-plantar-cara-al-dominio-eeuu-china",
-    "link": "xataka.com/robotica-e-ia/mistral-da-su-mayor-salto-ahora-modelo-europeo-que-quiere-plantar-cara-al-dominio-eeuu-china",
-    "title": "Mistral da su mayor salto hasta ahora con un modelo de pesos abiertos tan potente como cualquiera de China",
-    "date": "2026-10-06T18:40:29.694Z",
-    "channel": "fb_article"
-  },
-  {
     "url": "xataka.com/servicios/apple-esta-empezando-a-cortar-acceso-a-agentes-ia-motivos-seguridad",
     "link": "xataka.com/servicios/apple-esta-empezando-a-cortar-acceso-a-agentes-ia-motivos-seguridad",
     "title": "Apple está empezando a cortar el acceso a los agentes de IA por motivos de seguridad",
@@ -1397,6 +1390,13 @@
     "link": "https://wwwhatsnew.com/2026/11/19/gemini-4-neon-google-modelo-coste-benchmarks/",
     "title": "Gemini 4 Neon: Google estrena el modelo que busca el punto medio entre potencia y coste",
     "date": "2026-11-20T01:31:57.253Z",
+    "channel": "video_news"
+  },
+  {
+    "url": "wwwhatsnew.com/2026/11/20/anthropic-ipo-nasdaq-mayor-salida-bolsa-historia",
+    "link": "https://wwwhatsnew.com/2026/11/20/anthropic-ipo-nasdaq-mayor-salida-bolsa-historia/",
+    "title": "Anthropic debuta en el Nasdaq con la mayor salida a bolsa de la historia, y una paradoja de fondo",
+    "date": "2026-11-20T08:15:49.501Z",
     "channel": "video_news"
   }
 ]
