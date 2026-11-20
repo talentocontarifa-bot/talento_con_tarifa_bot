@@ -2350,5 +2350,30 @@
         "id": "0ZrCSwz-Yrw"
       }
     }
+  },
+  "3a850c903b02169f2b985d19f0a04c8c841e8f1a46d60968e2038de74f5eff50": {
+    "source_url": "https://techcrunch.com/2026/11/19/google-gives-gemini-the-ability-to-use-your-mac-for-you/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2156589668310112",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18134657971807797",
+        "phase": "publishing",
+        "id": "18028611713927108"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7710379278935967765",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "HAW7xTxH_f0"
+      }
+    }
   }
 }
