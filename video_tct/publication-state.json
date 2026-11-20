@@ -2306,5 +2306,27 @@
         "id": "6R28LK8unsw"
       }
     }
+  },
+  "c6cc62292808deb4c12f3e65fdfeb40d7d6750d3a9a8ed9dcce55c3f1fc0f621": {
+    "source_url": "https://wwwhatsnew.com/2026/11/19/gemini-4-neon-google-modelo-coste-benchmarks/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1145336337992148",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18134471311807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "gu0XFavBJyo"
+      }
+    }
   }
 }
