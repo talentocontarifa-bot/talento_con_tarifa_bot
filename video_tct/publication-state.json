@@ -2420,5 +2420,27 @@
         "id": "nUgv8L6RKMs"
       }
     }
+  },
+  "3298713995b153167b4788ea43cf57a71b1a70643c88b3c40d33ce8bb8414d0a": {
+    "source_url": "https://www.theverge.com/podcast/1038701/anthropic-ipo-ai-safety-openai-nvidia-structure",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1453732916939829",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18134859844807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "npTPre1H9co"
+      }
+    }
   }
 }
