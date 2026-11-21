@@ -1,12 +1,5 @@
 [
   {
-    "url": "spanish.entrepreneur.com/emprendedores/los-agentes-de-ia-ya-pueden-actuar-por-si-mismos-y-las-empresas-comienzan-a-adoptarlos",
-    "link": "spanish.entrepreneur.com/emprendedores/los-agentes-de-ia-ya-pueden-actuar-por-si-mismos-y-las-empresas-comienzan-a-adoptarlos",
-    "title": "Los agentes de IA ya pueden actuar por sí mismos y las empresas comienzan a adoptarlos",
-    "date": "2026-10-07T20:26:49.912Z",
-    "channel": "video_news"
-  },
-  {
     "url": "wwwhatsnew.com/2026/10/07/mirror-particle-world-model-comportamiento-humano-llm-2026",
     "link": "wwwhatsnew.com/2026/10/07/mirror-particle-world-model-comportamiento-humano-llm-2026",
     "title": "Mirror Particle construye modelos del mundo del comportamiento humano porque los LLM no son suficientes para predecir lo que hace la gente",
@@ -1398,5 +1391,12 @@
     "title": "Dario Amodei, CEO de Anthropic: “La IA podría comprimir un siglo de progreso médico en una década”",
     "date": "2026-11-21T08:07:59.203Z",
     "channel": "video_news"
+  },
+  {
+    "url": "wwwhatsnew.com/2026/11/21/chatgpt-espacios-colaborativos-plus-openai",
+    "link": "https://wwwhatsnew.com/2026/11/21/chatgpt-espacios-colaborativos-plus-openai/",
+    "title": "ChatGPT lleva sus espacios colaborativos a los usuarios Plus, antes reservados a los planes caros",
+    "date": "2026-11-21T13:01:52.692Z",
+    "channel": "fb_article"
   }
 ]
