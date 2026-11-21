@@ -1,12 +1,5 @@
 [
   {
-    "url": "xataka.com/robotica-e-ia/openai-todavia-no-sabe-que-forma-tendra-trabajo-ia-asi-que-ha-decidido-cobrarte-todas",
-    "link": "xataka.com/robotica-e-ia/openai-todavia-no-sabe-que-forma-tendra-trabajo-ia-asi-que-ha-decidido-cobrarte-todas",
-    "title": "OpenAI todavía no sabe qué forma tendrá el trabajo con la IA, así que ha decidido cobrarte por todas",
-    "date": "2026-10-07T13:00:55.909Z",
-    "channel": "fb_article"
-  },
-  {
     "url": "xataka.com/empresas-y-economia/alibaba-tiene-listo-chip-para-ia-que-quiere-plantar-cara-a-nvidia",
     "link": "xataka.com/empresas-y-economia/alibaba-tiene-listo-chip-para-ia-que-quiere-plantar-cara-a-nvidia",
     "title": "Alibaba tiene listo al fin el chip para IA con el que quiere plantar cara a Nvidia",
@@ -1397,6 +1390,13 @@
     "link": "https://techcrunch.com/2026/11/19/google-gives-gemini-the-ability-to-use-your-mac-for-you/",
     "title": "Google gives Gemini the ability to use your Mac for you",
     "date": "2026-11-20T22:06:08.795Z",
+    "channel": "video_news"
+  },
+  {
+    "url": "wwwhatsnew.com/2026/11/21/openai-dots-agentes-autonomos-chatgpt-plus-prueba",
+    "link": "https://wwwhatsnew.com/2026/11/21/openai-dots-agentes-autonomos-chatgpt-plus-prueba/",
+    "title": "OpenAI empieza a abrir sus agentes autónomos Dots a los usuarios de ChatGPT Plus",
+    "date": "2026-11-21T01:03:01.314Z",
     "channel": "video_news"
   }
 ]

@@ -2375,5 +2375,28 @@
         "id": "HAW7xTxH_f0"
       }
     }
+  },
+  "deba1fd904e52355a8a221eef8fb58cf276ff42b838291bd4c5c01401bc0167e": {
+    "source_url": "https://wwwhatsnew.com/2026/11/21/openai-dots-agentes-autonomos-chatgpt-plus-prueba/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1142723758482275",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18134691595807797",
+        "phase": "publishing",
+        "id": "18036480299972343"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "6BzHxF2OuEo"
+      }
+    }
   }
 }
