@@ -1,12 +1,5 @@
 [
   {
-    "url": "xataka.com/empresas-y-economia/alibaba-tiene-listo-chip-para-ia-que-quiere-plantar-cara-a-nvidia",
-    "link": "xataka.com/empresas-y-economia/alibaba-tiene-listo-chip-para-ia-que-quiere-plantar-cara-a-nvidia",
-    "title": "Alibaba tiene listo al fin el chip para IA con el que quiere plantar cara a Nvidia",
-    "date": "2026-10-07T19:07:00.518Z",
-    "channel": "fb_article"
-  },
-  {
     "url": "spanish.entrepreneur.com/emprendedores/los-agentes-de-ia-ya-pueden-actuar-por-si-mismos-y-las-empresas-comienzan-a-adoptarlos",
     "link": "spanish.entrepreneur.com/emprendedores/los-agentes-de-ia-ya-pueden-actuar-por-si-mismos-y-las-empresas-comienzan-a-adoptarlos",
     "title": "Los agentes de IA ya pueden actuar por sí mismos y las empresas comienzan a adoptarlos",
@@ -1397,6 +1390,13 @@
     "link": "https://wwwhatsnew.com/2026/11/21/openai-dots-agentes-autonomos-chatgpt-plus-prueba/",
     "title": "OpenAI empieza a abrir sus agentes autónomos Dots a los usuarios de ChatGPT Plus",
     "date": "2026-11-21T01:03:01.314Z",
+    "channel": "video_news"
+  },
+  {
+    "url": "xataka.com/empresas-y-economia/dario-amodei-ceo-anthropic-ia-podria-comprimir-siglo-progreso-medico-decada",
+    "link": "https://www.xataka.com/empresas-y-economia/dario-amodei-ceo-anthropic-ia-podria-comprimir-siglo-progreso-medico-decada",
+    "title": "Dario Amodei, CEO de Anthropic: “La IA podría comprimir un siglo de progreso médico en una década”",
+    "date": "2026-11-21T08:07:59.203Z",
     "channel": "video_news"
   }
 ]

@@ -2398,5 +2398,27 @@
         "id": "6BzHxF2OuEo"
       }
     }
+  },
+  "17da1a8abebe38eada191e0aed9e068ffc39c30663894b33afb1e109f74b3fa8": {
+    "source_url": "https://www.xataka.com/empresas-y-economia/dario-amodei-ceo-anthropic-ia-podria-comprimir-siglo-progreso-medico-decada",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2587821745025362",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18134749798807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "nUgv8L6RKMs"
+      }
+    }
   }
 }
