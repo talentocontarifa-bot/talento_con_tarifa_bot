@@ -1,12 +1,5 @@
 [
   {
-    "url": "wwwhatsnew.com/2026/10/08/openai-722-manuscritos-matematicos-ia-lean-github-2026",
-    "link": "wwwhatsnew.com/2026/10/08/openai-722-manuscritos-matematicos-ia-lean-github-2026",
-    "title": "OpenAI publica 722 demostraciones matemáticas generadas por IA: el mayor corpus verificado de la historia",
-    "date": "2026-10-08T20:23:44.032Z",
-    "channel": "video_news"
-  },
-  {
     "url": "wwwhatsnew.com/2026/10/09/grok-bot-spacex-claude-opus-midjourney-suno-ia-atencion-cliente",
     "link": "wwwhatsnew.com/2026/10/09/grok-bot-spacex-claude-opus-midjourney-suno-ia-atencion-cliente",
     "title": "SpaceX lanza Grok Bot con Claude Opus 5.5, Midjourney y Suno: la atención al cliente ya no es cosa de humanos",
@@ -1398,5 +1391,12 @@
     "title": "Apps de notas con IA: qué hacen Notion AI, Apple Notas, Google Keep con Gemini y OneNote con Copilot, y cuánto te cuestan",
     "date": "2026-11-22T07:54:54.183Z",
     "channel": "video_news"
+  },
+  {
+    "url": "wwwhatsnew.com/2026/11/22/anthropic-matematico-afirma-demostrar-hipotesis-riemann-claude",
+    "link": "https://wwwhatsnew.com/2026/11/22/anthropic-matematico-afirma-demostrar-hipotesis-riemann-claude/",
+    "title": "Un matemático de Anthropic afirma haber demostrado la hipótesis de Riemann con ayuda de Claude",
+    "date": "2026-11-22T13:01:08.206Z",
+    "channel": "fb_article"
   }
 ]
