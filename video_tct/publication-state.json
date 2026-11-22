@@ -2442,5 +2442,28 @@
         "id": "npTPre1H9co"
       }
     }
+  },
+  "8d2d611284dedaf49cb41a204b7eedda5d641face2f3ad3996de0006e584746b": {
+    "source_url": "https://wwwhatsnew.com/2026/11/22/phishing-escrito-con-ia-senales-detectar/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1148700344373691",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18134883829807797",
+        "phase": "publishing",
+        "id": "18108366836644476"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "ExYCJtDtVKQ"
+      }
+    }
   }
 }
