@@ -2489,5 +2489,28 @@
         "status": "requires_review"
       }
     }
+  },
+  "c196095808d738dfbce0fb2485bbc0e3d330498696e9c0b19786657207086c79": {
+    "source_url": "https://wwwhatsnew.com/2026/11/22/thinking-machines-inkling-2-mini-modelo-pesos-abiertos-portatil/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2135091517213886",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18135068854807797",
+        "phase": "publishing",
+        "id": "17911109739331417"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "9DmAGbTjIAk"
+      }
+    }
   }
 }

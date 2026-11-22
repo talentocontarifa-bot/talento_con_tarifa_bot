@@ -1,12 +1,5 @@
 [
   {
-    "url": "wwwhatsnew.com/2026/10/09/anthropic-claude-haiku-5-5-lanzamiento-precio-benchmarks-2026",
-    "link": "wwwhatsnew.com/2026/10/09/anthropic-claude-haiku-5-5-lanzamiento-precio-benchmarks-2026",
-    "title": "Anthropic lanza Haiku 5.5: el modelo más barato de su historia supera a GPT-6 Luna en velocidad",
-    "date": "2026-10-09T07:15:19.171Z",
-    "channel": "video_news"
-  },
-  {
     "url": "xataka.com/empresas-y-economia/problemas-horizonte-ganancias-anualizadas-openai-se-quedan-20-000-millones-dolares-debajo-esperado",
     "link": "xataka.com/empresas-y-economia/problemas-horizonte-ganancias-anualizadas-openai-se-quedan-20-000-millones-dolares-debajo-esperado",
     "title": "Problemas en el horizonte: las ganancias anualizadas de OpenAI se quedan 20.000 millones de dólares por debajo de lo esperado",
@@ -1398,5 +1391,12 @@
     "title": "Google ha convertido Gemini en una tabla periódica. El problema es que ahora hay dos modelos de programación y ninguna pista de cuál elegir",
     "date": "2026-11-22T20:01:02.773Z",
     "channel": "fb_article"
+  },
+  {
+    "url": "wwwhatsnew.com/2026/11/22/thinking-machines-inkling-2-mini-modelo-pesos-abiertos-portatil",
+    "link": "https://wwwhatsnew.com/2026/11/22/thinking-machines-inkling-2-mini-modelo-pesos-abiertos-portatil/",
+    "title": "Thinking Machines lanza Inkling 2 Mini, un modelo de pesos abiertos que cabe en un portátil",
+    "date": "2026-11-22T20:56:14.975Z",
+    "channel": "video_news"
   }
 ]
