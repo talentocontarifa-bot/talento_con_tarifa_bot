@@ -2465,5 +2465,29 @@
         "id": "ExYCJtDtVKQ"
       }
     }
+  },
+  "b4acbc8313b0d2eb4abaff7b1597be23c5139b52fa05f014d462ad958f55f6d9": {
+    "source_url": "https://wwwhatsnew.com/2026/11/22/apps-notas-ia-notion-apple-notas-google-keep-onenote-copilot/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "4628177757509645",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18134949139807797",
+        "phase": "publishing",
+        "id": "18215676637363361"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7710901976027908097",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }

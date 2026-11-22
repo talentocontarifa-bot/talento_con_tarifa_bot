@@ -1,12 +1,5 @@
 [
   {
-    "url": "xataka.com/investigacion/parte-comunidad-matematica-esta-pie-guerra-openai",
-    "link": "xataka.com/investigacion/parte-comunidad-matematica-esta-pie-guerra-openai",
-    "title": "Una parte de la comunidad matemática está en pie de guerra contra OpenAI",
-    "date": "2026-10-08T19:03:32.687Z",
-    "channel": "fb_article"
-  },
-  {
     "url": "wwwhatsnew.com/2026/10/08/openai-722-manuscritos-matematicos-ia-lean-github-2026",
     "link": "wwwhatsnew.com/2026/10/08/openai-722-manuscritos-matematicos-ia-lean-github-2026",
     "title": "OpenAI publica 722 demostraciones matemáticas generadas por IA: el mayor corpus verificado de la historia",
@@ -1397,6 +1390,13 @@
     "link": "https://wwwhatsnew.com/2026/11/22/phishing-escrito-con-ia-senales-detectar/",
     "title": "Phishing escrito con IA: por qué los correos falsos ya no tienen faltas y qué señales siguen delatándolos",
     "date": "2026-11-22T00:01:32.948Z",
+    "channel": "video_news"
+  },
+  {
+    "url": "wwwhatsnew.com/2026/11/22/apps-notas-ia-notion-apple-notas-google-keep-onenote-copilot",
+    "link": "https://wwwhatsnew.com/2026/11/22/apps-notas-ia-notion-apple-notas-google-keep-onenote-copilot/",
+    "title": "Apps de notas con IA: qué hacen Notion AI, Apple Notas, Google Keep con Gemini y OneNote con Copilot, y cuánto te cuestan",
+    "date": "2026-11-22T07:54:54.183Z",
     "channel": "video_news"
   }
 ]
