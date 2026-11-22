@@ -1,12 +1,5 @@
 [
   {
-    "url": "wwwhatsnew.com/2026/10/09/grok-bot-spacex-claude-opus-midjourney-suno-ia-atencion-cliente",
-    "link": "wwwhatsnew.com/2026/10/09/grok-bot-spacex-claude-opus-midjourney-suno-ia-atencion-cliente",
-    "title": "SpaceX lanza Grok Bot con Claude Opus 5.5, Midjourney y Suno: la atención al cliente ya no es cosa de humanos",
-    "date": "2026-10-09T00:05:09.281Z",
-    "channel": "video_news"
-  },
-  {
     "url": "wwwhatsnew.com/2026/10/09/anthropic-claude-haiku-5-5-lanzamiento-precio-benchmarks-2026",
     "link": "wwwhatsnew.com/2026/10/09/anthropic-claude-haiku-5-5-lanzamiento-precio-benchmarks-2026",
     "title": "Anthropic lanza Haiku 5.5: el modelo más barato de su historia supera a GPT-6 Luna en velocidad",
@@ -1397,6 +1390,13 @@
     "link": "https://wwwhatsnew.com/2026/11/22/anthropic-matematico-afirma-demostrar-hipotesis-riemann-claude/",
     "title": "Un matemático de Anthropic afirma haber demostrado la hipótesis de Riemann con ayuda de Claude",
     "date": "2026-11-22T13:01:08.206Z",
+    "channel": "fb_article"
+  },
+  {
+    "url": "xataka.com/robotica-e-ia/google-ha-convertido-gemini-tabla-periodica-problema-que-ahora-hay-dos-modelos-programacion-ninguna-pista-cual-elegir",
+    "link": "https://www.xataka.com/robotica-e-ia/google-ha-convertido-gemini-tabla-periodica-problema-que-ahora-hay-dos-modelos-programacion-ninguna-pista-cual-elegir",
+    "title": "Google ha convertido Gemini en una tabla periódica. El problema es que ahora hay dos modelos de programación y ninguna pista de cuál elegir",
+    "date": "2026-11-22T20:01:02.773Z",
     "channel": "fb_article"
   }
 ]
