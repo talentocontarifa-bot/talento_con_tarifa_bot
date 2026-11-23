@@ -1,12 +1,5 @@
 [
   {
-    "url": "xataka.com/empresas-y-economia/problemas-horizonte-ganancias-anualizadas-openai-se-quedan-20-000-millones-dolares-debajo-esperado",
-    "link": "xataka.com/empresas-y-economia/problemas-horizonte-ganancias-anualizadas-openai-se-quedan-20-000-millones-dolares-debajo-esperado",
-    "title": "Problemas en el horizonte: las ganancias anualizadas de OpenAI se quedan 20.000 millones de dólares por debajo de lo esperado",
-    "date": "2026-10-09T18:34:00.141Z",
-    "channel": "fb_article"
-  },
-  {
     "url": "wwwhatsnew.com/2026/10/09/openai-despidos-investigadores-cadena-pensamiento-monitoreo-gpt6-astra-2026",
     "link": "wwwhatsnew.com/2026/10/09/openai-despidos-investigadores-cadena-pensamiento-monitoreo-gpt6-astra-2026",
     "title": "OpenAI despidió a tres investigadores que querían preservar el monitoreo del razonamiento de sus modelos",
@@ -1397,6 +1390,13 @@
     "link": "https://wwwhatsnew.com/2026/11/22/thinking-machines-inkling-2-mini-modelo-pesos-abiertos-portatil/",
     "title": "Thinking Machines lanza Inkling 2 Mini, un modelo de pesos abiertos que cabe en un portátil",
     "date": "2026-11-22T20:56:14.975Z",
+    "channel": "video_news"
+  },
+  {
+    "url": "pandex.io",
+    "link": "https://www.pandex.io",
+    "title": "Pandex – Official European Law for AI Agents, over MCP",
+    "date": "2026-11-23T00:34:48.783Z",
     "channel": "video_news"
   }
 ]
