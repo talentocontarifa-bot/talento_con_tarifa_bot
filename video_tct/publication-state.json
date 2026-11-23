@@ -2535,5 +2535,30 @@
         "id": "wyWyJyhzux0"
       }
     }
+  },
+  "ae61009f04fc031912cb682a97f5cbfb540cf5e25bb9cf1ac4ac3fdb4ddc7e9e": {
+    "source_url": "https://wwwhatsnew.com/2026/11/23/signal-limita-capturas-pantalla-movil-vigilancia-ia/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1184423320908677",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18135149281807797",
+        "phase": "publishing",
+        "id": "18216376906364665"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7711285811518294034",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "AoYxicgBJ4g"
+      }
+    }
   }
 }
