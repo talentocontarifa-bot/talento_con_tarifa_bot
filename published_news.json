@@ -1,12 +1,5 @@
 [
   {
-    "url": "wwwhatsnew.com/2026/10/10/chatgpt-adolescentes-crisis-mental-common-sense-media-riesgo-inaceptable-2026",
-    "link": "wwwhatsnew.com/2026/10/10/chatgpt-adolescentes-crisis-mental-common-sense-media-riesgo-inaceptable-2026",
-    "title": "ChatGPT mantuvo conversaciones con adolescentes en crisis cuando debería haber derivado: el informe de Common Sense Media",
-    "date": "2026-10-10T23:04:24.295Z",
-    "channel": "video_news"
-  },
-  {
     "url": "wwwhatsnew.com/2026/10/11/dots-chatgpt-agentes-siempre-activos-europa-plan-pro-2026",
     "link": "wwwhatsnew.com/2026/10/11/dots-chatgpt-agentes-siempre-activos-europa-plan-pro-2026",
     "title": "Dots, los agentes siempre activos de ChatGPT, no llegan al plan Pro en Europa: qué hacen y qué te pierdes",
@@ -1397,6 +1390,13 @@
     "link": "https://wwwhatsnew.com/2026/11/24/crear-app-web-con-ia-sin-programar-gemini-canvas-claude-chatgpt-sites/",
     "title": "Crear una app o una web sencilla con IA sin saber programar: qué permiten hoy Gemini Canvas, los artefactos de Claude y ChatGPT Sites",
     "date": "2026-11-24T13:01:13.398Z",
+    "channel": "fb_article"
+  },
+  {
+    "url": "blog.n8n.io/production-ai-playbook-audit-trace-for-ai-agents",
+    "link": "https://blog.n8n.io/production-ai-playbook-audit-trace-for-ai-agents/",
+    "title": "Production AI Playbook: Audit & trace for AI agents",
+    "date": "2026-11-24T22:49:31.910Z",
     "channel": "fb_article"
   }
 ]
