@@ -2585,5 +2585,29 @@
         "id": "3uNZ7J_P-NE"
       }
     }
+  },
+  "eb8452aaffb0233724532ef0106399a8f2dde8fc0574738e6d9674619887fd3d": {
+    "source_url": "https://wwwhatsnew.com/2026/11/24/felicitaciones-navidad-ia-gemini-chatgpt-copilot-magnific/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1020207423734427",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18135373483807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7711688944987867188",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "s_fFEznGnXY"
+      }
+    }
   }
 }
