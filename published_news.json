@@ -1,12 +1,5 @@
 [
   {
-    "url": "wwwhatsnew.com/2026/10/11/dots-chatgpt-agentes-siempre-activos-europa-plan-pro-2026",
-    "link": "wwwhatsnew.com/2026/10/11/dots-chatgpt-agentes-siempre-activos-europa-plan-pro-2026",
-    "title": "Dots, los agentes siempre activos de ChatGPT, no llegan al plan Pro en Europa: qué hacen y qué te pierdes",
-    "date": "2026-10-11T06:58:07.645Z",
-    "channel": "video_news"
-  },
-  {
     "url": "xataka.com/robotica-e-ia/big-tech-quieren-que-todos-tengamos-nuestro-agente-ia-personal-idea-fantastica-gran-problema-privacidad",
     "link": "xataka.com/robotica-e-ia/big-tech-quieren-que-todos-tengamos-nuestro-agente-ia-personal-idea-fantastica-gran-problema-privacidad",
     "title": "Las Big Tech quieren que todos tengamos nuestro agente de IA personal. Es una idea fantástica con un gran problema: la privacidad",
@@ -1398,5 +1391,12 @@
     "title": "Production AI Playbook: Audit & trace for AI agents",
     "date": "2026-11-24T22:49:31.910Z",
     "channel": "fb_article"
+  },
+  {
+    "url": "xataka.com/robotica-e-ia/china-se-hizo-hueco-regalando-sus-modelos-ia-para-competir-openai-anthropic-z-ai-lanza-glm-5-4-primero-pago",
+    "link": "https://www.xataka.com/robotica-e-ia/china-se-hizo-hueco-regalando-sus-modelos-ia-para-competir-openai-anthropic-z-ai-lanza-glm-5-4-primero-pago",
+    "title": "China se hizo un hueco regalando sus modelos de IA. Para competir con OpenAI y Anthropic, Z.ai lanza GLM-5.4 primero de pago",
+    "date": "2026-11-24T23:45:22.105Z",
+    "channel": "video_news"
   }
 ]

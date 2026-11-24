@@ -2609,5 +2609,28 @@
         "id": "s_fFEznGnXY"
       }
     }
+  },
+  "4f7c1e2469dadc12a595bc2a96df223ee01d91fcfbd59ba6d959a01e147b3d06": {
+    "source_url": "https://www.xataka.com/robotica-e-ia/china-se-hizo-hueco-regalando-sus-modelos-ia-para-competir-openai-anthropic-z-ai-lanza-glm-5-4-primero-pago",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2013893232608855",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18135503458807797",
+        "phase": "publishing",
+        "id": "17875579731642988"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "BvtulLrT_Co"
+      }
+    }
   }
 }
