@@ -1,12 +1,5 @@
 [
   {
-    "url": "xataka.com/servicios/web-abierta-se-diseno-para-humanos-agentes-ia-acaban-demostrarle-a-wikipedia-que-ese-pacto-se-ha-roto",
-    "link": "xataka.com/servicios/web-abierta-se-diseno-para-humanos-agentes-ia-acaban-demostrarle-a-wikipedia-que-ese-pacto-se-ha-roto",
-    "title": "La web abierta se diseñó para humanos. Unos agentes de IA acaban de demostrarle a Wikipedia que ese pacto se ha roto",
-    "date": "2026-10-10T13:01:16.598Z",
-    "channel": "fb_article"
-  },
-  {
     "url": "xataka.com/servicios/empresas-ia-tienen-claro-que-habra-gran-catastrofe-2027-que-preparan-dia-despues",
     "link": "xataka.com/servicios/empresas-ia-tienen-claro-que-habra-gran-catastrofe-2027-que-preparan-dia-despues",
     "title": "Las empresas de IA tienen tan claro que habrá una gran catástrofe en 2027 que ya preparan el día después",
@@ -1398,5 +1391,12 @@
     "title": "Qué es Artex, la IA principal sospechosa del ciberataque a la Comisión Europea que tiene en alerta al FBI",
     "date": "2026-11-24T00:27:22.957Z",
     "channel": "fb_article"
+  },
+  {
+    "url": "simonwillison.net/2026/nov/23/glm-54",
+    "link": "https://simonwillison.net/2026/Nov/23/glm-54/",
+    "title": "GLM-5.4: Toward Generalized Coding with Our First Loop Transformer",
+    "date": "2026-11-24T02:00:37.326Z",
+    "channel": "video_news"
   }
 ]
