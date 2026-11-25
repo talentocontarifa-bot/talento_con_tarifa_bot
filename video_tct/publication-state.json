@@ -2657,5 +2657,27 @@
         "id": "lAPKdlm1Ffw"
       }
     }
+  },
+  "dd6f179421b43b53981659fd5929d9aa126ca0f4fc3413873cca1d0f38071c9c": {
+    "source_url": "https://spanish.entrepreneur.com/tecnologia/la-inteligencia-artificial-esta-de-moda-pero-que-pasa-con-las-buenas-practicas",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1706292604452999",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18135570808807797",
+        "phase": "publishing",
+        "id": "17944599147127174"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }

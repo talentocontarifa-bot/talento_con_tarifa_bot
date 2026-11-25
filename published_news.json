@@ -1,12 +1,5 @@
 [
   {
-    "url": "xataka.com/robotica-e-ia/satya-nadella-ceo-microsoft-debemos-asumir-que-todos-modelos-ia-estan-comprometidos-contenerlos-principio",
-    "link": "xataka.com/robotica-e-ia/satya-nadella-ceo-microsoft-debemos-asumir-que-todos-modelos-ia-estan-comprometidos-contenerlos-principio",
-    "title": "Satya Nadella, CEO de Microsoft: \"Debemos asumir que todos los modelos de IA están comprometidos y contenerlos desde el principio\"",
-    "date": "2026-10-11T19:20:44.229Z",
-    "channel": "video_news"
-  },
-  {
     "url": "wwwhatsnew.com/2026/10/11/mit-modelos-ia-arquitectura-modular-cerebro-humano-2026",
     "link": "wwwhatsnew.com/2026/10/11/mit-modelos-ia-arquitectura-modular-cerebro-humano-2026",
     "title": "El MIT encuentra en seis modelos de IA la misma arquitectura modular que organiza el cerebro humano",
@@ -1397,6 +1390,13 @@
     "link": "https://simonwillison.net/2026/Nov/24/llm-inflection-points/",
     "title": "Three LLM inflection points in twelve months",
     "date": "2026-11-25T03:17:22.777Z",
+    "channel": "video_news"
+  },
+  {
+    "url": "spanish.entrepreneur.com/tecnologia/la-inteligencia-artificial-esta-de-moda-pero-que-pasa-con-las-buenas-practicas",
+    "link": "https://spanish.entrepreneur.com/tecnologia/la-inteligencia-artificial-esta-de-moda-pero-que-pasa-con-las-buenas-practicas",
+    "title": "La inteligencia artificial está de moda, pero ¿qué pasa con las buenas prácticas?",
+    "date": "2026-11-25T09:42:47.853Z",
     "channel": "video_news"
   }
 ]
