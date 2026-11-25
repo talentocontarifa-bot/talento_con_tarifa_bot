@@ -2632,5 +2632,30 @@
         "id": "BvtulLrT_Co"
       }
     }
+  },
+  "0b260d07579db8478ef4bb1835da65cfc9845725cc2b63f79ac4b8ced1dc2fde": {
+    "source_url": "https://simonwillison.net/2026/Nov/24/llm-inflection-points/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1632572941251447",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18135527500807797",
+        "phase": "publishing",
+        "id": "18104442125071869"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7711943678775986228",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "lAPKdlm1Ffw"
+      }
+    }
   }
 }

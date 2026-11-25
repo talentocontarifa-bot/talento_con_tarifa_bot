@@ -1,12 +1,5 @@
 [
   {
-    "url": "xataka.com/robotica-e-ia/big-tech-quieren-que-todos-tengamos-nuestro-agente-ia-personal-idea-fantastica-gran-problema-privacidad",
-    "link": "xataka.com/robotica-e-ia/big-tech-quieren-que-todos-tengamos-nuestro-agente-ia-personal-idea-fantastica-gran-problema-privacidad",
-    "title": "Las Big Tech quieren que todos tengamos nuestro agente de IA personal. Es una idea fantástica con un gran problema: la privacidad",
-    "date": "2026-10-11T17:50:08.328Z",
-    "channel": "fb_article"
-  },
-  {
     "url": "xataka.com/robotica-e-ia/satya-nadella-ceo-microsoft-debemos-asumir-que-todos-modelos-ia-estan-comprometidos-contenerlos-principio",
     "link": "xataka.com/robotica-e-ia/satya-nadella-ceo-microsoft-debemos-asumir-que-todos-modelos-ia-estan-comprometidos-contenerlos-principio",
     "title": "Satya Nadella, CEO de Microsoft: \"Debemos asumir que todos los modelos de IA están comprometidos y contenerlos desde el principio\"",
@@ -1397,6 +1390,13 @@
     "link": "https://www.xataka.com/robotica-e-ia/china-se-hizo-hueco-regalando-sus-modelos-ia-para-competir-openai-anthropic-z-ai-lanza-glm-5-4-primero-pago",
     "title": "China se hizo un hueco regalando sus modelos de IA. Para competir con OpenAI y Anthropic, Z.ai lanza GLM-5.4 primero de pago",
     "date": "2026-11-24T23:45:22.105Z",
+    "channel": "video_news"
+  },
+  {
+    "url": "simonwillison.net/2026/nov/24/llm-inflection-points",
+    "link": "https://simonwillison.net/2026/Nov/24/llm-inflection-points/",
+    "title": "Three LLM inflection points in twelve months",
+    "date": "2026-11-25T03:17:22.777Z",
     "channel": "video_news"
   }
 ]
