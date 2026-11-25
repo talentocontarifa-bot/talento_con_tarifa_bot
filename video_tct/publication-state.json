@@ -2679,5 +2679,27 @@
         "status": "requires_review"
       }
     }
+  },
+  "b69abd48f308713ed014c5bb38eb80f6bc08bd00574e6cd70533fa04bae2efd9": {
+    "source_url": "https://wwwhatsnew.com/2026/11/26/anthropic-skills-over-mcp-tasks-elicitation-dos-anos/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1675168760945073",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18135678190807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "p8wZSSzB2AE"
+      }
+    }
   }
 }

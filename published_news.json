@@ -1,12 +1,5 @@
 [
   {
-    "url": "xataka.com/movilidad/metros-llevan-decadas-automatizando-conduccion-china-acaba-ensenar-uno-que-quiere-dar-siguiente-paso-ia",
-    "link": "xataka.com/movilidad/metros-llevan-decadas-automatizando-conduccion-china-acaba-ensenar-uno-que-quiere-dar-siguiente-paso-ia",
-    "title": "Los metros llevan décadas automatizando la conducción. China acaba de enseñar uno que quiere dar el siguiente paso con IA",
-    "date": "2026-10-12T21:26:54.687Z",
-    "channel": "fb_article"
-  },
-  {
     "url": "xataka.com/robotica-e-ia/nvidia-tiene-motivos-para-preocuparse-microsoft-apuesta-su-propio-chip-maia-300-para-su-infraestructura-ia",
     "link": "xataka.com/robotica-e-ia/nvidia-tiene-motivos-para-preocuparse-microsoft-apuesta-su-propio-chip-maia-300-para-su-infraestructura-ia",
     "title": "NVIDIA tiene motivos para preocuparse. Microsoft apuesta por su propio chip Maia 300 para su infraestructura de IA",
@@ -1398,5 +1391,12 @@
     "title": "Tareas programadas en ChatGPT, Gemini y Claude: qué puedes automatizar, en qué planes y con qué límites",
     "date": "2026-11-25T22:03:19.932Z",
     "channel": "fb_article"
+  },
+  {
+    "url": "wwwhatsnew.com/2026/11/26/anthropic-skills-over-mcp-tasks-elicitation-dos-anos",
+    "link": "https://wwwhatsnew.com/2026/11/26/anthropic-skills-over-mcp-tasks-elicitation-dos-anos/",
+    "title": "Anthropic lanza Skills over MCP y hace que Claude trate a un servidor como a otro agente",
+    "date": "2026-11-25T23:31:11.307Z",
+    "channel": "video_news"
   }
 ]
