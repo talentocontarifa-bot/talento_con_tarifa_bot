@@ -2724,5 +2724,28 @@
         "id": "O3hhmTe9beg"
       }
     }
+  },
+  "fb19c642f1b7558434080e89777e6a142ece742a5bd5be6d30ba5d9516e13b6e": {
+    "source_url": "https://techcrunch.com/2026/11/25/openai-says-heavy-chatgpt-users-may-hit-limits-sooner-as-it-merges-chat-and-work/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1845332733436700",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18135753175807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7712408101730797574",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "requires_review"
+      }
+    }
   }
 }
