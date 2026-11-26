@@ -1,12 +1,5 @@
 [
   {
-    "url": "xataka.com/robotica-e-ia/nvidia-tiene-motivos-para-preocuparse-microsoft-apuesta-su-propio-chip-maia-300-para-su-infraestructura-ia",
-    "link": "xataka.com/robotica-e-ia/nvidia-tiene-motivos-para-preocuparse-microsoft-apuesta-su-propio-chip-maia-300-para-su-infraestructura-ia",
-    "title": "NVIDIA tiene motivos para preocuparse. Microsoft apuesta por su propio chip Maia 300 para su infraestructura de IA",
-    "date": "2026-10-12T22:37:06.762Z",
-    "channel": "video_news"
-  },
-  {
     "url": "wwwhatsnew.com/2026/10/12/wikipedia-agentes-ia-openai-infraestructura-web-abierta-2026",
     "link": "wwwhatsnew.com/2026/10/12/wikipedia-agentes-ia-openai-infraestructura-web-abierta-2026",
     "title": "Wikipedia contra los agentes de IA: cuando la web diseñada para humanos empieza a crujir",
@@ -1397,6 +1390,13 @@
     "link": "https://wwwhatsnew.com/2026/11/26/anthropic-skills-over-mcp-tasks-elicitation-dos-anos/",
     "title": "Anthropic lanza Skills over MCP y hace que Claude trate a un servidor como a otro agente",
     "date": "2026-11-25T23:31:11.307Z",
+    "channel": "video_news"
+  },
+  {
+    "url": "wwwhatsnew.com/2026/11/26/tidal-retira-29-millones-canciones-generadas-ia",
+    "link": "https://wwwhatsnew.com/2026/11/26/tidal-retira-29-millones-canciones-generadas-ia/",
+    "title": "Tidal retirará 29 millones de canciones generadas íntegramente con IA",
+    "date": "2026-11-26T02:39:29.424Z",
     "channel": "video_news"
   }
 ]

@@ -2701,5 +2701,28 @@
         "id": "p8wZSSzB2AE"
       }
     }
+  },
+  "4c00483aeb5d131bdcd127f9dd5859d3e1e6e4329fbfaffcc8f1b2d67818ff66": {
+    "source_url": "https://wwwhatsnew.com/2026/11/26/tidal-retira-29-millones-canciones-generadas-ia/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2335500577211615",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18135697594807797",
+        "phase": "publishing",
+        "id": "18219289345362740"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "O3hhmTe9beg"
+      }
+    }
   }
 }
