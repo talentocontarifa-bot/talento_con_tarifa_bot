@@ -2747,5 +2747,30 @@
         "status": "requires_review"
       }
     }
+  },
+  "0b35b27d1979c0f4ee533cc62a0b0467b08ed02a9963e1fabbbf153acf5e310b": {
+    "source_url": "https://techstackups.com/articles/google-workspace-ai-agents-mcp/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "995768563157768",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18135875317807797",
+        "phase": "publishing",
+        "id": "18170654155421548"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7712627518917953557",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "B2OAC1vIOfY"
+      }
+    }
   }
 }
