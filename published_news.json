@@ -1,12 +1,5 @@
 [
   {
-    "url": "spanish.entrepreneur.com/tecnologia/cuando-la-inteligencia-artificial-decida-como-pagar-que-lugar-ocuparan-los-bancos",
-    "link": "spanish.entrepreneur.com/tecnologia/cuando-la-inteligencia-artificial-decida-como-pagar-que-lugar-ocuparan-los-bancos",
-    "title": "Cuando la inteligencia artificial decida cómo pagar, ¿qué lugar ocuparán los bancos?",
-    "date": "2026-10-14T19:04:53.665Z",
-    "channel": "video_news"
-  },
-  {
     "url": "wwwhatsnew.com/2026/10/14/meta-muse-wonder-wonder-full-modelos-ia-benchmark",
     "link": "wwwhatsnew.com/2026/10/14/meta-muse-wonder-wonder-full-modelos-ia-benchmark",
     "title": "Meta lanza Muse Wonder: el modelo que quiere devolver a la empresa su sitio en la frontera de la IA",
@@ -1397,6 +1390,13 @@
     "link": "https://www.xataka.com/espacio/carrera-inteligencia-artificial-no-se-libra-solo-tierra-china-acaba-dar-otro-paso-espacio",
     "title": "La carrera por la inteligencia artificial ya no se libra solo en la Tierra: China acaba de dar otro paso desde el espacio",
     "date": "2026-11-27T13:01:14.291Z",
+    "channel": "fb_article"
+  },
+  {
+    "url": "blog.n8n.io/deterministic-ai",
+    "link": "https://blog.n8n.io/deterministic-ai/",
+    "title": "Architectural Patterns for Deterministic AI Pipelines",
+    "date": "2026-11-27T21:42:47.271Z",
     "channel": "fb_article"
   }
 ]
