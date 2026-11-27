@@ -1,12 +1,5 @@
 [
   {
-    "url": "wwwhatsnew.com/2026/10/14/google-gemini-4-argon-lanzamiento-api-app-buscador",
-    "link": "wwwhatsnew.com/2026/10/14/google-gemini-4-argon-lanzamiento-api-app-buscador",
-    "title": "Google lanza Gemini 4 Argon: el modelo para trabajo pesado ya disponible en API, app y buscador",
-    "date": "2026-10-13T23:32:45.775Z",
-    "channel": "video_news"
-  },
-  {
     "url": "xataka.com/servicios/motor-busqueda-aleman-ha-rechazado-a-mistral-apostando-modelos-ia-chinos-open-source-su-lugar",
     "link": "xataka.com/servicios/motor-busqueda-aleman-ha-rechazado-a-mistral-apostando-modelos-ia-chinos-open-source-su-lugar",
     "title": "Un motor de búsqueda alemán ha rechazado a Mistral apostando por modelos IA chinos open-source en su lugar",
@@ -1397,6 +1390,13 @@
     "link": "https://techstackups.com/articles/google-workspace-ai-agents-mcp/",
     "title": "Google Will Make AI Agents Use Its MCP Servers. The Gmail One Can't Send Email",
     "date": "2026-11-26T23:30:00.007Z",
+    "channel": "video_news"
+  },
+  {
+    "url": "blog.n8n.io/ai-test-case-generation",
+    "link": "https://blog.n8n.io/ai-test-case-generation/",
+    "title": "AI Test Case Generation for Production QA Pipelines",
+    "date": "2026-11-27T02:34:44.743Z",
     "channel": "video_news"
   }
 ]

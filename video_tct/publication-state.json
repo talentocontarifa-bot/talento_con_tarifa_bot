@@ -2772,5 +2772,28 @@
         "id": "B2OAC1vIOfY"
       }
     }
+  },
+  "433d4b6a67ce8dc91ad6a3a2ac6fd28c87fc57a2eaeb1bfcc9eda805bb73fb8f": {
+    "source_url": "https://blog.n8n.io/ai-test-case-generation/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1147478518146111",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18135895795807797",
+        "phase": "publishing",
+        "id": "18125349649986378"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "c8iVn4d7q0w"
+      }
+    }
   }
 }
