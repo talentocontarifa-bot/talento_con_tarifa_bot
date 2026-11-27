@@ -2819,5 +2819,28 @@
         "id": "BYhT4ZrMnm8"
       }
     }
+  },
+  "86e0493406aedb32a67107693de7825716cae07658a64cde8de875bc6c6c0461": {
+    "source_url": "https://wwwhatsnew.com/2026/11/27/arreglar-cosas-casa-camara-movil-ia-gemini-live-chatgpt-copilot/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2234630083788581",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18136051519807797",
+        "phase": "publishing",
+        "id": "18082264640406557"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "eTZVPJJf_so"
+      }
+    }
   }
 }
