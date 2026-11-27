@@ -2795,5 +2795,29 @@
         "id": "c8iVn4d7q0w"
       }
     }
+  },
+  "d1809ee0e85e011b15d64bf37594b144e72075b47e913b67b15fdb461d662ab7": {
+    "source_url": "https://www.xataka.com/robotica-e-ia/revuelo-t3-code-programar-ia-explicado-software-open-source-que-usa-telemetria-para-identificar-al-usuario",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "2318828548896261",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18135943966807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "submitted",
+        "id": "v_inbox_file~v2.7712783433739372550",
+        "mode": "INBOX_DRAFT"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "BYhT4ZrMnm8"
+      }
+    }
   }
 }
