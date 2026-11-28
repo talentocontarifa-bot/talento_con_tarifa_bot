@@ -2865,5 +2865,27 @@
         "id": "TJC01Kp5A8I"
       }
     }
+  },
+  "faf06cf28156f4a597e1cd21d8796539c356579c8e723cd9825f06e9dde634da": {
+    "source_url": "https://spanish.entrepreneur.com/tecnologia/puede-la-ia-realmente-anadir-valor-al-sector-inmobiliario",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1179134214811293",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "requires_review",
+        "container_id": "18136111327807797",
+        "phase": "upload"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "neex_GtGzN8"
+      }
+    }
   }
 }
