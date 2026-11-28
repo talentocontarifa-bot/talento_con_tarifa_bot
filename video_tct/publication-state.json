@@ -2842,5 +2842,28 @@
         "id": "eTZVPJJf_so"
       }
     }
+  },
+  "f1b5a99ab0c1a1f5ded43bed25d98dd32ae59e79c48e329e22c5ea48a5386508": {
+    "source_url": "https://blog.n8n.io/fault-tolerance/",
+    "targets": {
+      "facebook:217934242951793": {
+        "status": "published",
+        "id": "1474216488013624",
+        "phase": "processing"
+      },
+      "instagram:17841424233889613": {
+        "status": "published",
+        "container_id": "18136070194807797",
+        "phase": "publishing",
+        "id": "18121440295965807"
+      },
+      "tiktok:8ae9c09e8226580e": {
+        "status": "requires_review"
+      },
+      "youtube:ba38a6553be0ca42": {
+        "status": "published",
+        "id": "TJC01Kp5A8I"
+      }
+    }
   }
 }

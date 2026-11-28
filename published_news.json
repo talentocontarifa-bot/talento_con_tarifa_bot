@@ -1,12 +1,5 @@
 [
   {
-    "url": "xataka.com/seleccion/asus-trae-a-espana-sus-portatiles-proart-nvidia-rtx-spark-ia-local-suscripciones-para-creadores",
-    "link": "xataka.com/seleccion/asus-trae-a-espana-sus-portatiles-proart-nvidia-rtx-spark-ia-local-suscripciones-para-creadores",
-    "title": "Asus trae a España sus portátiles ProArt con NVIDIA RTX Spark: IA local y sin suscripciones para creadores",
-    "date": "2026-10-15T13:01:38.376Z",
-    "channel": "fb_article"
-  },
-  {
     "url": "genbeta.com/inteligencia-artificial/su-escuela-bloqueo-chatgpt-ahora-esta-estudiante-secundaria-17-anos-dirige-startup-inteligencia-artificial-1-000-usuarios",
     "link": "genbeta.com/inteligencia-artificial/su-escuela-bloqueo-chatgpt-ahora-esta-estudiante-secundaria-17-anos-dirige-startup-inteligencia-artificial-1-000-usuarios",
     "title": "Su escuela bloqueó ChatGPT. Ahora esta estudiante de secundaria de 17 años dirige una startup de inteligencia artificial con 1.000 usuarios",
@@ -1397,6 +1390,13 @@
     "link": "https://wwwhatsnew.com/2026/11/27/arreglar-cosas-casa-camara-movil-ia-gemini-live-chatgpt-copilot/",
     "title": "Arreglar cosas en casa con la cámara del móvil y la IA: para qué sirven Gemini Live, ChatGPT y Copilot, y dónde no debes fiarte nunca",
     "date": "2026-11-27T23:07:34.689Z",
+    "channel": "video_news"
+  },
+  {
+    "url": "blog.n8n.io/fault-tolerance",
+    "link": "https://blog.n8n.io/fault-tolerance/",
+    "title": "How Fault Tolerance Supports Reliable AI Workflows",
+    "date": "2026-11-28T02:22:16.092Z",
     "channel": "video_news"
   }
 ]
