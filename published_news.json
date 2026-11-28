@@ -1,12 +1,5 @@
 [
   {
-    "url": "xataka.com/empresas-y-economia/anthropic-ofrece-172-000-euros-al-ano-a-alguien-que-quiera-hacer-exactamente-trabajo-que-deberia-hacer-agente-ia",
-    "link": "xataka.com/empresas-y-economia/anthropic-ofrece-172-000-euros-al-ano-a-alguien-que-quiera-hacer-exactamente-trabajo-que-deberia-hacer-agente-ia",
-    "title": "Anthropic ofrece 172.000 euros al año a alguien que quiera hacer exactamente el trabajo que debería hacer un agente de IA",
-    "date": "2026-10-16T17:01:37.187Z",
-    "channel": "fb_article"
-  },
-  {
     "url": "wwwhatsnew.com/2026/10/17/ocho-estados-demandan-openai-chatgpt-seguridad-automejora",
     "link": "wwwhatsnew.com/2026/10/17/ocho-estados-demandan-openai-chatgpt-seguridad-automejora",
     "title": "Ocho estados de EE. UU. demandan a OpenAI por la seguridad de ChatGPT, y Arkansas pide frenar la IA que se mejora a sí misma",
@@ -1398,5 +1391,12 @@
     "title": "¿Puede la IA realmente añadir valor al sector inmobiliario?",
     "date": "2026-11-28T08:47:40.445Z",
     "channel": "video_news"
+  },
+  {
+    "url": "wwwhatsnew.com/2026/11/27/nueva-york-prohibe-juguetes-chatbots-ia-cinco-anos",
+    "link": "https://wwwhatsnew.com/2026/11/27/nueva-york-prohibe-juguetes-chatbots-ia-cinco-anos/",
+    "title": "Nueva York prohíbe durante cinco años la venta de juguetes con chatbots de IA",
+    "date": "2026-11-28T13:01:12.006Z",
+    "channel": "fb_article"
   }
 ]
